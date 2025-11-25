@@ -1,0 +1,9 @@
+<configuration>
+    <input>
+        <net-file value="frauasmap.net.xml"/>
+        <route-files value="frauasmap.rou.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+    </time>
+</configuration>
