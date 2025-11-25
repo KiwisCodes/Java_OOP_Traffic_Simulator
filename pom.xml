@@ -35,12 +35,6 @@
             <version>${javafx.version}</version>
         </dependency>
 
-        <!-- 
-          Local TraaS.jar Dependency 
-          - scope = system
-          - systemPath = the path to the JAR. ${project.basedir} is the root folder 
-            (where pom.xml is)
-        -->
         <dependency>
             <groupId>com.traas</groupId>
             <artifactId>traas</artifactId>
@@ -64,7 +58,7 @@
                 </configuration>
             </plugin>
 
-            <!-- JavaFX Maven Plugin: Allows running from Maven (e.g., 'mvn javafx:run') -->
+            <!-- JavaFX Maven Plugin: Allows running from Maven ('mvn javafx:run') -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -75,7 +69,7 @@
             </plugin>
 
             <!-- 
-              Assembly Plugin: Creates a single runnable "uber-jar" 
+              Assembly Plugin: Creates a single runnable jar (a big jar)
               (jar-with-dependencies) that includes JavaFX and TraaS.jar
             -->
             <plugin>
@@ -97,7 +91,7 @@
                             </archive>
                             <descriptorRefs>
                                 <!-- This tells the plugin to bundle all dependencies -->
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                                <descriptorRef>jar-with-TraaS-Library</descriptorRef>
                             </descriptorRefs>
                         </configuration>
                     </execution>
