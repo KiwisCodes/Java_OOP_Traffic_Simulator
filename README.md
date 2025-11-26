@@ -152,6 +152,7 @@ cd Java_OOP_Traffic_Simulator
 You can set the path to sumo when you open the app. 
 
 Or else, you can set it manually, following these instructions:
+
 Go to file `Java_OOP_Traffic_Simulator/src/main/java/model/SimulationManager.java` and set your variable `sumoPath` (currently `"/Users/apple/sumo/bin/sumo"`) to your SUMO path in your local device.
 
 ```java
@@ -188,6 +189,7 @@ This project is part of the **Object-Oriented Programming in Java** module at **
 * Extended SUMO–Java communication features
 
 ---
+
 
 
 
