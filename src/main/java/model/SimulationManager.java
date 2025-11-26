@@ -27,7 +27,7 @@ public class SimulationManager {
 
 
     private String sumoPath = "/Users/apple/sumo/bin/sumo"; 
-    private String sumoConfigFileName = "frauasmap.sumocfg";
+    private String sumoConfigFileName = "SumoConfig/frauasmap.sumocfg";
     private String sumoConfigFilePath;
     private String stepLength = "0.001"; 
     

@@ -91,7 +91,7 @@
                             </archive>
                             <descriptorRefs>
                                 <!-- This tells the plugin to bundle all dependencies -->
-                                <descriptorRef>jar-with-TraaS-Library</descriptorRef>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
                         </configuration>
                     </execution>
