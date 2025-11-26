@@ -165,7 +165,10 @@ public class MainController {
 
 
     @FXML private void startSimulation() {
-    	if(this.pathToSumoGui.getText() == null || this.pathToSumoGui.getText() == "") {
+    	if(this.simManager.getSumoPath()!= ""){
+    		log("Sumo path manually set in the SimulationManager, it could be wrong, you should double check it");
+    	}
+    	else if(this.pathToSumoGui.getText() == null || this.pathToSumoGui.getText() == "") {
     		log("No Sumo or Sumo-GUI path found");
     		return;
     	}
@@ -266,11 +269,11 @@ This is the only thread allowed to modify UI elements (like moving a Circle or c
         System.out.println(message);
         if (logLabel != null) {
             // This Platform.runLater() thing comes from the javafx thing
-            Platform.runLater(() -> logLabel.setText(logLabel.getText() + "\n" + message));
+            Platform.runLater(() -> logLabel.setText(message + "\n" + logLabel.getText()));
             
-            if(bottomLog!=null) {
-            	bottomLog.setVvalue(1.0);
-            }
+//            if(bottomLog!=null) {
+//            	bottomLog.setVvalue(1.0);
+//            }
         }
     }
 

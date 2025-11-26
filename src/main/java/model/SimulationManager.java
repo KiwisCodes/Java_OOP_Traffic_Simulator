@@ -134,6 +134,11 @@ public class SimulationManager {
     }
     public boolean setSumoBinary(TextField textField) {
     	String userSumoPath = textField.getText();
+    	
+//    	if(this.sumoPath != "") {
+//    		return true;
+//    	}
+    	
     	if(userSumoPath != null && userSumoPath != "") {
     		this.sumoPath = userSumoPath;
     		return true;
@@ -143,7 +148,9 @@ public class SimulationManager {
     
     
     
-
+    public String getSumoPath() {
+    	return this.sumoPath;
+    }
     public StatisticsManager getStatisticsManager() { return statisticsManager; }
     public ReportManager getReportManager() { return reportManager; }
     public int getCurrentStep() { return currentStep; } 
