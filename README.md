@@ -29,8 +29,7 @@ This project is a Java-based application that connects to the SUMO (Simulation o
 ## 1.1 Directory Structure
 
 ```text
-➜  traffic-simulator-main git:(main) ✗ tree
-.
+root
 ├── Architectural-Diagram-Java-Sumo.pdf
 ├── ClassDiagramJavaOOP.drawio.pdf
 ├── GUI DESCRIPTION.pdf
@@ -129,6 +128,7 @@ This project is a Java-based application that connects to the SUMO (Simulation o
 │   └── test-classes
 ├── traffic-simulator-1.0.0-jar-with-dependencies.jar
 └── traffic-simulator-1.0.0.jar
+```
 
 ## 2. Technology Stack
 
@@ -187,5 +187,6 @@ This project is part of the **Object-Oriented Programming in Java** module at **
 * Extended SUMO–Java communication features
 
 ---
+
 
 
