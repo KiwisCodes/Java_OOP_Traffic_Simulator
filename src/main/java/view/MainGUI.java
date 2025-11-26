@@ -44,7 +44,7 @@ public class MainGUI extends Application {
 	        controller.log("Current FXML path: " + fxmlUrl);
 
 	        primaryStage.setTitle("Cool Traffic Simulator");
-	        primaryStage.setScene(new Scene(root)); // we can set default size here if we want but not now
+	        primaryStage.setScene(new Scene(root,1024,576)); // we can set default size here if we want but not now
 	        
 	        primaryStage.setOnCloseRequest(event -> {
                 System.out.println("Window closing...");
