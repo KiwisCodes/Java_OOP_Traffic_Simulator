@@ -17,7 +17,7 @@
         <javafx.version>21.0.2</javafx.version>
         <!-- TODO: UPDATE THIS to your main class's full path -->
         <!-- Example: com.yourcompany.traffic.MainApp -->
-        <main.class>view.MainGUI</main.class>
+        <main.class>view.Launcher</main.class>
     </properties>
 
     <dependencies>
