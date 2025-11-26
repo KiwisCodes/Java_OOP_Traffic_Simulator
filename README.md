@@ -148,6 +148,7 @@ cd Java_OOP_Traffic_Simulator
 ```
 
 **3.2. Add your SUMO Path**
+
 You can set the path to sumo when you open the app. 
 
 Or else, you can set it manually, following these instructions:
@@ -187,6 +188,7 @@ This project is part of the **Object-Oriented Programming in Java** module at **
 * Extended SUMO–Java communication features
 
 ---
+
 
 
 
