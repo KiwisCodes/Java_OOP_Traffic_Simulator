@@ -74,11 +74,11 @@
                                                 <!-- Controls Accordion -->
                               <Accordion>
                                   <panes>
-                                      <TitledPane alignment="TOP_LEFT" expanded="true" text="Simulation Control" textFill="#35e11e">
+                                      <TitledPane alignment="TOP_LEFT" expanded="true" text="Simulation Control" textFill="#22b20c">
                                           <content>
                                               <VBox spacing="5.0">
                                                   <children>
-                                                      <Button fx:id="startButton" mnemonicParsing="false" onAction="#startSimulation" prefWidth="200.0" text="Start Simulation" textFill="#15d324" />
+                                                      <Button fx:id="startButton" mnemonicParsing="false" onAction="#startSimulation" prefWidth="200.0" text="Start Simulation" textFill="#11b21c" />
                                                       <Button fx:id="pauseButton" mnemonicParsing="false" prefWidth="200.0" text="Pause" />
                                                       <Button fx:id="stepButton" mnemonicParsing="false" prefWidth="200.0" text="Step Forward" />
                                                   </children>
@@ -193,7 +193,7 @@
                                     <TextField fx:id="pathToSumoGui" promptText="ex: /Users/apple/sumo/bin/sumo-gui" />
                                     <BorderPane prefHeight="64.0" prefWidth="240.0">
                                        <center>
-                                          <Button fx:id="startSumoGuiButton" mnemonicParsing="false" prefHeight="27.0" prefWidth="100.0" text="Start Sumo GUI" BorderPane.alignment="CENTER">
+                                          <Button fx:id="startSumoGuiButton" mnemonicParsing="false" onMouseClicked="#insertSumoPath" text="Insert sumo/sumo-gui path" textFill="#1fc610" BorderPane.alignment="CENTER">
                                              <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                              </padding>

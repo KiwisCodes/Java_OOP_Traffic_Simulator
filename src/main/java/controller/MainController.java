@@ -125,17 +125,13 @@ public class MainController {
     @FXML private ToggleButton toggle3DButton;
     @FXML private TitledPane bottomLogArea;
 
-    // --- Logic & State ---
+//    Logic & State
     private SimulationManager simManager;
     private Renderer renderer; 
     private CoordinateConverter converter;
     
-    // --- THREAD MANAGEMENT ---
-    // 1. UI Thread: Handled by JavaFX & AnimationTimer
+//     THREAD MANAGEMENT
     private AnimationTimer uiLoop; 
-    
-    // 2. Background Threads: Handled by ExecutorService
-    // Pool size 2: One for sumo connection and stuff, One for Statistics, by doing this we wont freeze the GUI while doing stats and con
     private ExecutorService executor; 
     private final int NUMBER_OF_THREADS = 2; 
     
@@ -165,13 +161,15 @@ public class MainController {
     public void initialize() {
         log("Controller initialized. Waiting to start...");
         this.mapInteractionHandler = new MapInteractionHandler();
-        
-        
-        
     }
 
 
     @FXML private void startSimulation() {
+    	if(this.pathToSumoGui.getText() == null || this.pathToSumoGui.getText() == "") {
+    		log("No Sumo or Sumo-GUI path found");
+    		return;
+    	}
+    	
         log("Attempting to connect to SUMO...");
         boolean connected = this.simManager.startConnection();
 
@@ -297,6 +295,15 @@ This is the only thread allowed to modify UI elements (like moving a Circle or c
     @FXML private void injectVehicle() {}
     @FXML private void startSumoGUI() {}
     @FXML private void insertSumoConfigFile() {}
+    @FXML private void insertSumoPath() {
+    	if(this.simManager.setSumoBinary(this.pathToSumoGui)) {
+    		log("Successfully set path to sumo or sumo-gui");
+    		this.startSumoGuiButton.setDisable(true);
+    	}
+    	else {
+    		log("Set sumo or sumo-gui path fail");
+    	}
+    }
     @FXML private void applyFilter() {}
     @FXML private void clearFilter() {}
     @FXML private void runStressTest() {}

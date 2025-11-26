@@ -1,93 +1,91 @@
-Of course! Here is the provided text formatted as a clean and professional Markdown file, suitable for a `README.md` on GitHub.
+# Real-Time Traffic Simulation (OOP Java Project) <br/>  Milestone 1: System Design & Prototype
 
----
+**Winter 2025-2026 | Prof. Dr.-Eng. Ghadi Mahmoudi**
 
-# Real-Time Traffic Simulation (OOP Java Project)
-*Winter 2025-2026 | Prof. Dr.-Eng. Ghadi Mahmoudi*
-
-This repository contains the source code for the "Real-Time Traffic Simulation" group project for the Object-Oriented Programming in Java module.
+This repository contains the source code for Real-Time Traffic Simulation for the Object-Oriented Programming in Java module.
 
 ---
 
 ## 1. Project Overview
 
-This project is a Java-based application that connects to the SUMO (Simulation of Urban MObility) traffic simulator in real-time. It provides a platform to visualize, control, and analyze urban traffic flow. The system features an interactive GUI built with JavaFX, an object-oriented wrapper for the TraaS API, and tools for real-time data analysis and reporting.
+This project is a Java-based application that connects to the SUMO (Simulation of Urban MObility) traffic simulator in real-time. For this first milestone, we have developed a program that:
 
-### Core Features
+* **Live SUMO Integration:** Connects to a running SUMO instance via the TraaS API.
+* **GUI:** A GUI that allows user to start Simulation (other buttons for other functions will be implemented for later milestones).
+* **Class Design for TraaS wrapper:** a folder with packages of java files that manage multiple functiona
 
-- **Live SUMO Integration:** Connects to a running SUMO instance via the TraaS API.
-- **Interactive Map Visualization:** Renders the road network, moving vehicles, and traffic light states.
-- **Simulation Control:** Allows users to inject vehicles, control vehicle parameters, and manually manage traffic light phases.
-- **Statistics & Analytics:** Tracks and displays real-time metrics like average speed, vehicle density, and travel time.
-- **Exportable Reports:** Generates CSV and PDF summaries of simulation data.
+### Key Classes
 
-## 2. Team Members
+* `MainController.java`: the main controller of the whole application
+* `MapInteractionHandler.java`: to interact with the map (zooming, panning,..)
+* `VehicleManager.java`: manage the vehicles in the application
+* `ReportManager.java`: generating report with statistics onto the GUI of the application
+* `SimulationManager.java`: manage the simulation process
+* `StatisticsManager.java`: analyse the statistics of the timesteps during the Simulation
+* `CoordinateConverter.java`: convert Coordination from meters
+* `MainGUI.java`: runner for the program, load FXML and controller
+* `Renderer.java`: render the map and other components onto the GUI
 
-| Name          | Role                  | GitHub      |
-|---------------|-----------------------|-------------|
-| `[Your Name]` | Team Lead / Backend   | `[@username]` |
-| `[Your Name]` | Frontend (JavaFX)     | `[@username]` |
-| `[Your Name]` | SUMO & Data           | `[@username]` |
-| `[Your Name]` | Docs & QA             | `[@username]` |
-| `[Your Name]` | (Role)                | `[@username]` |
+## 2. Technology Stack
 
-## 3. Technology Stack
+* **Programming Language:** Java 17
+* **IDE:** Eclipse IDE
+* **Build tool:** Apache Maven
+* **SUMO TraaS:** TraCI as a Service API
+* **Visualization:** JavaFX (21.0.2)
 
-- **IDE**: Eclipse IDE
-- **Build Tool**: Apache Maven
-- **Language**: Java (JDK 17)
-- **GUI**: JavaFX (with FXML and Scene Builder)
-- **Simulation**: SUMO
-- **API**: TraaS (`TraaS.jar`)
-- **Version Control**: Git & GitHub
+## 3. Setup
 
-## 4. How to Run
-
-### Prerequisites
-
-- **Java 17+**: Must be installed and added to your `PATH`.
-- **Maven**: Must be installed and added to your `PATH`.
-- **SUMO**: Must be installed, and the `sumo` executable must be in your `PATH`.
-- **TraaS.jar**: You must place the `TraaS.jar` file inside a `lib/` folder in the project's root directory.
-
-### Running the Simulation
-
-1.  **Clone the Repository:**
-    ```bash
-    git clone https://github.com/KiwisCodes/traffic-simulator.git
-    cd traffic-simulator
-    ```
-
-2.  **Start the SUMO Server:**
-    Open a terminal and run SUMO with a configuration file and the `--remote-port` argument. (You must provide your own `.sumocfg` file).
-    ```bash
-    # Example using a generic config file
-    sumo -c path/to/your/map.sumocfg --remote-port 9999
-    ```
-
-3.  **Run the Java Application:**
-    Open a *second terminal* in the project root and use Maven to run the application.
-    ```bash
-    # This will compile and run the JavaFX application
-    mvn clean javafx:run
-    ```
-
-### Building a Runnable .jar
-
-You can create a single, all-inclusive `.jar` file (which includes JavaFX and TraaS) by running:
+**3.1. Clone the Repository:**
 
 ```bash
-mvn clean package
+git clone https://github.com/KiwisCodes/Java_OOP_Traffic_Simulator.git
+cd Java_OOP_Traffic_Simulator
 ```
 
-This will create a file like `traffic-simulator-1.0-SNAPSHOT.jar` in the `target/` directory. You can run it with:
+**3.2. Add your SUMO Path**
+
+Go to file `Java_OOP_Traffic_Simulator/src/main/java/model/SimulationManager.java` and set your variable `sumoPath` (currently `"/Users/apple/sumo/bin/sumo"`) to your SUMO path in your local device.
+
+```java
+private String sumoPath = yourSUMOpath; 
+```
+
+**3.3. Set your dependency**
+
+Go to file `Java_OOP_Traffic_Simulator/pom.xml` and save it
+
+=> You will see a Maven Dependencies library imported to your Directory.
+
+**3.4. Start the SUMO Server:**
+
+Open a terminal and run SUMO with a configuration file and the `--remote-port` argument.
 
 ```bash
-java -jar target/traffic-simulator-1.0-SNAPSHOT.jar
+sumo -c src/main/resources/frauasmap.sumocfg --remote-port 9999
 ```
 
-## 5. Milestone Status
+**3.5. Run the Java Application:**
 
-- [x] **Milestone 1** (System Design & Prototype): Due 27.11.2025
-- [ ] **Milestone 2** (Functional Prototype): Due 14.12.2025
-- [ ] **Final Submission**: Due 18.01.2026
+Open a second terminal in the project root and use Maven to run the application.
+
+```bash
+# This will compile and run the JavaFX application
+mvn clean javafx:run
+```
+
+---
+
+## 4. Acknowledgments
+
+This project is part of the **Object-Oriented Programming in Java** module at **Frankfurt University of Applied Sciences**. Special thanks to **Prof. Dr.-Eng. Ghadi Mahmoudi** for guidance and supervision throughout the development of this milestone.
+
+## 5. Future Work
+
+* Additional GUI features (vehicle and traffic light control, map interaction tools)
+* Statistical reporting feature
+* Map visualisation with manual-control options
+* Extended SUMO–Java communication features
+
+---
+

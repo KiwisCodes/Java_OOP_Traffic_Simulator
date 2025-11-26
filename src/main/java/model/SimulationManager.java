@@ -13,6 +13,7 @@ import it.polito.appeal.traci.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import de.tudresden.sumo.cmd.*;
 // Import your vehicle classes
 import model.vehicles.VehicleManager;
@@ -68,15 +69,6 @@ public class SimulationManager {
             System.out.println("Launching SUMO...");
             this.sumoConnection.runServer(); 
             this.sumoMap = new MapManger(sumoConnection);
-            
-//            List<String> tlsIdList = new ArrayList();
-//			Object result = this.sumoConnection.do_job_get(Trafficlight.getIDList());
-//			tlsIdList = (List<String>) result;
-//			
-//			
-//			for(String id:tlsIdList) {
-//				log(id);
-//			}
             
             System.out.println("Connection established!");
             this.isRunning = true;
@@ -140,15 +132,14 @@ public class SimulationManager {
             System.out.println("Connection closed.");
         }
     }
-    
-    public void log(String message) {
-        System.out.println(message);
-        if (logLabel != null) {
-            // This Platform.runLater() thing comes from the javafx thing
-            Platform.runLater(() -> logLabel.setText(message + "\n" + logLabel.getText()));
-        }
+    public boolean setSumoBinary(TextField textField) {
+    	String userSumoPath = textField.getText();
+    	if(userSumoPath != null && userSumoPath != "") {
+    		this.sumoPath = userSumoPath;
+    		return true;
+    	}
+    	return false;
     }
-
     
     
     
