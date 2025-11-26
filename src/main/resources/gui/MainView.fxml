@@ -276,7 +276,7 @@
          <bottom>
               <TitledPane fx:id="bottomLogArea" alignment="CENTER" collapsible="true" expanded="true" text="Simulation Log" BorderPane.alignment="CENTER">
                   <content>
-                      <ScrollPane fx:id="bottomLog">
+                      <ScrollPane fx:id="bottomLog" hbarPolicy="NEVER" maxHeight="150.0" vbarPolicy="NEVER">
                           <content>
                               <Label fx:id="logLabel" alignment="TOP_LEFT" style="-fx-background-color: #ffffff;" wrapText="true" />
                           </content>

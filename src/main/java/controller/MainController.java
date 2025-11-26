@@ -31,11 +31,15 @@ import util.CoordinateConverter; // Ensure this is imported from your util/view 
 // Java Imports
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+
+import de.tudresden.sumo.cmd.Trafficlight;
 
 public class MainController {
 	
@@ -113,6 +117,7 @@ public class MainController {
     @FXML private Pane busPane;
     @FXML private Pane truckPane;
     @FXML private Pane bikePane;
+    @FXML private ScrollPane bottomLog;
     @FXML private Label logLabel;
     @FXML private Button zoomInButton;
     @FXML private Button zoomOutButton;
@@ -131,11 +136,14 @@ public class MainController {
     
     // 2. Background Threads: Handled by ExecutorService
     // Pool size 2: One for sumo connection and stuff, One for Statistics, by doing this we wont freeze the GUI while doing stats and con
-    private ExecutorService threadPool; 
+    private ExecutorService executor; 
     private final int NUMBER_OF_THREADS = 2; 
     
     // Flags
-    private volatile boolean isSimulationRunning = false;
+    private boolean isSimulationRunning = false;
+    
+    private static int currentStep=0;
+    
 
     // --- Visualization ---
     private MapInteractionHandler mapInteractionHandler;
@@ -145,7 +153,7 @@ public class MainController {
         this.simManager = new SimulationManager();  
         this.converter = new CoordinateConverter(); 
         this.renderer = new Renderer(); 
-        this.threadPool = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+        this.executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
     }
     
     // main entry point if running standalone (optional)
@@ -177,14 +185,28 @@ public class MainController {
             
             
             
-            
             //1. thread 2: We should use this background thread for the simulationManager ---
-            threadPool.submit(() -> {
+            executor.submit(() -> {
                 log("Simulation Thread Started.");
+                log("Trafficligth ID list:");
+                List<String> tlsIdList = new ArrayList();
+                
+                try {
+                	Object result = this.simManager.getConnection().do_job_get(Trafficlight.getIDList());
+                	tlsIdList = (List<String>) result;
+                	for(String id:tlsIdList) {
+                		log(id);
+                	}
+                } catch (Exception e) {
+                	// TODO Auto-generated catch block
+                	e.printStackTrace();
+                }
                 while (isSimulationRunning) {
                     try {
+                    	log("Step: " + currentStep);
                         simManager.step(); 
-                        Thread.sleep(100); //this thread stop for 0.1 second before moving on
+                        Thread.sleep(1000); //this thread stop for 1 second before moving on
+                        currentStep++;
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break; 
@@ -196,7 +218,7 @@ public class MainController {
 
             //2. thread 3: We use this thread for running the statisticManager ---
             //But not yet
-//            threadPool.submit(() -> {
+//            executor.submit(() -> {
 //                log("Stats Thread Started.");
 //                while (isSimulationRunning) {
 //                    try {
@@ -246,7 +268,11 @@ This is the only thread allowed to modify UI elements (like moving a Circle or c
         System.out.println(message);
         if (logLabel != null) {
             // This Platform.runLater() thing comes from the javafx thing
-            Platform.runLater(() -> logLabel.setText(message + "\n" + logLabel.getText()));
+            Platform.runLater(() -> logLabel.setText(logLabel.getText() + "\n" + message));
+            
+            if(bottomLog!=null) {
+            	bottomLog.setVvalue(1.0);
+            }
         }
     }
 
@@ -257,8 +283,8 @@ This is the only thread allowed to modify UI elements (like moving a Circle or c
         if (uiLoop != null) {
             uiLoop.stop();
         }
-        if (threadPool != null) {
-            threadPool.shutdownNow(); 
+        if (executor != null) {
+            executor.shutdownNow(); 
         }
         if (simManager != null) {
             simManager.stopSimulation();

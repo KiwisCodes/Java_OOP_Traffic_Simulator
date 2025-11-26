@@ -18,7 +18,7 @@ import controller.MainController;
 public class MainGUI extends Application {
 	private static final String FXML_VIEW = "/gui/MainView.fxml"; 
 	
-	
+		
 		@FXML private static BorderPane borderPaneContainer;
 	    @FXML private static HBox simulationHeader;
 	    @FXML private static TitledPane bottomLogArea;

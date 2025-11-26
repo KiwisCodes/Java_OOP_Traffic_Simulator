@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 import it.polito.appeal.traci.*;
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import de.tudresden.sumo.cmd.*;
 // Import your vehicle classes
 import model.vehicles.VehicleManager;
@@ -30,6 +33,8 @@ public class SimulationManager {
     private String sumoConfigFileName = "SumoConfig/frauasmap.sumocfg";
     private String sumoConfigFilePath;
     private String stepLength = "0.001"; 
+    @FXML private Label logLabel;
+    
     
     private SumoTraciConnection sumoConnection;
     
@@ -63,6 +68,15 @@ public class SimulationManager {
             System.out.println("Launching SUMO...");
             this.sumoConnection.runServer(); 
             this.sumoMap = new MapManger(sumoConnection);
+            
+//            List<String> tlsIdList = new ArrayList();
+//			Object result = this.sumoConnection.do_job_get(Trafficlight.getIDList());
+//			tlsIdList = (List<String>) result;
+//			
+//			
+//			for(String id:tlsIdList) {
+//				log(id);
+//			}
             
             System.out.println("Connection established!");
             this.isRunning = true;
@@ -124,6 +138,14 @@ public class SimulationManager {
         if (this.sumoConnection != null && !this.sumoConnection.isClosed()) {
             this.sumoConnection.close();
             System.out.println("Connection closed.");
+        }
+    }
+    
+    public void log(String message) {
+        System.out.println(message);
+        if (logLabel != null) {
+            // This Platform.runLater() thing comes from the javafx thing
+            Platform.runLater(() -> logLabel.setText(message + "\n" + logLabel.getText()));
         }
     }
 
