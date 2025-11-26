@@ -26,6 +26,110 @@ This project is a Java-based application that connects to the SUMO (Simulation o
 * `MainGUI.java`: runner for the program, load FXML and controller
 * `Renderer.java`: render the map and other components onto the GUI
 
+## 1.1 Directory Structure
+
+```text
+➜  traffic-simulator-main git:(main) ✗ tree
+.
+├── Architectural-Diagram-Java-Sumo.pdf
+├── ClassDiagramJavaOOP.drawio.pdf
+├── GUI DESCRIPTION.pdf
+├── JavaClassDiagram.drawio.png
+├── JavaClassDiagram.drawio.svg
+├── JavaOOPClassDiagram.drawio.svg
+├── Project Overview.pdf
+├── README.md
+├── lib
+│   └── TraaS.jar
+├── pom.xml
+├── run.command
+├── src
+│   ├── main
+│   │   ├── java
+│   │   │   ├── controller
+│   │   │   │   ├── MainController.java
+│   │   │   │   └── MapInteractionHandler.java
+│   │   │   ├── model
+│   │   │   │   ├── ReportManager.java
+│   │   │   │   ├── SimulationManager.java
+│   │   │   │   ├── StatisticsManager.java
+│   │   │   │   ├── infrastructure
+│   │   │   │   │   ├── MapManger.java
+│   │   │   │   │   └── TrafficlightManager.java
+│   │   │   │   └── vehicles
+│   │   │   │       └── VehicleManager.java
+│   │   │   ├── testjava
+│   │   │   │   └── TestSumo.java
+│   │   │   ├── util
+│   │   │   │   └── CoordinateConverter.java
+│   │   │   └── view
+│   │   │       ├── Launcher.java
+│   │   │       ├── MainGUI.java
+│   │   │       └── Renderer.java
+│   │   └── resources
+│   │       ├── SumoConfig
+│   │       │   ├── frauasmap.net.xml
+│   │       │   ├── frauasmap.osm
+│   │       │   ├── frauasmap.rou.xml
+│   │       │   ├── frauasmap.sumocfg
+│   │       │   ├── minimal.sumocfg
+│   │       │   └── trips.trips.xml
+│   │       └── gui
+│   │           └── MainView.fxml
+│   └── test
+│       ├── java
+│       └── resources
+├── target
+│   ├── classes
+│   │   ├── META-INF
+│   │   │   ├── MANIFEST.MF
+│   │   │   └── maven
+│   │   │       └── com.htkkk
+│   │   │           └── traffic-simulator
+│   │   │               ├── pom.properties
+│   │   │               └── pom.xml
+│   │   ├── SumoConfig
+│   │   │   ├── frauasmap.net.xml
+│   │   │   ├── frauasmap.osm
+│   │   │   ├── frauasmap.rou.xml
+│   │   │   ├── frauasmap.sumocfg
+│   │   │   ├── minimal.sumocfg
+│   │   │   └── trips.trips.xml
+│   │   ├── controller
+│   │   │   ├── MainController$1.class
+│   │   │   ├── MainController.class
+│   │   │   └── MapInteractionHandler.class
+│   │   ├── gui
+│   │   │   └── MainView.fxml
+│   │   ├── model
+│   │   │   ├── ReportManager.class
+│   │   │   ├── SimulationManager.class
+│   │   │   ├── StatisticsManager.class
+│   │   │   ├── infrastructure
+│   │   │   │   ├── MapManger.class
+│   │   │   │   └── TrafficlightManager.class
+│   │   │   └── vehicles
+│   │   │       └── VehicleManager.class
+│   │   ├── testjava
+│   │   │   └── TestSumo.class
+│   │   ├── util
+│   │   │   └── CoordinateConverter.class
+│   │   └── view
+│   │       ├── Launcher.class
+│   │       ├── MainGUI.class
+│   │       └── Renderer.class
+│   ├── generated-sources
+│   │   └── annotations
+│   ├── maven-status
+│   │   └── maven-compiler-plugin
+│   │       └── compile
+│   │           └── default-compile
+│   │               ├── createdFiles.lst
+│   │               └── inputFiles.lst
+│   └── test-classes
+├── traffic-simulator-1.0.0-jar-with-dependencies.jar
+└── traffic-simulator-1.0.0.jar
+
 ## 2. Technology Stack
 
 * **Programming Language:** Java 17
@@ -44,7 +148,9 @@ cd Java_OOP_Traffic_Simulator
 ```
 
 **3.2. Add your SUMO Path**
+You can set the path to sumo when you open the app. 
 
+Or else, you can set it manually, following these instructions:
 Go to file `Java_OOP_Traffic_Simulator/src/main/java/model/SimulationManager.java` and set your variable `sumoPath` (currently `"/Users/apple/sumo/bin/sumo"`) to your SUMO path in your local device.
 
 ```java
@@ -57,15 +163,8 @@ Go to file `Java_OOP_Traffic_Simulator/pom.xml` and save it
 
 => You will see a Maven Dependencies library imported to your Directory.
 
-**3.4. Start the SUMO Server:**
 
-Open a terminal and run SUMO with a configuration file and the `--remote-port` argument.
-
-```bash
-sumo -c src/main/resources/frauasmap.sumocfg --remote-port 9999
-```
-
-**3.5. Run the Java Application:**
+**3.4. Run the Java Application:**
 
 Open a second terminal in the project root and use Maven to run the application.
 
@@ -88,4 +187,5 @@ This project is part of the **Object-Oriented Programming in Java** module at **
 * Extended SUMO–Java communication features
 
 ---
+
 
