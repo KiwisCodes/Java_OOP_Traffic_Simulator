@@ -147,6 +147,8 @@ git clone https://github.com/KiwisCodes/Java_OOP_Traffic_Simulator.git
 cd Java_OOP_Traffic_Simulator
 ```
 
+Or if you download the .zip file then you would need to unzip it, then go inside the folder traffic-simulator-main, there might be one more traffic-simulator-main (exact same name with the root), if you need to go to that directory to access the code.
+
 **3.2. Add your SUMO Path**
 
 You can set the path to sumo when you open the app. 
