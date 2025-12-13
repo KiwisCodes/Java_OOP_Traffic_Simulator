@@ -15,6 +15,21 @@ import java.net.URL;
 
 import controller.MainController;
 
+
+
+/**
+ * The main entry point for the Traffic Simulator Application (JavaFX).
+ * <p>
+ * This class extends {@link Application} and is responsible for:
+ * <ul>
+ * <li>Loading the FXML user interface layout.</li>
+ * <li>Setting up the primary stage (window) and scene.</li>
+ * <li>Handling application lifecycle events (start and close).</li>
+ * </ul>
+ * </p>
+ * @author pth
+ * @version 1.0
+ */
 public class MainGUI extends Application {
 	private static final String FXML_VIEW = "/gui/MainView2.fxml"; 
 	
@@ -55,6 +70,12 @@ public class MainGUI extends Application {
 	        primaryStage.show();
 	    }
 
+	    /**
+	     * The main() method is ignored in correctly deployed JavaFX application.
+	     * main() serves only as fallback in case the application can not be launched through deployment artifacts,
+	     * e.g., in IDEs with limited FX support.
+	     * @param args the command line arguments
+	     */
 	    public static void main(String[] args) {
 	        launch(args);
 	    }

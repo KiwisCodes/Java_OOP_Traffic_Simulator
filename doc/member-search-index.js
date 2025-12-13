@@ -1,0 +1,1 @@
+memberSearchIndex = [{"p":"view","c":"MainGUI","l":"main(String[])","u":"main(java.lang.String[])"},{"p":"view","c":"MainGUI","l":"MainGUI()","u":"%3Cinit%3E()"},{"p":"view","c":"MainGUI","l":"start(Stage)","u":"start(javafx.stage.Stage)"},{"p":"view","c":"MainGUI","l":"windowHeight"},{"p":"view","c":"MainGUI","l":"windowWidth"}];updateSearchResults();

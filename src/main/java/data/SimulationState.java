@@ -1,45 +1,72 @@
 package data;
 
-import java.util.concurrent.atomic.*;
-
-
-import model.infrastructure.*;
+import java.util.Map;
+import model.infrastructure.TrafficlightObject;
 import model.vehicles.VehicleClass;
 
-import java.util.*;
-
+/**
+ * Represents an <b>immutable snapshot</b> of the simulation world at a specific moment in time (tick).
+ * <p>
+ * This class is a fundamental part of the <b>Thread-Safe Rendering</b> architecture:
+ * </p>
+ * <ul>
+ * <li>The <b>Simulation Manager</b> creates a deep copy of the current vehicle and infrastructure data.</li>
+ * <li>It wraps that data in this {@code SimulationState} object.</li>
+ * <li>This state is passed to the UI thread via the {@link SimulationQueue}.</li>
+ * </ul>
+ * <p>
+ * <b>Why copy?</b> As Java passes object references by value, passing raw manager objects 
+ * to the UI thread would lead to {@link java.util.ConcurrentModificationException} 
+ * (race conditions) if the simulation modifies the data while the UI is trying to draw it. 
+ * By storing copies, this class ensures the View renders a stable state.
+ * </p>
+ * @author pth
+ * @version 1.0
+ */
 public class SimulationState {
-	/*
-	this is a class that expects copies of data from managers, not reference to those,
-	althought the golden rule of java that it always pass by value
-	however it is intuitive for primitive data
-	as for complex objects, classes, like a Hashmap or a connection or other objects with many attribute
-	when you pass those objects into other functions, you are just passing the address of the regions in the heap that
-	contains the real value
-	so to conclude -> managers must return a copy, not the reference to the real thing.
-	*/
 
-//	private final Map<String, EdgeClass> lastEdges;
-//	private final Map<String, LaneObject> lastLanes;
-    private final Map<String, VehicleClass> lastVehicles;//need to change this
-//    private final List<String> laneIdList; //we use this to draw all the lanes;
+    /** * A map containing snapshots of all vehicles active in the current tick. 
+     * Key: Vehicle ID, Value: The Vehicle object (copy).
+     */
+    private final Map<String, VehicleClass> lastVehicles;
+    
+    /** * A map containing the state of all traffic lights in the current tick.
+     * 
+     */
     private final Map<TrafficlightObject, Character> lastTrafficLightIDs;
-//    private final List<String> lastTrafficLightIDs; commented all traffic light to test vehicle and edges/lanes
-//    private final Map<String, Map<String, String>> lastLanes;
-//    private final Map<String, Map<String, String>> lastJunctions;
+
+    /**
+     * Constructs a new simulation snapshot.
+     * <p>
+     * <b>Note:</b> The maps passed to this constructor should contain <b>copies</b> 
+     * of the data, not references to the live manager collections.
+     * </p>
+     *
+     * @param lastVehicles A map of vehicle IDs to Vehicle objects containing position/speed data.
+     * @param lastTrafficLightIDs A map of TrafficLights to their current phase state.
+     */
     public SimulationState(
-//    		Map<String, EdgeClass> lastEdges,
-    		Map<String, VehicleClass> lastVehicles,
-    		Map<TrafficlightObject, Character> lastTrafficLightIDs
-//    		List<String> laneIdList
-    		) 
-    {	
-//    	this.lastEdges = lastEdges;
-		this.lastVehicles = lastVehicles;
-		this.lastTrafficLightIDs = lastTrafficLightIDs;
-//		this.laneIdList = laneIdList;
-	}
-//	public Map<String, EdgeClass> getEdges() { return lastEdges; }
-    public Map<String, VehicleClass> getVehicles() { return lastVehicles; }
-    public Map<TrafficlightObject, Character> getTrafficLights() { return lastTrafficLightIDs;}
+            Map<String, VehicleClass> lastVehicles,
+            Map<TrafficlightObject, Character> lastTrafficLightIDs
+            ) 
+    {   
+        this.lastVehicles = lastVehicles;
+        this.lastTrafficLightIDs = lastTrafficLightIDs;
+    }
+
+    /**
+     * Retrieves the map of vehicles for this frame.
+     * @return A map where the key is the Vehicle ID and the value is the Vehicle object.
+     */
+    public Map<String, VehicleClass> getVehicles() { 
+        return lastVehicles; 
+    }
+
+    /**
+     * Retrieves the map of traffic light states for this frame.
+     * @return A map where the key is the TrafficLight object and the value is the phase char.
+     */
+    public Map<TrafficlightObject, Character> getTrafficLights() { 
+        return lastTrafficLightIDs;
+    }
 }
