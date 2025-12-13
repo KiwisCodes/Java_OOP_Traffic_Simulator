@@ -7,7 +7,11 @@ import model.infrastructure.*;
 import model.vehicles.VehicleClass;
 
 import java.util.*;
-
+/**
+ * Storing data at a specific timestamp of SUMO simulation
+ * 
+ * @author khoale
+ */
 public class SimulationState {
 	/*
 	this is a class that expects copies of data from managers, not reference to those,
@@ -27,6 +31,12 @@ public class SimulationState {
 //    private final List<String> lastTrafficLightIDs; commented all traffic light to test vehicle and edges/lanes
 //    private final Map<String, Map<String, String>> lastLanes;
 //    private final Map<String, Map<String, String>> lastJunctions;
+    /**
+     * Constructor
+     * 
+     * @param lastVehicles: data about Vehicles
+     * @param lastTrafficLightIDs: data about Traffic Lights
+     */
     public SimulationState(
 //    		Map<String, EdgeClass> lastEdges,
     		Map<String, VehicleClass> lastVehicles,
@@ -40,6 +50,14 @@ public class SimulationState {
 //		this.laneIdList = laneIdList;
 	}
 //	public Map<String, EdgeClass> getEdges() { return lastEdges; }
+    /**
+     * return the current data about Vehicles
+     * @return current state data about Vehicles
+     */
     public Map<String, VehicleClass> getVehicles() { return lastVehicles; }
+    /**
+     * return the current data about Traffic Lights
+     * @return current state data about Traffic Lights
+     */
     public Map<TrafficlightObject, Character> getTrafficLights() { return lastTrafficLightIDs;}
 }

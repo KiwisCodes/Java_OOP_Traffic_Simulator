@@ -32,10 +32,15 @@ import model.infrastructure.MapManager;
 import model.infrastructure.TrafficlightManager;
 import data.*;
 
-
+/**
+ * Centralize object about SUMO connection
+ * 
+ * keeping the Connection with SUMO alive and getting necessary data for application's functions
+ * @author khoale
+ */
 public class SimulationManager {
 
-    private String sumoPath = "/Users/apple/sumo/bin/sumo";
+    private String sumoPath = "/Users/khoale/sumo/bin/sumo";
     private String sumoConfigFileName = "frauasmap.sumocfg";
     private String sumoConfigFilePath;
 
@@ -59,11 +64,19 @@ public class SimulationManager {
     private static int vehicleCounter = 0;
 	private double standardSpeed = 3.6;
 	public boolean isRunning = false;
+	/**
+	 * Constructor
+	 * @param queue: an queue object storing states of the simulation 
+	 * @param statsManager: an statistic Manager Object 
+	 */
     public SimulationManager(SimulationQueue queue, StatisticsManager statsManager) {
     		this.sumoConnection = new SumoTraciConnection(sumoPath, sumoConfigFileName);
     		this.statisticsManager = statsManager;
     }
-
+    /**
+     * Start connection with SUMO
+     * @return true if connected
+     */
     public boolean startConnection() {
         if (!setupPaths()) return false;
 
@@ -123,7 +136,9 @@ public class SimulationManager {
             return false;
         }
     }
-
+    /**
+     * Running a Simulation Loop until the Application Closed
+     */
     public void runSimulationLoop() {
         System.out.println("   -> Simulation Loop Started.");
 
@@ -136,7 +151,11 @@ public class SimulationManager {
         System.out.println("Simulation loop finished.");
     }
 
-
+    /**
+     * Doing a timestep in SUMO simulation
+     * 
+     * Also, it gets the data and update simulation state
+     */
     public void step() {
         try {
             this.sumoConnection.do_timestep();
@@ -150,7 +169,17 @@ public class SimulationManager {
             stopSimulation(); 
         }
     }
-
+    
+    /**
+     * Inject Vehicle to SUMO
+     * @param vehType: type of Vehicle
+     * @param sumoColor: Color of Vehicle
+     * @param Speed: Speed of Vehicle
+     * @param firstEdge: starting Edge of the Vehicle
+     * @param lastEdge: exiting Edge of the Vehicle
+     * @return true if injected
+     * @throws Execption if no Route found between 2 edges
+     */
     public boolean InjectVehicle(String vehType, SumoColor sumoColor, double Speed, String firstEdge, String lastEdge) {
 		try {
 			System.out.println(sumoColor);
@@ -170,6 +199,11 @@ public class SimulationManager {
 		return true;
 	}
 	
+    /**
+     * Random Stress Test a certain number of vehicles
+     * @param number: number of vehicle wanted for the Stress Test
+     * @throws Exception: throws when communication with SUMO fails
+     */
 	public void StressTest(int number) throws Exception {
 		int N = number;
 		String vehicleStringIDs = String.valueOf(sumoConnection.do_job_get(Vehicle.getIDList()));
@@ -191,6 +225,10 @@ public class SimulationManager {
 			vehicleManager.injectVehicle(String.valueOf("vehicle_" + vehicleCounter++), "DEFAULT_VEHTYPE", routeID, sumoColor, standardSpeed);
 		}
 	}
+	/**
+	 * Random Stress Test with default number of vehicles (50)
+	 * @throws Exception throws when communication with SUMO fails
+	 */
 	public void StressTest() throws Exception {
 		int N = 50;
 		String vehicleStringIDs = String.valueOf(sumoConnection.do_job_get(Vehicle.getIDList()));
@@ -210,15 +248,24 @@ public class SimulationManager {
 		}
 	}
 	
+	/**
+	 * Get list of Edge Objects of the current state
+	 * @return a HashMap of Edge Ids and Edge Objects
+	 */
 	public Map<String, EdgeClass> getListOfEdges() {
 		return listOfEdges;
 	};
 	
+	/**
+	 * Get list of Vehicle Objects of the current state
+	 * @return a HashMap of Vehicle Ids and Edge Objects
+	 */
 	public Map<String, VehicleClass> getListOfVehicles() {
 		return listOfVehicles;
 	};
 	
-	public SumoStringList getRouteFromEdges(String firstEdge, String lastEdge, String vehType) throws Exception {
+
+	private SumoStringList getRouteFromEdges(String firstEdge, String lastEdge, String vehType) throws Exception {
 		double offset = 5;
 		double currentTime = (double) sumoConnection.do_job_get(Simulation.getTime());
 		double depart = currentTime + offset;
@@ -227,7 +274,10 @@ public class SimulationManager {
 		SumoStringList edges = stage.edges;
 		return edges;
 	}
-
+	
+	/**
+	 * Stop Simulation by disconnecting with SUMO
+	 */
     public void stopSimulation() {
         this.isRunning = false;
         if (this.sumoConnection != null && !this.sumoConnection.isClosed()) {
@@ -236,6 +286,7 @@ public class SimulationManager {
         }
     }
 
+    
     public boolean setSumoBinary(TextField textField) {
     	String userSumoPath = textField.getText();
     	if(userSumoPath != null && userSumoPath != "") {
@@ -247,15 +298,31 @@ public class SimulationManager {
     
     
     
-
+    /**
+     * Get Statistic Manger
+     * @return Statistic Manager
+     */
     public StatisticsManager getStatisticsManager() { return statisticsManager; }
+    /**
+     * Get Report Manager 
+     * @return Report Manager
+     */
     public ReportManager getReportManager() { return reportManager; }
+    /**
+     * Get Traffic Light Manager
+     * @return Traffic Light Manager
+     */
     public TrafficlightManager getTrafficlightManager() { return trafficlightManager; }
+    /**
+     * Get SUMO connection
+     * @return SUMO connection
+     */
     public SumoTraciConnection getConnection() { return sumoConnection; }
     public MapManager getMapManager() { return mapManager; }
     public SimulationState getState() {
     	return this.simulationState;
     }
+    
     public double getStepLength() {
     	boolean check_validity = false;
     	try {
