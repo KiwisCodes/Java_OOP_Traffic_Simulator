@@ -1,0 +1,4 @@
+<input>
+    <net-file value="house.net.xml"/>
+    <route-files value="house.rou.xml"/>
+</input>

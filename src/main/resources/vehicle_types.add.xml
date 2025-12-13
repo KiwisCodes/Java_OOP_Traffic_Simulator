@@ -1,0 +1,19 @@
+<additional>
+    <vType id="DEFAULT_VEHTYPE" vClass="passenger" length="5.0" maxSpeed="50" color="green" guiShape="passenger"/>
+
+    <vType id="DEFAULT_BIKETYPE" vClass="bicycle" length="1.6" width="0.8" maxSpeed="5.5" color="orange" guiShape="bicycle"/>
+
+    <vType id="DEFAULT_TAXITYPE" vClass="taxi" length="5.0" maxSpeed="50" color="yellow" guiShape="passenger/sedan"/>
+
+    <vType id="BUS" vClass="bus" length="12.0" maxSpeed="30" color="blue" guiShape="bus"/>
+
+    <vType id="MOTO" vClass="motorcycle" length="2.2" width="0.9" maxSpeed="60" color="grey" guiShape="motorcycle"/>
+
+    <vType id="MOPED" vClass="moped" length="1.8" width="0.8" maxSpeed="12" color="cyan" guiShape="moped"/>
+
+    <vType id="TRUCK" vClass="truck" length="7.1" width="2.4" maxSpeed="25" color="brown" guiShape="truck"/>
+
+    <vType id="DELIVERY" vClass="delivery" length="6.5" width="2.2" maxSpeed="35" color="white" guiShape="delivery"/>
+
+    <vType id="DEFAULT_PEDTYPE" vClass="pedestrian" length="0.5" width="0.5" maxSpeed="1.5" color="white" guiShape="pedestrian"/>
+</additional>

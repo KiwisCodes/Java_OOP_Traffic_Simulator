@@ -1,0 +1,118 @@
+This .txt file tries to tell you about the functions in javafx
+
+
+===========================
+What does getChildren() do?
+
+Think of JavaFX like a tree structure (The "Scene Graph").
+
+
+
+The Stage: The Window.
+
+The Scene: The content inside the window.
+
+The Root (StackPane): The main container.
+
+The Children: The items inside the container.
+
+getChildren() returns the list of items currently inside a layout pane.
+
+
+
+lanePane.getChildren().add(myShape): "Put this shape inside the pane."
+
+lanePane.getChildren().clear(): "Remove everything from this pane."
+==================================================================
+
+
+
+
+A. The Origin Problem (Translation)
+
+SUMO: Your city might exist at coordinates x=5000, y=5000.
+
+JavaFX: Your screen starts at x=0, y=0 (top left corner).
+
+The Fix: We subtract mapMinX.
+
+If the map starts at 5000, and the point is at 5005, the screen position is $5005 - 5000 = 5$. This shifts the map to the edge of your screen.
+
+B. The Y-Axis Flip (Inversion)
+
+SUMO: Up is Positive. A higher Y value means "North".
+
+JavaFX: Down is Positive. A higher Y value means "South" (bottom of screen).
+
+The Fix: mapMaxY - sumoY.
+
+Imagine mapMaxY is 100 (the top of the map).
+
+If a car is at y=100 (Top): $100 - 100 = 0$. (Top of screen).
+
+If a car is at y=0 (Bottom): $100 - 0 = 100$. (Bottom of screen).
+
+
+It is completely normal to find this confusing. It is one of the most common "head-scratching" moments in computer graphics because our brains are trained on high school math, but computer screens work differently.
+
+Here is the best way to visualize it without getting lost in the numbers.
+
+1. The "Floor" vs. The "Ceiling"
+
+Think of the coordinate systems like measuring the height of a picture on a wall.
+
+SUMO (The Cartesian/Math Way): Measures from the Floor up.
+
+$(0,0)$ is on the ground.
+
+As $Y$ gets bigger, you go higher toward the sky.
+
+JavaFX (The Screen Way): Measures from the Ceiling down.
+
+$(0,0)$ is the top-left corner (where the first pixel is drawn).
+
+As $Y$ gets bigger, you go lower toward the floor.
+
+
+
+
+2. The "Mirror" Problem (explain the Y part)
+
+If you draw your SUMO map on a screen without doing the math, the map will look like a reflection in a lake.
+
+In Real Life (SUMO): The North (Top) of the map has a high Y value (e.g., 100).
+
+On Screen (JavaFX): If you tell the screen "Draw at Y=100", it puts the dot at the bottom of the window.
+
+Result: Your North becomes South. Your map is upside down.
+
+
+C. Zooming (Scaling)
+
+Logic: We multiply the normalized coordinate by a factor.
+
+Example: If scale = 5.0, then 1 meter becomes 5 pixels.
+
+Order of Operations: You must subtract the offset (sumoX - minX) before you multiply by the scale. If you scale first, your map will fly off the screen because you are multiplying the huge 5000 coordinate by 5.
+
+
+
+
+
+
+
+Map M<String, List<speed position>>
+
+draw(list<string>, map<string, list<int>>, pane)
+
+
+
+
+
+
+
+
+
+
+
+

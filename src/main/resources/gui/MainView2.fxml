@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<StackPane prefHeight="900.0" prefWidth="1400.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
+   <children>
+      
+      <AnchorPane styleClass="map-background">
+         <children>
+            <StackPane fx:id="centerMapStackPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <children>
+                    <AnchorPane fx:id="centerMapAnchorPane" />
+                    <Group fx:id="centerMapPaneGroup">
+                       <children>
+                          <Pane fx:id="carLanePane" pickOnBounds="false" />
+                          <Pane fx:id="mixedLanePane" pickOnBounds="false" />
+                          <Pane fx:id="bikeLanePane" pickOnBounds="false" />
+                          <Pane fx:id="junctionPane" pickOnBounds="false" />
+                          <Pane fx:id="routePane" />
+                          <Pane fx:id="vehiclePane" pickOnBounds="false" />
+                          <Pane fx:id="trafficLightPane" pickOnBounds="false" />
+                       </children>
+                    </Group>
+                    <Pane fx:id="busPane" pickOnBounds="false" />
+                    <Pane fx:id="carPane" pickOnBounds="false" />
+                    <Pane fx:id="bikePane" pickOnBounds="false" />
+                </children>
+            </StackPane>
+         </children>
+      </AnchorPane>
+
+      <BorderPane fx:id="borderPaneContainer" pickOnBounds="false">
+         
+         <top>
+            <HBox alignment="TOP_CENTER" opacity="0.95" pickOnBounds="false" BorderPane.alignment="CENTER">
+               <children>
+                  <HBox alignment="CENTER" spacing="20.0" styleClass="hud-pill">
+                     <children>
+                        <VBox alignment="CENTER">
+                           <children>
+                              <Label styleClass="hud-sublabel" text="STEP" />
+                              <Label fx:id="simStepLabel" styleClass="hud-label" text="0" />
+                           </children>
+                        </VBox>
+                        <Region />
+                        <Separator opacity="0.3" orientation="VERTICAL" />
+                        <VBox alignment="CENTER">
+                           <children>
+                              <Label styleClass="hud-sublabel" text="VEHICLES" />
+                              <Label fx:id="vehicleCountLabel" styleClass="hud-label" text="0" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </children>
+               <padding>
+                  <Insets top="10.0" />
+               </padding>
+            </HBox>
+         </top>
+
+         <left>
+            <VBox alignment="CENTER_LEFT" maxHeight="725.0" maxWidth="350.0" opacity="0.95" pickOnBounds="false" prefHeight="713.0" prefWidth="396.0" BorderPane.alignment="CENTER_LEFT">
+               <BorderPane.margin>
+                  <Insets left="10.0" />
+               </BorderPane.margin>
+               <children>
+               
+                  <StackPane fx:id="leftCardContainer" prefWidth="320.0" styleClass="floating-card-wrapper">
+                     <children>
+                        <ScrollPane fx:id="leftControlPanel" fitToWidth="true" hbarPolicy="NEVER" styleClass="scroll-pane" vbarPolicy="AS_NEEDED" StackPane.alignment="CENTER_LEFT">
+                           <content>
+                              <VBox styleClass="inner-content-box">
+                                 <children>
+                                    <Label text="Traffic Simulator" textFill="#36436f">
+                                       <font>
+                                          <Font name="System Bold" size="24.0" />
+                                       </font>
+                                    </Label>
+
+                                    <VBox spacing="8.0">
+                                       <children>
+                                          <Label styleClass="section-header" text="1. CONFIGURATION" />
+                                          <TextField fx:id="pathToSumoGuiField" promptText="Path to sumo-gui/sumo" />
+                                          <TextField fx:id="pathToSumocfgFileField" promptText="Path to .sumocfg..." />
+                                          <HBox spacing="8.0">
+                                             <children>
+                                                <Button fx:id="loadSumoPathButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#loadSumoPath" styleClass="action-button" text="Load Sumo Path" HBox.hgrow="ALWAYS" />
+                                                <Button fx:id="loadSumoConfigButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Load Map" HBox.hgrow="ALWAYS" />
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
+
+                                    <Separator />
+
+                                    <VBox spacing="8.0">
+                                       <children>
+                                          <Label styleClass="section-header" text="2. SIMULATION CONTROLS" />
+                                          <Button fx:id="startButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#startSimulation" styleClass="action-button" text="▶ Start">
+                                             <font>
+                                                <Font name="System Bold" size="13.0" />
+                                             </font></Button>
+                                          <HBox spacing="8.0">
+                                             <children>
+                                                <Button fx:id="pauseButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#pauseSimulation" styleClass="secondary-button" text="⏸ Pause" HBox.hgrow="ALWAYS">
+                                                   <font>
+                                                      <Font name="System Bold" size="13.0" />
+                                                   </font></Button>
+                                                <Button fx:id="stepButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#stepSimulation" styleClass="secondary-button" text="Step Forward" HBox.hgrow="ALWAYS">
+                                                   <font>
+                                                      <Font name="System Bold" size="13.0" />
+                                                   </font>
+                                                </Button>
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
+
+                                    <Separator />
+
+                                    <Accordion>
+                                      <panes>
+                                        <TitledPane fx:id="injectionPane" text="Vehicle Injection">
+                                          <content>
+                                            <VBox spacing="10.0">
+                                               <children>
+                                                  <VBox spacing="5.0">
+													   <children>
+													      <Label style="-fx-font-size: 11px;" text="Select Vehicle Type:" textFill="#666666" />
+													      <HBox spacing="20.0">
+													         <children>
+													            <RadioButton fx:id="carRadio" selected="true" style="-fx-font-weight: bold;" text="Car ">
+													               <toggleGroup>
+													                  <javafx.scene.control.ToggleGroup fx:id="vehicleTypeGroup" />
+													               </toggleGroup>
+													            </RadioButton>
+													            <RadioButton fx:id="bikeRadio" style="-fx-font-weight: bold;" text="Bicycle" toggleGroup="$vehicleTypeGroup" />
+													         </children>
+													      </HBox>
+													   </children>
+													</VBox>
+                                                      <VBox prefHeight="0.0" prefWidth="275.0">
+                                                         <children>
+                                                            <Label text="Choose First Edge" />
+                                                            <TextField fx:id="firstEdgeField" editable="false" promptText="First Edge ID" styleClass="read-only-field" />
+                                                            <Label text="Choose Second Edge" />
+                                                            <TextField fx:id="secondEdgeField" editable="false" promptText="Second Edge ID" styleClass="read-only-field" />
+                                                         </children>
+                                                      </VBox>
+                                                      <Label text="Choose Vehicle Color" />
+                                                      <ColorPicker fx:id="injectVehicleColorPickerButton" maxWidth="1.7976931348623157E308" />
+                                                      <Label text="Choose Vehicle Speed" />
+                                                      <Slider fx:id="injectVehicleSpeedSlider" majorTickUnit="5.0" max="15.0" min="5.0" minorTickCount="8" showTickLabels="true" showTickMarks="true" />
+                                                  <Button fx:id="injectVehicleButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#injectVehicle" styleClass="action-button" text="INJECT VEHICLE" />
+                                               </children>
+                                            </VBox>
+                                          </content>
+                                        </TitledPane>
+                                        
+                                        <TitledPane fx:id="trafficLightControlPane" text="Traffic Lights">
+                                          <content>
+                                            <VBox spacing="10.0">
+                                               <children>
+                                               	 <Label style="-fx-font-size: 11px;" text="Select Traffic Light ID on map" textFill="#666666" />
+                                               	 <TextField fx:id="trafficLightIdField" editable="false" promptText="TL ID" styleClass="read-only-field" />
+                                                  <Label text="Set Color and/or Duration for the Traffic Light" textFill="#666666" />
+                                                  <HBox alignment="TOP_CENTER" spacing="5.0">
+                                                     <Button fx:id="setRedPhaseButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="danger-button" text="Red" HBox.hgrow="ALWAYS" />
+                                                         <Region prefHeight="26.0" prefWidth="0.0" />
+                                                         <Button fx:id="setYellowPhaseButton" maxWidth="1.7976931348623157E308" minWidth="80.0" mnemonicParsing="false" styleClass="warning-button" text="Yellow" />
+                                                         <Region prefHeight="26.0" prefWidth="0.0" />
+                                                     <Button fx:id="setGreenPhaseButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="26.0" prefWidth="52.0" styleClass="success-button" text="Green" HBox.hgrow="ALWAYS" />
+                                                  </HBox>
+                                                  <HBox spacing="5.0">
+                                                      <TextField fx:id="phaseDurationField" promptText="Duration (s)" HBox.hgrow="ALWAYS" />
+                                                      <!--<Button fx:id="setPhaseDurationButton" styleClass="small-button" text="Set" />-->
+                                                  </HBox>
+                                                  <Button fx:id="setTrafficLightColorandorDurationButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#setTrafficLightColorandorDuration" styleClass="action-button" text="SET COLOR AND/OR DURATION" />
+                                                  <!--<CheckBox fx:id="adaptiveTrafficCheck" text="Adaptive Mode" />*/-->
+                                                  <Label text="Switch Traffic Light onto the next Phase" textFill="#666666" />
+                                                  <Button fx:id="switchTrafficLightPhaseButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#switchTrafficLightPhase" styleClass="action-button" text="SWITCH TO THE NEXT PHASE" />
+                                               </children>
+                                            </VBox>
+                                          </content>
+                                        </TitledPane>
+                                        
+                                        <TitledPane text="Reports &amp; Stats">
+                                           <content>
+                                              <VBox spacing="8.0">
+                                                 <children>
+                                                    <Label fx:id="avgSpeedLabel" style="-fx-font-weight: bold;" text="Avg Speed: 0.0" />
+                                                    <Label fx:id="congestionLabel" style="-fx-font-weight: bold;" text="Congestion: Low" />
+                                                    <Separator />
+                                                    <Button fx:id="showChartsButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="View Live Charts" />
+                                                    <Button fx:id="exportVehiclesCsvButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Export CSV Vehicle Report" />
+                                                      <Button fx:id="exportEdgesCsvButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Export CSV Edge Report" />
+                                                      <Button fx:id="exportPdfButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Export PDF Report" />
+                                                 </children>
+                                              </VBox>
+                                           </content>
+                                        </TitledPane>
+                                          <TitledPane fx:id="stressTestPane" text="Stress Test">
+                                             <content>
+                                                <VBox spacing="10.0">
+                                                   <children>
+                                                      <VBox spacing="5.0">
+                                                         <children>
+                                                            <Label style="-fx-font-size: 11px;" text="Select Vehicle Type:" textFill="#666666" />
+                                                            <HBox spacing="20.0">
+                                                               <children>
+                                                                  <RadioButton fx:id="carRadio1" selected="true" style="-fx-font-weight: bold;" text="Car ">
+                                                                     <toggleGroup>
+                                                                        <ToggleGroup fx:id="vehicleTypeGroup1" />
+                                                                     </toggleGroup>
+                                                                  </RadioButton>
+                                                                  <RadioButton fx:id="bikeRadio1" style="-fx-font-weight: bold;" text="Bicycle" toggleGroup="$vehicleTypeGroup1" />
+                                                               </children>
+                                                            </HBox>
+                                                         </children>
+                                                      </VBox>
+                                                      <VBox prefHeight="0.0" prefWidth="275.0">
+                                                         <children>
+                                                            <Label text="Choose First Edge" />
+                                                            <TextField fx:id="firstEdgeField1" editable="false" promptText="First Edge ID" styleClass="read-only-field" />
+                                                            <Label text="Choose Second Edge" />
+                                                            <TextField fx:id="secondEdgeField1" editable="false" promptText="Second Edge ID" styleClass="read-only-field" />
+                                                         </children>
+                                                      </VBox>
+                                                      <Label text="Choose Vehicle Color" />
+                                                      <ColorPicker fx:id="injectVehicleColorPickerButton1" maxWidth="1.7976931348623157E308" />
+                                                      <Label text="Choose Vehicle Speed" />
+                                                      <Slider fx:id="injectVehicleSpeedSlider1" majorTickUnit="5.0" max="15.0" min="5.0" minorTickCount="6" showTickLabels="true" showTickMarks="true" />
+                                                      <Label layoutX="21.0" layoutY="230.0" text="Choose number of vehicles:" />
+                                                      <Slider fx:id="numberOfVehicleSlider1" blockIncrement="0.0" layoutX="21.0" layoutY="257.0" majorTickUnit="20.0" max="50.0" min="5.0" minorTickCount="9" showTickLabels="true" showTickMarks="true" snapToTicks="true" />
+                                                      <Button fx:id="stressTestButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#runStressTestOnSpecificEdges" styleClass="action-button" text="INJECT VEHICLE" />
+                                                   </children>
+                                                </VBox>
+                                             </content>
+                                          </TitledPane>
+                                      </panes>
+                                    </Accordion>
+                                 </children>
+                              </VBox>
+                           </content>
+                        </ScrollPane>
+                     </children>
+                  </StackPane>
+               </children>
+            </VBox>
+         </left>
+
+         <right>
+            <VBox alignment="CENTER_RIGHT" opacity="0.95" pickOnBounds="false" spacing="15.0" BorderPane.alignment="CENTER_RIGHT">
+               <children>
+                  <VBox alignment="CENTER" spacing="15.0">
+                      <ToggleButton fx:id="view3DToggleButton" mnemonicParsing="false" styleClass="map-control-button" text="3D" textAlignment="CENTER" />
+                      <Button fx:id="resetViewButton" mnemonicParsing="false" onAction="#resetView" styleClass="map-control-button" text="⟲" textAlignment="CENTER">
+                        <font>
+                           <Font size="20.0" />
+                        </font></Button>
+                      <Separator orientation="HORIZONTAL" prefWidth="20.0" />
+                      <Button fx:id="zoomInButton" mnemonicParsing="false" onAction="#zoomIn" styleClass="map-control-button" text="+" textAlignment="CENTER" />
+                      <Button fx:id="zoomOutButton" mnemonicParsing="false" onAction="#zoomOut" styleClass="map-control-button" text="-" textAlignment="CENTER" />
+                  </VBox>
+               </children>
+               <BorderPane.margin>
+                  <Insets right="10.0" />
+               </BorderPane.margin>
+            </VBox>
+         </right>
+         
+         <bottom>
+            <VBox alignment="BOTTOM_CENTER" opacity="0.95" pickOnBounds="false" BorderPane.alignment="CENTER">
+               <children>
+                  <VBox alignment="BOTTOM_LEFT" maxHeight="100.0" styleClass="log-panel" VBox.vgrow="ALWAYS">
+                     <children>
+                        <Label styleClass="log-header" text="SIMULATION LOG">
+                           <VBox.margin>
+                              <Insets bottom="5.0" left="5.0" />
+                           </VBox.margin>
+                        </Label>
+                        <VBox>
+                           <children>
+                              <ScrollPane fx:id="bottomLogScrollPane" fitToHeight="true" fitToWidth="true" prefHeight="150.0" style="-fx-background-color: transparent;">
+                                 <content>
+                                    <VBox>
+                                       <children>
+                                          <Label fx:id="logLabel" styleClass="log-text" text="&gt; Ready" wrapText="true" />
+                                       </children>
+                                    </VBox>
+                                 </content>
+                              </ScrollPane>
+                           </children>
+                        </VBox>
+                     </children>
+                  </VBox>
+               </children>
+               <BorderPane.margin>
+                  <Insets top="20.0" />
+               </BorderPane.margin>
+            </VBox>
+         </bottom>
+         
+      </BorderPane>
+      
+   </children>
+</StackPane>

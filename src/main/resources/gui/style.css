@@ -1,0 +1,202 @@
+
+.root {
+    -fx-font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 13px;
+    -fx-focus-color: transparent; 
+    -fx-faint-focus-color: transparent;
+}
+
+
+.map-background {
+    -fx-background-color: #EFEFF1; 
+}
+
+
+.floating-card-wrapper {
+
+    -fx-background-color: white;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 20, 0, 0, 5);
+    -fx-padding: 25; 
+    -fx-border-width: 0; 
+}
+
+.inner-content-box {
+    -fx-background-color: transparent;
+    -fx-spacing: 12;
+}
+
+.scroll-pane, .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+.scroll-pane .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+.scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: rgb(180, 180, 180);
+    -fx-background-radius: 10;
+}
+
+
+.section-header {
+    -fx-text-fill: #888888;
+    -fx-font-weight: bold;
+    -fx-font-size: 10px;
+    -fx-letter-spacing: 1px;
+}
+
+
+.log-panel {
+    -fx-background-color: rgb(45, 52, 54);
+    -fx-background-radius: 0; 
+    -fx-padding: 15 30 15 30;
+}
+
+.log-header {
+    -fx-text-fill: #A7D0D6;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-font-family: "Monospaced";
+}
+
+.log-text {
+    -fx-text-fill: #F7E1BC; 
+    -fx-font-family: "Consolas", "Monospaced";
+    -fx-font-size: 12px;
+}
+
+.map-control-button {
+    -fx-background-color: white;
+    -fx-text-fill: #555;
+    -fx-background-radius: 100%;
+    -fx-min-width: 45px;
+    -fx-min-height: 45px;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
+    -fx-cursor: hand;
+}
+.map-control-button:selected {
+     -fx-background-color: #36436F;
+     -fx-text-fill: white;
+}
+.map-control-button:hover {
+    -fx-background-color: #F7E1BC;
+    -fx-scale-x: 1.1; 
+    -fx-scale-y: 1.1;
+}
+
+.hud-pill {
+    -fx-background-color: #24282B;
+    -fx-background-radius: 10;
+    -fx-padding: 8 25 8 25;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 2);
+}
+.hud-label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+.hud-sublabel {
+    -fx-text-fill: #A7D0D6;
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+}
+
+.text-field {
+    -fx-background-color: rgb(255,255,255);
+    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-prompt-text-fill: #999;
+}
+.text-field:focused {
+    -fx-background-color: white;
+    -fx-border-color: #A7D0D6; 
+    -fx-border-radius: 8;
+}
+
+.read-only-field {
+    -fx-background-color: rgba(247, 225, 188, 0.2); 
+    -fx-text-fill: #555;
+    -fx-font-weight: bold;
+}
+
+
+.action-button {
+    -fx-background-color: #36436F;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.action-button:hover {
+    -fx-background-color: #4A5B8F;
+}
+
+.secondary-button {
+    -fx-background-color: #e0e0e0;
+    -fx-text-fill: #444;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+.secondary-button:hover {
+    -fx-background-color: #d0d0d0;
+}
+
+.small-button {
+    -fx-background-color: #A7D0D6;
+    -fx-text-fill: #222;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-font-size: 11px;
+}
+
+.danger-button {
+    -fx-background-color: #B6000F;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+}
+
+
+.warning-button {
+    -fx-background-color: #FFD700; 
+    -fx-text-fill: black;           
+    -fx-background-radius: 8;
+}
+
+.selected-button {
+    -fx-border-color: black;   
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;   
+}
+
+.success-button {
+    -fx-background-color: #5BA860;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+}
+
+.titled-pane {
+    -fx-text-fill: #36436F;
+}
+.titled-pane > .title {
+    -fx-background-color: transparent;
+    -fx-border-color: #eeeeee;
+    -fx-border-width: 0 0 1 0;
+    -fx-font-weight: bold;
+    -fx-padding: 10 0 10 0;
+}
+.titled-pane > .title .arrow-button {
+    -fx-background-color: transparent;
+}
+.titled-pane > .title .arrow {
+    -fx-background-color: #36436F;
+}
+
+.modal-window {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 20, 0, 0, 0);
+    -fx-padding: 20;
+}
