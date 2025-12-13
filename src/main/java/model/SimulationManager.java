@@ -250,12 +250,26 @@ public class SimulationManager {
 
     public StatisticsManager getStatisticsManager() { return statisticsManager; }
     public ReportManager getReportManager() { return reportManager; }
+    /**
+     * Provides access to the traffic light manager instance of {@code SimulationManager}.
+     *
+     * @return traffic light manager responsible for controlling traffic lights
+     */
     public TrafficlightManager getTrafficlightManager() { return trafficlightManager; }
     public SumoTraciConnection getConnection() { return sumoConnection; }
     public MapManager getMapManager() { return mapManager; }
     public SimulationState getState() {
     	return this.simulationState;
     }
+    
+    /**
+     * Returns the simulation step length if it is a valid non-negative number.
+     *
+     * If the stored step length cannot be parsed as a number or is negative,
+     * the method returns {@code -1} to indicate an invalid value.
+     *
+     * @return step length value, or {@code -1} if the value is invalid
+     */
     public double getStepLength() {
     	boolean check_validity = false;
     	try {

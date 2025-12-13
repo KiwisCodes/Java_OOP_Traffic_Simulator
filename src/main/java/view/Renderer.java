@@ -89,11 +89,7 @@ public class Renderer {
 
  // Trong Renderer.java
 
-    /**
-     * Vẽ toàn bộ lớp tĩnh: Đường, Ngã tư.
-     * @param mapManager: chứa thông tin ID và biên (bounds)
-     * @param connection: dùng để lấy hình dáng (Shape) chi tiết từ SUMO
-     */
+
     public void renderLanes(Map<String,LaneClass> laneData, Pane carPane, Pane bikePane,Pane mixedPane,Consumer<String> onLaneClick) {
     	
     	//should input list of
@@ -301,9 +297,6 @@ public class Renderer {
     // PHẦN VẼ ĐÈN GIAO THÔNG (TRAFFIC LIGHTS)
     // =================================================================================
 
-    /**
-     * Tạo nhóm chứa các đèn giao thông
-     */
 //    public Group createTrafficLightGroup(SumoTraciConnection connection, Consumer<String> onLightClick) {
 //        Group tlGroup = new Group();
 //
@@ -327,9 +320,6 @@ public class Renderer {
 //        return tlGroup;
 //    }
 
-    /**
-     * Hàm phụ trợ: Vẽ 1 cái đèn giao thông (Hình tròn)
-     */
 //    private Shape createTrafficLightShape(String tlId, SumoTraciConnection connection, Consumer<String> onLightClick) {
 //        try {
 //            // MẸO: Trong SUMO, ID của đèn giao thông thường trùng với ID của Ngã tư (Junction) nó điều khiển.
@@ -804,6 +794,19 @@ public class Renderer {
 	    
 //		}
 	//Khang
+	/**
+	 * Renders traffic lights on the given pane and updates their visual state.
+	 *
+	 * The method creates graphical traffic light representations the first time
+	 * it is called, positions them using the traffic light geometry,
+	 * and registers mouse interaction handlers (hover, click and exit). On subsequent calls, it updates
+	 * the colors of existing traffic lights based on the provided state data
+	 * without recreating nodes.
+	 *
+	 * @param trafficLightPane pane used to display traffic light graphics
+	 * @param trafficLightsData mapping of {@code TrafficlightObject} links to their current color state
+	 * @param onTrafficLightClick action executed when a traffic light is clicked
+	 */
 		public void renderTrafficLights(Pane trafficLightPane, Map<TrafficlightObject,Character>trafficLightsData, Consumer<TrafficlightObject> onTrafficLightClick) {
 			
 			if (trafficLightsData == null || trafficLightsData.isEmpty()) {
