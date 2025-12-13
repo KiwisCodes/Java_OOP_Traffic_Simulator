@@ -1,13 +1,23 @@
-# Compiled Java class files
-*.class
+# --- Maven Build Output ---
+/target/
+/bin/
+dependency-reduced-pom.xml
 
-# Build output
-target/
+# --- IDE Settings (Eclipse) ---
+.classpath
+.project
+.settings/
 
-# Log files
-*.log
-
-# IDE settings
+# --- IDE Settings (IntelliJ) ---
 .idea/
-.vscode/
 *.iml
+*.iws
+*.ipr
+
+# --- Java Crash Logs ---
+*.log
+hs_err_pid*
+
+# --- OS System Files ---
+.DS_Store
+Thumbs.db
