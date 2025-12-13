@@ -90,10 +90,31 @@ public class Renderer {
  // Trong Renderer.java
 
     /**
-     * Vẽ toàn bộ lớp tĩnh: Đường, Ngã tư.
-     * @param mapManager: chứa thông tin ID và biên (bounds)
-     * @param connection: dùng để lấy hình dáng (Shape) chi tiết từ SUMO
+     * Renders all lanes onto the visualization map by categorizing them into specific UI layers (Panes)
+     * based on their vehicle access permissions.
+     * <p>
+     * <b>Process:</b>
+     * <ol>
+     * <li>Clears all existing children in car, bike, and mixed panes.</li>
+     * <li>Iterates through the provided {@code laneData}.</li>
+     * <li>Filters out internal junction lanes (IDs starting with ":").</li>
+     * <li>Generates a {@link Shape} for each valid lane.</li>
+     * <li>Assigns the shape to the appropriate pane:
+     * <ul>
+     * <li><b>Mixed Pane:</b> If both cars and bikes are allowed.</li>
+     * <li><b>Bike Pane:</b> If only bikes are allowed.</li>
+     * <li><b>Car Pane:</b> If only cars are allowed.</li>
+     * </ul>
+     * </li>
+     * </ol>
+     * 
+     * * <b>Note:</b> Lanes that do not fall into the above categories (e.g., restricted roads) 
+     * are added to the {@code carPane} but set to be <b>mouse-transparent</b> (non-interactive).
+     *
+     * @param laneData A map containing lane IDs and their corresponding {@code LaneClass} properties.
+     * @param onLaneClick A consumer callback to handle mouse click events on the generated lane shapes.
      */
+    
     public void renderLanes(Map<String,LaneClass> laneData, Pane carPane, Pane bikePane,Pane mixedPane,Consumer<String> onLaneClick) {
     	
     	//should input list of
@@ -154,7 +175,27 @@ public class Renderer {
         }
     }
     
-    
+    /**
+     * Constructs a graphical representation (Shape) of a specific lane to be rendered on the map.
+     * <p>
+     * This method orchestrates the visual creation process by:
+     * <ol>
+     * <li>Retrieving the raw geometry (list of X, Y coordinates) from the SUMO simulation data.</li>
+     * <li>Converting these real-world coordinates into JavaFX screen coordinates using the {@code converter}.</li>
+     * <li>Creating a {@link Polyline} and applying visual styles (stroke width, color, line caps).</li>
+     * <li>Attaching mouse interaction logic (Hover effects and Click delegation).</li>
+     * </ol>
+     * </p>
+     *
+     * @param props       The {@code LaneClass} object containing the lane's properties (ID, width, geometry shape).
+     * @param laneData    The map containing data for all lanes (used for context if necessary).
+     * @param onLaneClick A {@code Consumer} callback used to handle mouse click events.
+     * <br><b>Note on Architecture:</b> This parameter facilitates a <i>delegation pattern</i>.
+     * The {@code Renderer} detects the click event, but delegates the actual business logic 
+     * (such as updating text fields in the UI) back to the {@code MainController} via this callback.
+     * @return A fully styled {@link Shape} (specifically a {@link Polyline}) ready to be added to the UI pane, 
+     * or {@code null} if the geometry data is invalid.
+     */
     
     private Shape createLaneShape(LaneClass props, Map<String,LaneClass> laneData,Consumer<String> onLaneClick) {
     	//should input laneObject here
@@ -231,7 +272,27 @@ public class Renderer {
             return null; 
         }
     }
-    
+
+
+        /**
+         * Renders all valid junctions (intersections) onto the visualization map.
+         * <p>
+         * <b>Processing Steps:</b>
+         * <ol>
+         * <li>Clears the {@code junctionPane} to remove old artifacts.</li>
+         * <li>Iterates through the provided {@code junctionData}.</li>
+         * <li><b>Filtering:</b> Skips internal SUMO junctions (IDs starting with ":") to avoid visual clutter.</li>
+         * <li>Generates a geometric {@link Shape} for each valid junction.</li>
+         * <li>Attaches a mouse click listener to delegate the selection event back to the Controller via {@code onJunctionClick}.</li>
+         * <li>Adds the generated shape directly to the UI pane.</li>
+         * </ol>
+         * </p>
+         *
+         * @param junctionData    A map containing junction IDs and their properties (geometry, position).
+         * @param junctionPane    The JavaFX {@link Pane} layer dedicated to displaying junctions.
+         * @param onJunctionClick A callback (Consumer) to handle user interactions.
+         * <br>When a user clicks a junction, its ID is passed to this consumer, allowing the MainController to react (e.g., show details).
+         */
     public void renderJunctions(Map<String,JunctionClass>junctionData, Pane junctionPane, Consumer<String> onJunctionClick) {
         // 1. Tự dọn dẹp Pane trước khi vẽ
         junctionPane.getChildren().clear();
@@ -261,7 +322,17 @@ public class Renderer {
         }
     }
     
-    
+    /**
+     * Constructs the graphical representation (Polygon) for a single junction based on its geometry.
+     * * <p>
+     * This method converts real-world SUMO coordinates into screen pixel coordinates 
+     * to form a closed {@link Polygon}.
+     * </p>
+     *
+     * @param props The {@code JunctionClass} object containing the junction's ID and geometry shape.
+     * @return A styled {@link Polygon} representing the intersection, ready for rendering.
+     * Returns {@code null} if the junction has no geometry data or is invalid.
+     */
     private Shape createJunctionShape(JunctionClass props) {
         try {
         	SumoGeometry geometry = props.getShape();
@@ -387,6 +458,28 @@ public class Renderer {
     //Khai báo biến cache (dùng để lưu dữ liệu xe)
   	// Key: ID xe (String), Value: Hình vẽ chiếc xe đó (Polygon)
     private Map<String, Polygon> vehicleVisualCache = new HashMap<>();
+    
+    /**
+     * Renders and synchronizes the visual representation of vehicles on the map based on the latest simulation state.
+     * <p>
+     * <b>Performance Optimization Strategy:</b>
+     * Instead of clearing and redrawing all vehicles every frame (which is computationally expensive), 
+     * this method employs a <b>Caching Mechanism</b> ({@code vehicleVisualCache}) to synchronize the UI state:
+     * <ul>
+     * <li><b>Garbage Collection:</b> Identifies and removes vehicles that are present in the cache 
+     * but no longer exist in the new {@code vehicleData} (i.e., vehicles that have left the simulation).</li>
+     * <li><b>Update vs. Create:</b> 
+     * <ul>
+     * <li>If a vehicle ID exists in the cache, its existing {@link Polygon} shape is updated with new coordinates and rotation (Low cost).</li>
+     * <li>If a vehicle ID is new, a new {@link Polygon} shape is instantiated, styled, and added to the cache (One-time cost).</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * </p>
+     *
+     * @param vehiclePane The JavaFX {@link Pane} layer dedicated to displaying vehicles.
+     * @param vehicleData A map containing the latest snapshot of vehicle data (ID -> Vehicle Properties) from the simulation core.
+     */
 	public void renderVehicles(Pane vehiclePane, Map<String, VehicleClass> vehicleData) {
 		//Dòng lệnh này xóa sạch mọi thứ trong Pane mỗi khi hàm được gọi (60 lần/giây) -> Quá tốn cache, máy chạy nặng, 
 //		// Xoá sạch xe trên 
@@ -653,6 +746,19 @@ public class Renderer {
 //        }
 //    }
 	
+	
+	/**
+     * Clears the internal cache of vehicle visual objects.
+     * <p>
+     * This method removes all stored vehicle shapes ({@link Polygon}) from the {@code vehicleVisualCache}.
+     * <b>Usage:</b> This should be called explicitly when:
+     * <ul>
+     * <li>Resetting or restarting the simulation.</li>
+     * <li>Loading a new map.</li>
+     * </ul>
+     * This ensures that no stale visual artifacts ("ghost vehicles") from the previous session remain in memory or on screen.
+     * </p>
+     */
 	public void clearVehicleCache() {
         this.vehicleVisualCache.clear();
     }
