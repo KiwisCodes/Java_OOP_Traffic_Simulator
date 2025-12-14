@@ -109,7 +109,6 @@ public class Renderer {
         try {
             for (String laneId : laneData.keySet()) {
             	LaneClass props = laneData.get(laneId);
-                // Bỏ qua lane nội bộ (ngã tư)
                 if (laneId.startsWith(":")) continue;
 
                 try {
