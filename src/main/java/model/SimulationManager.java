@@ -112,7 +112,7 @@ public class SimulationManager {
 
         try {
             System.out.println("Launching SUMO... (This may pause until TraCI connects)");
-            this.sumoConnection.runServer(); // Starts the SUMO process
+            this.sumoConnection.runServer(); 
             
             if(this.sumoConnection.isClosed()) {
         		System.out.println("Is closed");
@@ -215,7 +215,7 @@ public class SimulationManager {
      */
     public boolean InjectVehicle(String vehType, SumoColor sumoColor, double Speed, String firstEdge, String lastEdge) {
 		try {
-			System.out.println(sumoColor);
+//			System.out.println(sumoColor);
 			String routeID = "routes_" + vehicleCounter;			
 			SumoStringList edges = getRouteFromEdges(firstEdge, lastEdge, vehType);
 			if(edges == null || edges.size() == 0) {
