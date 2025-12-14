@@ -235,31 +235,43 @@ public class MainController {
         this.mapInteractionHandler = new MapInteractionHandler(centerMapStackPane, centerMapPaneGroup);
         if (injectionPane != null) {
             injectionPane.expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
-            	InteractWithVehicleInjectionDropMenu();
-                if (!isNowExpanded) {
-                    if (firstEdgeField != null) firstEdgeField.clear();
-                    if (secondEdgeField != null) secondEdgeField.clear();
+                // CHỈ CHẠY KHI ĐANG MỞ
+                if (isNowExpanded) {
+                    // 1. Đóng cái kia
+                    if (stressTestPane != null && stressTestPane.isExpanded()) {
+                        stressTestPane.setExpanded(false);
+                    }
+                    // 2. Kích hoạt logic bản đồ
+                    InteractWithVehicleInjectionDropMenu();
                 }
+                // Nếu bạn thích giữ text cũ thì xoá đoạn else clear() đi cũng được
             });
         }
         
         if (stressTestPane != null) {
             stressTestPane.expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
-            	InteractWithVehicleStressTestDropMenu();
-                if (!isNowExpanded) {
-                    if (firstEdgeField1 != null) firstEdgeField1.clear();
-                    if (secondEdgeField1 != null) secondEdgeField1.clear();
+                // CHỈ CHẠY KHI ĐANG MỞ
+                if (isNowExpanded) {
+                    if (injectionPane != null && injectionPane.isExpanded()) {
+                        injectionPane.setExpanded(false);
+                    }
+                    InteractWithVehicleStressTestDropMenu();
                 }
             });
         }
         if (vehicleTypeGroup != null) {
             vehicleTypeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
             	InteractWithVehicleInjectionDropMenu();
+            	// Khi đổi loại xe, xoá trắng 2 ô chọn đường
+                if (firstEdgeField != null) firstEdgeField.clear();   
+                if (secondEdgeField != null) secondEdgeField.clear(); 
             });
         }
         if (vehicleTypeGroup1 != null) {
             vehicleTypeGroup1.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
             	InteractWithVehicleStressTestDropMenu();
+            	if (firstEdgeField1 != null) firstEdgeField1.clear();   
+                if (secondEdgeField1 != null) secondEdgeField1.clear();
             });
         }
         
