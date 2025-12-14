@@ -4,41 +4,34 @@ package view;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.function.Consumer; // Để xử lý click chuột
+import java.util.function.Consumer;
 import java.util.Map;
-// --- JavaFX (Giao diện) ---
 import javafx.scene.Group;
 import javafx.scene.Cursor;
-import javafx.scene.effect.DropShadow; // Hiệu ứng phát sáng
+import javafx.scene.effect.DropShadow; 
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;      // Vẽ ngã tư
-import javafx.scene.shape.Polyline;    // Vẽ đường gấp khúc
+import javafx.scene.shape.Circle;     
+import javafx.scene.shape.Polyline;   
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
-import javafx.scene.shape.StrokeLineCap; // Bo tròn đầu đường
-
-// --- TraaS / SUMO (Thư viện mô phỏng) ---
+import javafx.scene.shape.StrokeLineCap;
 import it.polito.appeal.traci.SumoTraciConnection;
-import de.tudresden.sumo.cmd.Lane;           // Lệnh lấy thông tin Lane
-import de.tudresden.sumo.cmd.Junction;       // Lệnh lấy thông tin Junction
-import de.tudresden.sumo.objects.SumoGeometry;   // Chứa danh sách tọa độ hình dáng
-import de.tudresden.sumo.objects.SumoPosition2D; // Tọa độ X, Y lẻ
+import de.tudresden.sumo.cmd.Lane;           
+import de.tudresden.sumo.cmd.Junction;      
+import de.tudresden.sumo.objects.SumoGeometry;  
+import de.tudresden.sumo.objects.SumoPosition2D; 
 import model.infrastructure.MapManager;
 import model.infrastructure.TrafficlightObject;
 import model.vehicles.VehicleClass;
 import util.ColorConverter;
 import model.infrastructure.*;
-// --- Project Classes (Các class của nhóm bạn) ---
 import util.CoordinateConverter;
-//import cần thiết cho đèn giao thông:
-import de.tudresden.sumo.cmd.Trafficlight; // Lệnh lấy đèn
-import de.tudresden.sumo.cmd.Junction;     // Lệnh lấy vị trí ngã tư
-import javafx.scene.shape.Circle;          // Để vẽ hình tròn
-	
-// import cho vẽ xe
-import de.tudresden.sumo.objects.SumoColor;     // Để hiểu màu sắc
-import javafx.scene.shape.Polygon;   // vẽ hình 
+import de.tudresden.sumo.cmd.Trafficlight; 
+import de.tudresden.sumo.cmd.Junction;    
+import javafx.scene.shape.Circle;          
+import de.tudresden.sumo.objects.SumoColor;     
+import javafx.scene.shape.Polygon;   
 import java.util.Map;
 public class Renderer {
     public void setConverter(MapManager mapManager) {
@@ -56,8 +49,6 @@ public class Renderer {
 
     public Renderer() {
         this.converter = new CoordinateConverter(); 
-        
-        // Các cài đặt khác (Glow effect...)
         HOVER_GLOW.setColor(Color.CYAN);
         HOVER_GLOW.setRadius(10);
         HOVER_GLOW.setSpread(0.6);
