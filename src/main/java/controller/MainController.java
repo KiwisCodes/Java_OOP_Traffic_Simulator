@@ -59,6 +59,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -197,7 +198,7 @@ public class MainController {
 //    Thread
     private AnimationTimer uiLoop; 
     private ExecutorService threadPool; 
-    private final int NUMBER_OF_THREADS = 3;
+    private final int NUMBER_OF_THREADS = 4; //sim, stat, stress, extra things...
     
 //    Flags
     private volatile static boolean isSimulationRunning = false;
@@ -284,6 +285,23 @@ public class MainController {
         setRedPhaseButton.setOnAction(e -> toggleColorButton(setRedPhaseButton));
         setYellowPhaseButton.setOnAction(e -> toggleColorButton(setYellowPhaseButton));
         setGreenPhaseButton.setOnAction(e -> toggleColorButton(setGreenPhaseButton));
+        
+        this.carRadio.setOnMouseClicked(e -> {
+        	this.firstEdgeField.clear();
+        	this.secondEdgeField.clear();
+        });
+        this.bikeRadio.setOnMouseClicked(e -> {
+        	this.firstEdgeField.clear();
+        	this.secondEdgeField.clear();
+        });
+        this.carRadio1.setOnMouseClicked(e -> {
+        	this.firstEdgeField1.clear();
+        	this.secondEdgeField1.clear();
+        });
+        this.bikeRadio1.setOnMouseClicked(e -> {
+        	this.firstEdgeField1.clear();
+        	this.secondEdgeField1.clear();
+        });
         
     }
 
@@ -375,7 +393,7 @@ public class MainController {
             threadPool.submit(() -> {
                 log("Simulation Thread Started.");
                 while (isSimulationRunning) {
-                	if(this.simManager.getConnection().isClosed()) {
+                	if(this.simManager == null || simManager.getConnection().isClosed()) {
                 		log("Connection lost, stopping loop");
                 		break;
                 	}
@@ -465,7 +483,6 @@ public class MainController {
             }
         };
         uiLoop.start();
-        log("Đã khởi động Animation Loop.");
     }
 
     private void updateView() {
@@ -562,29 +579,33 @@ public class MainController {
 
     public void stopSimulation() {
         System.out.println("Stopping simulation...");
+        
         isSimulationRunning = false;
+        
         if (uiLoop != null) {
             uiLoop.stop();
         }
 
-        if (simManager != null) {
-        	simManager.stopSimulation();
-        }
         if (renderer != null) {
             renderer.clearVehicleCache();
         }
-	        if (vehiclePane != null) {
-	            Platform.runLater(() -> vehiclePane.getChildren().clear());
-	        if (threadPool != null) {
-	            threadPool.shutdownNow();
-	            try {
-	                if (!threadPool.awaitTermination(500, java.util.concurrent.TimeUnit.MILLISECONDS)) {
-	                     System.out.println("Thread pool did not terminate");
-	                }
-	            } catch (InterruptedException e) {
-	                System.out.println("Shutdown interrupted");
-	            }
-	        }
+        if (vehiclePane != null) {
+            Platform.runLater(() -> vehiclePane.getChildren().clear());
+        }
+
+        if (threadPool != null) {
+            threadPool.shutdownNow(); 
+            try {
+                if (!threadPool.awaitTermination(1000, TimeUnit.MILLISECONDS)) {
+                     System.out.println("Thread pool did not terminate gracefully");
+                }
+            } catch (InterruptedException e) {
+                System.out.println("Shutdown interrupted");
+            }
+        }
+
+        if (simManager != null) {
+        	simManager.stopSimulation();
         }
     }
     
@@ -661,7 +682,7 @@ public class MainController {
     	if(this.carRadio.isSelected()) vehicleType = "DEFAULT_VEHTYPE";
     	else if(this.bikeRadio.isSelected()){
             vehicleType = "DEFAULT_BIKETYPE";
-            speed = (speed>12) ?  12 : speed;
+            speed = (speed>5) ?  5: speed;
         }
         Color fxColor = injectVehicleColorPickerButton.getValue();
         SumoColor sumoColor = ColorConverter.toSumoColor(fxColor);
@@ -671,8 +692,16 @@ public class MainController {
     	else {
     		log("Fail injecting vehicle");
     	}
+    	this.firstEdgeField.clear();
+    	this.secondEdgeField.clear();
     }
     
+    /**
+     * Switches the current traffic light to its next phase.
+     *
+     * If no traffic light is selected, the operation is aborted and a warning
+     * message is logged.
+     */
     @FXML private void switchTrafficLightPhase() {
     	if(this.trafficLightIdField.getText().isEmpty() || this.currentTrafficLightLink == null) {
     		log("Please choose a Traffic Light please");
@@ -683,6 +712,17 @@ public class MainController {
 		return;
 }
 
+    /**
+     * Sets the traffic light color and/or phase duration based on user input.
+     *
+     * The method validates user selections and applies one of the following:
+     * - Only phase duration
+     * - Only signal color
+     * - Both signal color and phase duration
+     *
+     * If traffic light id is missing or duration is invalid, the operation is aborted
+     * and an explanatory message is logged.
+     */
     @FXML private void setTrafficLightColorandorDuration() {
     	if(this.trafficLightIdField.getText().isEmpty() || this.currentTrafficLightLink == null) {
     		log("Please choose a Traffic Light please");
@@ -756,18 +796,24 @@ public class MainController {
     		}
     	}
 }
-
+    
+    /**
+     * Toggles the selection state of a traffic light color button.
+     *
+     * If the given button is already selected, it is deselected.
+     * Otherwise, the previous selection is cleared and the new button
+     * becomes the active color selection.
+     *
+     * @param button color selection button to toggle
+     */
 	private void toggleColorButton(Button button) {
 	    if (selectedColorButton == button) {
-	        // Deselect this button
 	        button.getStyleClass().remove("selected-button");
 	        selectedColorButton = null;
 	    } else {
-	        // Deselect previous button
 	        if (selectedColorButton != null) {
 	            selectedColorButton.getStyleClass().remove("selected-button");
 	        }
-	        // Select new
 	        button.getStyleClass().add("selected-button");
 	        selectedColorButton = button;
 	    }
@@ -801,12 +847,11 @@ public class MainController {
     @FXML 
     private void runStressTestOnSpecificEdges() {
         if(this.firstEdgeField1.getText().isEmpty() || this.secondEdgeField1.getText().isEmpty()) {
-            log("Please choose 2 edges first.");
+            log("Please choose 2 edges first");
             return;
         }
         
         this.stressTestButton.setDisable(true);
-
         PauseTransition unlockTimer = new PauseTransition(Duration.seconds(20));
         unlockTimer.setOnFinished(e -> this.stressTestButton.setDisable(false));
         unlockTimer.play();
@@ -814,49 +859,73 @@ public class MainController {
         final String firstEdgeId = this.firstEdgeField1.getText();
         final String secondEdgeId = this.secondEdgeField1.getText();
 
-        double spd = 10;
-        if (this.injectVehicleSpeedSlider1 != null) {
-            spd = this.injectVehicleSpeedSlider1.getValue();
-        }
-
+        double spd = (this.injectVehicleSpeedSlider1 != null) ? this.injectVehicleSpeedSlider1.getValue() : 5;
         String type = "DEFAULT_VEHTYPE";
+        
         if (this.bikeRadio1.isSelected()){
             type = "DEFAULT_BIKETYPE";
-            spd = (spd>12) ? 12 : spd;
+            spd = (spd > 5) ? 5 : spd; 
         }
 
         final String vehicleType = type;
         final double speed = spd;
-        
         final int totalVehicles = (int) this.numberOfVehicleSlider1.getValue();
-
         Color fxColor = injectVehicleColorPickerButton1.getValue();
         SumoColor sumoColor = ColorConverter.toSumoColor(fxColor);
 
         log("Starting Stress Test: Injecting " + totalVehicles + " vehicles...");
 
-        new Thread(() -> {
+        threadPool.submit(() -> {
             int successCount = 0;
             
             for (int i = 0; i < totalVehicles; i++) {
-
-                boolean success = this.simManager.InjectVehicle(vehicleType, sumoColor, speed, firstEdgeId, secondEdgeId);
-                
-                if (success) {
-                    successCount++;
-                    Platform.runLater(() -> log("Injected vehicle")); 
-                } else {
-                    Platform.runLater(() -> log("Injection failed (Road full?)"));
-                }
-                try { 
-                    Thread.sleep(200); 
-                } catch (InterruptedException e) { 
+            	
+                if (!isSimulationRunning || Thread.currentThread().isInterrupted()) {
                     break; 
                 }
+                if (isPaused) {
+                    i--; 
+                    try { 
+                        Thread.sleep(200); 
+                    } catch (InterruptedException e) { 
+                        break; 
+                    }
+                    continue;
+                }
+
+                try {
+                    if(this.simManager == null || this.simManager.getConnection().isClosed()) {
+                         break;
+                    }
+
+                    boolean success = this.simManager.InjectVehicle(vehicleType, sumoColor, speed, firstEdgeId, secondEdgeId);
+                    
+                    if (success) {
+                        successCount++;
+                        Platform.runLater(() -> log("Injected vehicle")); 
+                    } else {
+                        Platform.runLater(() -> log("Injection failed"));
+                    }
+                    Thread.sleep(200); 
+                    
+                } catch (InterruptedException e) { 
+                    Thread.currentThread().interrupt();
+                    break; 
+                } catch (Exception e) {
+                    if (e.toString().contains("connection is closed")) {
+                        break; 
+                    }
+                    e.printStackTrace(); 
+                }
             }
+            
             final int finalCount = successCount;
-            Platform.runLater(() -> log("Stress Test Complete. Total Injected: " + finalCount + "vehicles"));
-        }).start();
+            Platform.runLater(() -> {
+            	log("Stress Test Complete. Total: " + finalCount);
+            	this.firstEdgeField1.clear();
+            	this.secondEdgeField1.clear();
+            });
+        });
     }
     
     

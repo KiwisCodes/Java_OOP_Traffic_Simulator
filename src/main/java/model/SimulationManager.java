@@ -46,7 +46,7 @@ import data.*;
  * <li>Handling vehicle injection and stress testing scenarios.</li>
  * </ul>
  * </p>
- * @author pth
+ * @author pth, khoale
  * @version 1.0
  */
 public class SimulationManager {
@@ -112,7 +112,7 @@ public class SimulationManager {
 
         try {
             System.out.println("Launching SUMO... (This may pause until TraCI connects)");
-            this.sumoConnection.runServer(); // Starts the SUMO process
+            this.sumoConnection.runServer(); 
             
             if(this.sumoConnection.isClosed()) {
         		System.out.println("Is closed");
@@ -202,20 +202,20 @@ public class SimulationManager {
             stopSimulation(); 
         }
     }
-
     
     /**
-     * Injects a new vehicle into the simulation dynamically.
-     * @param vehType The type of vehicle (e.g., "car", "bus", "bike").
-     * @param sumoColor The visual color of the vehicle in the simulation.
-     * @param Speed The initial speed of the vehicle.
-     * @param firstEdge The ID of the starting edge (road segment).
-     * @param lastEdge The ID of the destination edge.
-     * @return {@code true} if the vehicle was successfully injected, {@code false} if no path could be found.
+     * Inject Vehicle to SUMO
+     * @param vehType: type of Vehicle
+     * @param sumoColor: Color of Vehicle
+     * @param Speed: Speed of Vehicle
+     * @param firstEdge: starting Edge of the Vehicle
+     * @param lastEdge: exiting Edge of the Vehicle
+     * @return true if injected
+     * @throws Execption if no Route found between 2 edges
      */
     public boolean InjectVehicle(String vehType, SumoColor sumoColor, double Speed, String firstEdge, String lastEdge) {
 		try {
-			System.out.println(sumoColor);
+//			System.out.println(sumoColor);
 			String routeID = "routes_" + vehicleCounter;			
 			SumoStringList edges = getRouteFromEdges(firstEdge, lastEdge, vehType);
 			if(edges == null || edges.size() == 0) {
@@ -233,9 +233,9 @@ public class SimulationManager {
 	}
 	
     /**
-     * Performs a stress test by injecting a specified number of vehicles on random valid routes.
-     * @param number The number of vehicles to inject.
-     * @throws Exception If communication with SUMO fails.
+     * Random Stress Test a certain number of vehicles
+     * @param number: number of vehicle wanted for the Stress Test
+     * @throws Exception: throws when communication with SUMO fails
      */
 	public void StressTest(int number) throws Exception {
 		int N = number;
@@ -255,11 +255,10 @@ public class SimulationManager {
 			vehicleManager.injectVehicle(String.valueOf("vehicle_" + vehicleCounter++), "DEFAULT_VEHTYPE", routeID, sumoColor, standardSpeed);
 		}
 	}
-	
 	/**
-     * Performs a default stress test with 50 vehicles.
-     * @throws Exception If communication with SUMO fails.
-     */
+	 * Random Stress Test with default number of vehicles (50)
+	 * @throws Exception throws when communication with SUMO fails
+	 */
 	public void StressTest() throws Exception {
 		int N = 50;
 		String vehicleStringIDs = String.valueOf(sumoConnection.do_job_get(Vehicle.getIDList()));
@@ -280,28 +279,23 @@ public class SimulationManager {
 	}
 	
 	/**
-     * @return A map containing all edge data (ID -> EdgeClass).
-     */
+	 * Get list of Edge Objects of the current state
+	 * @return a HashMap of Edge Ids and Edge Objects
+	 */
 	public Map<String, EdgeClass> getListOfEdges() {
 		return listOfEdges;
 	};
 	
 	/**
-     * @return A map containing all vehicle data (ID -> VehicleClass).
-     */
+	 * Get list of Vehicle Objects of the current state
+	 * @return a HashMap of Vehicle Ids and Edge Objects
+	 */
 	public Map<String, VehicleClass> getListOfVehicles() {
 		return listOfVehicles;
 	};
 	
-	/**
-     * Calculates a route between two edges using SUMO's internal routing engine.
-     * @param firstEdge The start edge ID.
-     * @param lastEdge The end edge ID.
-     * @param vehType The vehicle type (affects which lanes are valid).
-     * @return A {@link SumoStringList} containing the IDs of all edges in the route.
-     * @throws Exception If routing fails or edges are invalid.
-     */
-	public SumoStringList getRouteFromEdges(String firstEdge, String lastEdge, String vehType) throws Exception {
+
+	private SumoStringList getRouteFromEdges(String firstEdge, String lastEdge, String vehType) throws Exception {
 		double offset = 5;
 		double currentTime = (double) sumoConnection.do_job_get(Simulation.getTime());
 		double depart = currentTime + offset;
@@ -310,10 +304,10 @@ public class SimulationManager {
 		SumoStringList edges = stage.edges;
 		return edges;
 	}
-
+	
 	/**
-     * Stops the simulation loop and closes the connection to SUMO.
-     */
+	 * Stop Simulation by disconnecting with SUMO
+	 */
     public void stopSimulation() {
         this.isRunning = false;
         if (this.sumoConnection != null && !this.sumoConnection.isClosed()) {
@@ -338,17 +332,25 @@ public class SimulationManager {
     
     
     
-    
-    /** @return The Statistics Manager instance. */
+    /**
+     * Get Statistic Manger
+     * @return Statistic Manager
+     */
     public StatisticsManager getStatisticsManager() { return statisticsManager; }
-    
-    /** @return The Report Manager instance. */
+    /**
+     * Get Report Manager 
+     * @return Report Manager
+     */
     public ReportManager getReportManager() { return reportManager; }
-    
-    /** @return The Traffic Light Manager instance. */
+    /**
+     * Get Traffic Light Manager
+     * @return Traffic Light Manager
+     */
     public TrafficlightManager getTrafficlightManager() { return trafficlightManager; }
-    
-    /** @return The active TraCI connection object. */
+    /**
+     * Get SUMO connection
+     * @return SUMO connection
+     */
     public SumoTraciConnection getConnection() { return sumoConnection; }
     
     /** @return The Map Manager instance. */
@@ -360,8 +362,12 @@ public class SimulationManager {
     }
     
     /**
-     * Parses and returns the simulation step length.
-     * * @return The step length in seconds (e.g., 0.1), or -1 if the configured value is invalid.
+     * Returns the simulation step length if it is a valid non-negative number.
+     *
+     * If the stored step length cannot be parsed as a number or is negative,
+     * the method returns {@code -1} to indicate an invalid value.
+     *
+     * @return step length value, or {@code -1} if the value is invalid
      */
     public double getStepLength() {
         boolean check_validity = false;

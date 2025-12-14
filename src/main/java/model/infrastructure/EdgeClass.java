@@ -7,6 +7,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Represent an Edge Object on the map
+ * 
+ * @author khoale
+ */
 public class EdgeClass {
     private final SumoTraciConnection sumoConnection;
     private final String edgeId;
@@ -19,7 +24,14 @@ public class EdgeClass {
     private boolean allowsPassenger;
     private boolean allowsBicycle;
     private boolean isInternal;
-
+    /**
+     * Constructor
+     * 
+     * also it creates Lane Objects that are in this Edge
+     * @param sumoConnection: connection with SUMO to get necessary data
+     * @param the ID of the edge
+     * @throws Exception: throws when communication with SUMO fails
+     */
     public EdgeClass(SumoTraciConnection sumoConnection, String edgeId) throws Exception {
         this.sumoConnection = sumoConnection;
         this.edgeId = edgeId;
@@ -45,18 +57,43 @@ public class EdgeClass {
         }
     }
 
-
+    /**
+     * Get Edge Id
+     * @return the Id of this Edge
+     */
     public String getId() { return edgeId; }
+    /**
+     * Get number of lane in the Edge
+     * @return the number of lane in Edge
+     */
     public int getLaneCount() { return laneCount; }
+    /**
+     * Showing if this edge allow Car type
+     * @return true if the Edge allows
+     */
     public boolean isPassengerAllowed() { return allowsPassenger; }
+    /**
+     * Showing if this edge allow Bicycle type
+     * @return true if the Edge allows
+     */
     public boolean isBicycleAllowed() { return allowsBicycle; }
+    /**
+     * Showing if this Edge is an Internal Edge
+     * @return true if the Edge is an Internal Edge
+     */
     public boolean isInternal() { return isInternal; }
 
- 
+    /**
+     * Get the Lane Objects in this Edge
+     * @return a HashMap of Lane IDs and Lane Objects in this Edge
+     */
     public Map<String, LaneClass> getLanes() {
         return new HashMap<>(this.lanes);
     }
-
+    /**
+     * Return a string representation of the Edge object
+     * @return a String in the format "Edge[ID= edgeId, Number of lanes= laneCount, Internal= true/false]" 
+     */
     @Override
     public String toString() {
         return "Edge[ID= " + this.edgeId + ", Number of lanes= " + this.getLaneCount() + ", Internal= " + this.isInternal()+ "]";

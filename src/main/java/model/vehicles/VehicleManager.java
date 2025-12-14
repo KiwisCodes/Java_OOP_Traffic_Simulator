@@ -13,18 +13,46 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Manages all vehicles information and interaction related to vehicles in SUMO via TraCI interface
+ * <p>
+ * This class retrieves and stores all of the information related to all vehicles at each step (speed, color) and also helps inject vehicles into SUMO
+ * It stores simulation state at every {@link #step()}.
+ *
+ * @author Minh Khoi
+ */
 public class VehicleManager {
-	
-	private SumoTraciConnection conn;
-	private List<String> vehiclesIds;
-	private Map<String, VehicleClass> vehiclesData;
-	
+
+    /** The connectiion object used to communicate with the running SUMO instance */
+    private SumoTraciConnection conn;
+    /** A list containing the IDs of all vehicles currently active in the simulation */
+    private List<String> vehiclesIds;
+    /** A map storing all informations related to each vehicle, using their ID */
+    private Map<String, VehicleClass> vehiclesData;
+
+    /**
+     * Constructs a new VehicleManager.
+     *
+     * @param connection The active {@link SumoTraciConnection} to the SUMO simulation.
+     */
 	public VehicleManager(SumoTraciConnection connection) {
 		this.conn = connection;
-		this.vehiclesData = new HashMap<>();
+        this.vehiclesData = new HashMap<>();
 		this.vehiclesIds = new ArrayList<>();
 	}
-	
+
+    /**
+     * Synchronizes the local vehicle data with the current state of the simulation.
+     * <p>
+     * This method performs the following actions:
+     * <ol>
+     *   <li>Retrieves the list of all active vehicle IDs from SUMO.</li>
+     *   <li>Resets the local data storage.</li>
+     *   <li>Calls {@link #updateVehiclesInfo()} to fetch detailed attributes for each vehicle.</li>
+     * </ol>
+     * If the connection is lost or closed, the method handles the exception
+     * and clears the local list of vehicles.
+     */
 	public void step() {
 		try {
 			SumoCommand idListCmd = Vehicle.getIDList();
@@ -49,7 +77,21 @@ public class VehicleManager {
 			e.printStackTrace();
 		}
 	}
-	
+
+    /**
+     * Fetches detailed attributes for every vehicle currently active in the simulation.
+     * <p>
+     * For each vehicle ID, multiple TraCI commands are executed to retrieve:
+     * <ul>
+     *   <li>Color</li>
+     *   <li>Position (2D)</li>
+     *   <li>Speed</li>
+     *   <li>Current Edge (Road) ID</li>
+     *   <li>Angle</li>
+     *   <li>Departure time</li>
+     * </ul>
+     * The gathered information is packaged into a {@link VehicleClass} object and stored in the map.
+     */
 	private void updateVehiclesInfo() {
 		for (String id: this.vehiclesIds) {
 			
@@ -92,11 +134,25 @@ public class VehicleManager {
 			}
 		}
 	}
-	
+
+    /**
+     * Returns a copy of the current vehicle data map.
+     *
+     * @return A {@link Map} where the key is the vehicle ID and the value is the {@link VehicleClass} object.
+     */
 	public Map<String, VehicleClass> getVehiclesData() {
 		return new HashMap<>(this.vehiclesData);
 	}
-	
+
+    /**
+     * Injects a new vehicle into the simulation dynamically.
+     *
+     * @param vehicleId The unique identifier for the new vehicle.
+     * @param typeId    The vehicle type ID (must be defined in the SUMO config/routes).
+     * @param routeId   The route ID (must be defined in the SUMO config/routes).
+     * @param sumoColor The color of the vehicle.
+     * @param Speed     The initial speed of the vehicle in m/s.
+     */
 	public void injectVehicle(String vehicleId, String typeId, String routeId, SumoColor sumoColor, double Speed) {
 		try {
 			int depart = 0; 
