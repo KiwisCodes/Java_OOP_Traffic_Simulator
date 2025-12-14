@@ -50,8 +50,9 @@ import data.*;
  * @version 1.0
  */
 public class SimulationManager {
-
-    private String sumoPath = "/Users/apple/sumo/bin/sumo";
+	
+	//TODO insert your sumoPath here to run
+    private String sumoPath = "";
     private String sumoConfigFileName = "SumoConfig/frauasmap.sumocfg";
     private String sumoConfigFilePath;
 
