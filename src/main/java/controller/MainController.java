@@ -23,7 +23,7 @@ import javafx.scene.transform.Scale;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.geometry.Pos; // import để căn giữa map
+import javafx.geometry.Pos;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 
@@ -62,15 +62,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-
-//--- PHẦN TẠO DỮ LIỆU GIẢ (MOCK DATA) ---
-// Import các thư viện này
 import de.tudresden.sumo.objects.SumoColor;
 import java.util.HashMap;
-import de.tudresden.ws.container.SumoPosition2D; // Sửa lỗi SumoPosition2D
-import de.tudresden.sumo.objects.SumoColor;     // Sửa lỗi SumoColor (chắc chắn bạn sẽ bị tiếp theo)
-
-// Thêm để vẽ xe chuyển 
+import de.tudresden.ws.container.SumoPosition2D; 
+import de.tudresden.sumo.objects.SumoColor;    
 import javafx.animation.AnimationTimer;
 import data.SimulationState;
 
@@ -236,22 +231,17 @@ public class MainController {
         this.mapInteractionHandler = new MapInteractionHandler(centerMapStackPane, centerMapPaneGroup);
         if (injectionPane != null) {
             injectionPane.expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
-                // CHỈ CHẠY KHI ĐANG MỞ
                 if (isNowExpanded) {
-                    // 1. Đóng cái kia
                     if (stressTestPane != null && stressTestPane.isExpanded()) {
                         stressTestPane.setExpanded(false);
                     }
-                    // 2. Kích hoạt logic bản đồ
                     InteractWithVehicleInjectionDropMenu();
                 }
-                // Nếu bạn thích giữ text cũ thì xoá đoạn else clear() đi cũng được
             });
         }
         
         if (stressTestPane != null) {
             stressTestPane.expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
-                // CHỈ CHẠY KHI ĐANG MỞ
                 if (isNowExpanded) {
                     if (injectionPane != null && injectionPane.isExpanded()) {
                         injectionPane.setExpanded(false);
@@ -263,7 +253,6 @@ public class MainController {
         if (vehicleTypeGroup != null) {
             vehicleTypeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
             	InteractWithVehicleInjectionDropMenu();
-            	// Khi đổi loại xe, xoá trắng 2 ô chọn đường
                 if (firstEdgeField != null) firstEdgeField.clear();   
                 if (secondEdgeField != null) secondEdgeField.clear(); 
             });
