@@ -213,35 +213,23 @@ public class MapInteractionHandler {
      * @param pivotSceneX The X coordinate of the center of zoom.
      * @param pivotSceneY The Y coordinate of the center of zoom.
      */
+    
     private void zoomToPivot(double zoomFactor, double pivotSceneX, double pivotSceneY) {
-    	//the zoom factor must be process to indicate zoom in or out, in means bigger zoom factor, out means smaller zoom factor
-        //calculate the new zoom and add limit
         double currentScale = targetNode.getScaleX();
         double newScale = currentScale * zoomFactor;
         if (newScale > MAX_SCALE) newScale = MAX_SCALE;
         if (newScale < MIN_SCALE) newScale = MIN_SCALE;
-
-
-        //from the xy of the mouse from scene, translate to local (ex: the local mouse on the map pane you want to focus on)
-        //1. imagine you point at 200,200 on the scence and the local map, no zoom yet
         Point2D pivotOnMap = targetNode.sceneToLocal(pivotSceneX, pivotSceneY);
         
-        //2. then you x2 the map, the edge you chose at 200,200 on scene now moves to 400,400 on scence 
-        //but your mouse still at 200,200 on scence
-        //then you scale the map pane, ex: if you zoom in, the edge you chose to pivot in the last step go far away, drifted away
-        //this zoom is dumb, because it does not move the pane to the place under your mouse
         targetNode.setScaleX(newScale);
         targetNode.setScaleY(newScale);
+        //something is here
         
-        //now you want to find the new location of the edge you chose on the scene to move the pane there
-        //which should give you 400x400
         Point2D newLocationInScene = targetNode.localToScene(pivotOnMap);
 
-        //cal the drift
         double driftX = newLocationInScene.getX() - pivotSceneX;
         double driftY = newLocationInScene.getY() - pivotSceneY;
         
-        //minus drift so it moves back to the mouse
         targetNode.setTranslateX(targetNode.getTranslateX() - driftX);
         targetNode.setTranslateY(targetNode.getTranslateY() - driftY);
     }
