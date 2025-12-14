@@ -12,7 +12,21 @@ import javafx.stage.Stage;
 
 import java.util.Map;
 
+/**
+ * This {@code ChartWindow} represents a separate window for visualization
+ * of Live-Simulation statistic using JavaFX
+ * <p>
+ * It includes these three different diagrams:
+ * <ul>
+ *     <li>A line diagram for the average vehicle speed over time step</li>
+ *     <li>A bar chart for the vehicle density per edge id</li>
+ *     <li>A bar chart for the distribution of vehicle travel time</li>
+ * </ul>
+ *
+ * @author Minh Khoi
+ */
 public class ChartWindow {
+    /** Main Window (Stage) for the diagrams.*/
     private final Stage stage;
 
     private XYChart.Series<Number, Number> speedSeries;
@@ -24,6 +38,12 @@ public class ChartWindow {
     private XYChart.Series<String, Number> travelTimeSeries;
     private BarChart<String, Number> travelTimeChart;
 
+    /**
+     * Create a new instance of the ChartWindow
+     * <p>
+     * This constructor initialises the {@link Stage}, configures the diagrams
+     * over {@link #initCharts()} and sets the layout of the Scene
+     */
     public ChartWindow() {
         this.stage = new Stage();
         this.stage.setTitle("Live Simulation Statistics");
@@ -37,6 +57,9 @@ public class ChartWindow {
         stage.setScene(scene);
     }
 
+    /**
+     * Initialises the axes, titles and data rows for all three diagrams
+     */
     private void initCharts() {
         // Speed Chart
         NumberAxis xAxisSpeed = new NumberAxis();
@@ -81,6 +104,12 @@ public class ChartWindow {
         travelTimeChart.getData().add(travelTimeSeries);
     }
 
+    /**
+     * Shows the statistic window
+     * <p>
+     * In case if the window is not yet shown, it would be opened.
+     * In case if it is already open, it would
+     */
     public void show() {
         if (!stage.isShowing()) {
             stage.show();
@@ -89,24 +118,29 @@ public class ChartWindow {
         }
     }
 
+    /**
+     * Updates the data in all diagrams
+     * <p>
+     * This method uses {@link Platform#runLater(Runnable)} to make sure
+     * that the changes in UI of JavaFX Application Thread would be carried out
+     * This prevents the Threading problem, when the method was called from the Simulation Thread.
+     * @param currentStep The step of the actual simulation (used as X value in the average speed diagram)
+     * @param avgSpeed The average speed of all vehicles in the current step
+     * @param densityMap The map that records the number of vehicles for each edge ID
+     *                   The old data of the vehicle density diagram would be erased every step und refilled with new data
+     * @param travelTimeMap The map that contains the time interval of vehicle travel time as key and number of vehicles in the interval as value
+     *                      Here the data would be erased every step and renewed
+     */
     public void updateData(int currentStep, double avgSpeed,
                            Map<String, Integer> densityMap, Map<String, Integer> travelTimeMap) {
         Platform.runLater(() -> {
-            // Update Speed
             speedSeries.getData().add(new XYChart.Data<>(currentStep, avgSpeed));
-            
-            // Limit history to keep memory low (optional optimization)
-            if (speedSeries.getData().size() > 100) {
-                speedSeries.getData().remove(0);
-            }
 
-            // Update Density
             densitySeries.getData().clear();
             for (Map.Entry<String, Integer> entry : densityMap.entrySet()) {
                 densitySeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
             }
 
-            // Update Travel Time
             travelTimeSeries.getData().clear();
             for (Map.Entry<String, Integer> entry : travelTimeMap.entrySet()) {
                 travelTimeSeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
