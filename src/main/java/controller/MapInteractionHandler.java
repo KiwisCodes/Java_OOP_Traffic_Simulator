@@ -10,11 +10,36 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.util.Duration;
 
+
+
+
+
+/**
+ * Handles user interactions with the map view, specifically Panning, Zooming, and Rotating.
+ * <p>
+ * <ul>
+ * <li><b>Panning:</b> Left-click and drag to translate the map.</li>
+ * <li><b>Rotating:</b> Right-click and drag (or trackpad gesture) to rotate the map around the mouse cursor.</li>
+ * <li><b>Zooming:</b> Mouse scroll (or trackpad pinch) to zoom in/out, focusing on the cursor location.</li>
+ * </ul>
+ * <b>Architecture Note:</b><br>
+ * It separates the {@code inputNode} (the pane capturing mouse events) 
+ * from the {@code targetNode} (the map group being transformed), allowing for flexible UI layouts.
+ * @author pth
+ * @version 1.0
+ */
 public class MapInteractionHandler {
 	
-	//for the map interaction we have 
-
+	/**
+     * Constructs a new interaction handler.
+     * @param inputNode  The UI component that listens for mouse events (usually the specific StackPane or AnchorPane wrapper).
+     * @param targetNode The actual Map Group (containing edges/vehicles) that will be scaled and translated.
+     */
+	
+	/** The UI component that listens for mouse events (e.g. the StackPane). */
     private final Node inputNode; // take input from the centerMapStackPane
+    
+    /** The actual Map Group that receives the scale/translate transforms. */
     private final Node targetNode; // output to the group of panes
     
     //panning variables
@@ -35,12 +60,23 @@ public class MapInteractionHandler {
     //rotate
     private static final double MOUSE_ROTATION_SENSITIVITY = 0.8; //degrees per pixel dragged
 
+    
+    /**
+     * Constructs a new interaction handler.
+     * @param inputNode  The UI component that listens for mouse events (usually the specific StackPane or AnchorPane wrapper).
+     * @param targetNode The actual Map Group (containing edges/vehicles) that will be scaled and translated.
+     */
     public MapInteractionHandler(Node inputNode, Node targetNode) {
         this.inputNode = inputNode;
         this.targetNode = targetNode;
         addListeners();
     }
 
+    
+    /**
+     * Registers all mouse, scroll, and gesture listeners on the input node.
+     * Includes logic for Panning, Zooming (Scroll), and Rotating (Right-click drag).
+     */
     private void addListeners() {
         inputNode.setOnMousePressed(event -> {
             mouseAnchorX = event.getSceneX();//this function get the current x on the whole scence
@@ -122,6 +158,11 @@ public class MapInteractionHandler {
         });
     }
     
+    
+    /**
+     * Manually triggers a zoom-in operation aimed at the center of the screen.
+     * Typically connected to a UI Button.
+     */
     public void handleZoomIn() {
         Scene scene = inputNode.getScene();
         if (scene == null) return; 
@@ -129,7 +170,12 @@ public class MapInteractionHandler {
         double screenCenterY = scene.getHeight() / 2;
         zoomToPivot(zoomFactor, screenCenterX, screenCenterY);
     }
-
+    
+    
+    /**
+     * Manually triggers a zoom-out operation aimed at the center of the screen.
+     * Typically connected to a UI Button.
+     */
     public void handleZoomOut() {
         Scene scene = inputNode.getScene();
         if (scene == null) return;
@@ -140,6 +186,9 @@ public class MapInteractionHandler {
         zoomToPivot(1 / zoomFactor, screenCenterX, screenCenterY);
     }
 
+    /**
+     * Resets the map to its default scale (0.75), position (0,0), and rotation (0).
+     */
     public void handleResetView() {
         this.targetNode.setScaleX(0.75);
         this.targetNode.setScaleY(0.75);
@@ -151,7 +200,19 @@ public class MapInteractionHandler {
     }
         
 
-    
+    /**
+     * Performs a zoom operation focused on a specific point in the scene, which are the pivotXY
+     * * Algorithm:
+     * 0. Store the original pivotX pivotY
+     * 1. Calculate new scale (clamped to limits).
+     * 2. Find pivot point on the map.
+     * 3. Apply scale.
+     * 4. Calculate drift (how far the pivot moved).
+     * 5. Translate back to correct the drift.
+     * @param zoomFactor The multiplier to apply to the current scale.
+     * @param pivotSceneX The X coordinate of the center of zoom.
+     * @param pivotSceneY The Y coordinate of the center of zoom.
+     */
     private void zoomToPivot(double zoomFactor, double pivotSceneX, double pivotSceneY) {
     	//the zoom factor must be process to indicate zoom in or out, in means bigger zoom factor, out means smaller zoom factor
         //calculate the new zoom and add limit
@@ -185,6 +246,14 @@ public class MapInteractionHandler {
         targetNode.setTranslateY(targetNode.getTranslateY() - driftY);
     }
     
+    
+    /**
+     * Rotates the map around a specific pivot point.
+     * Compensates for drift to ensure the rotation looks natural.
+     * @param angleDelta The angle to add (in degrees).
+     * @param pivotSceneX The X coordinate of the pivot point.
+     * @param pivotSceneY The Y coordinate of the pivot point.
+     */
     private void rotateAroundPivot(double angleDelta, double pivotSceneX, double pivotSceneY) {
         Point2D pivotOnMap = targetNode.sceneToLocal(pivotSceneX, pivotSceneY);
         

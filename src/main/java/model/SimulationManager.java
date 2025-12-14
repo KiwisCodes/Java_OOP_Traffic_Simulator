@@ -32,11 +32,22 @@ import model.infrastructure.MapManager;
 import model.infrastructure.TrafficlightManager;
 import data.*;
 
+
+
 /**
- * Centralize object about SUMO connection
- * 
- * keeping the Connection with SUMO alive and getting necessary data for application's functions
- * @author khoale
+ * The central controller for the SUMO simulation logic.
+ * <p>
+ * This class acts as the <b>Facade</b> between the Java application and the TraaS (Traffic as a Service) API.
+ * It is responsible for:
+ * <ul>
+ * <li>Managing the lifecycle of the simulation (Start, Stop, Step).</li>
+ * <li>Maintaining the connection to the SUMO process via TraCI.</li>
+ * <li>Orchestrating the {@link VehicleManager}, {@link TrafficlightManager}, and {@link MapManager}.</li>
+ * <li>Handling vehicle injection and stress testing scenarios.</li>
+ * </ul>
+ * </p>
+ * @author pth, khoale
+ * @version 1.0
  */
 public class SimulationManager {
 
@@ -63,19 +74,28 @@ public class SimulationManager {
     private SimulationState simulationState;
     private static int vehicleCounter = 0;
 	private double standardSpeed = 3.6;
+	
+	/** Flag indicating if the simulation loop is currently active. */
 	public boolean isRunning = false;
+	
 	/**
-	 * Constructor
-	 * @param queue: an queue object storing states of the simulation 
-	 * @param statsManager: an statistic Manager Object 
-	 */
+     * Constructs a new Simulation Manager.
+     * @param queue The queue used for thread-safe communication (not currently stored in this class but kept for architecture consistency).
+     * @param statsManager The manager responsible for calculating traffic statistics.
+     */
     public SimulationManager(SimulationQueue queue, StatisticsManager statsManager) {
     		this.sumoConnection = new SumoTraciConnection(sumoPath, sumoConfigFileName);
     		this.statisticsManager = statsManager;
     }
+    
+    
     /**
-     * Start connection with SUMO
-     * @return true if connected
+     * Establishes the connection to the SUMO server and initializes all sub-managers.
+     * <p>
+     * This method locates the configuration files, starts the SUMO binary, and creates instances
+     * of {@link MapManager}, {@link VehicleManager}, etc.
+     * </p>
+     * @return {@code true} if the connection was successfully established, {@code false} otherwise.
      */
     public boolean startConnection() {
         if (!setupPaths()) return false;
@@ -115,7 +135,12 @@ public class SimulationManager {
             return false;
         }
     }
-
+    
+    
+    /**
+     * Resolves the absolute paths for the SUMO binary and the configuration file.
+     * @return {@code true} if files exist and are executable.
+     */
     private boolean setupPaths() {
         try {
             URL resource = SimulationManager.class.getClassLoader().getResource(this.sumoConfigFileName);
@@ -136,8 +161,14 @@ public class SimulationManager {
             return false;
         }
     }
+
+    
     /**
-     * Running a Simulation Loop until the Application Closed
+     * Runs the main simulation loop in a blocking manner.
+     * <p>
+     * <b>Note:</b> This method blocks the calling thread until the simulation stops. 
+     * Ideally, it should be run in a separate thread from the UI.
+     * </p>
      */
     public void runSimulationLoop() {
         System.out.println("   -> Simulation Loop Started.");
@@ -152,9 +183,11 @@ public class SimulationManager {
     }
 
     /**
-     * Doing a timestep in SUMO simulation
-     * 
-     * Also, it gets the data and update simulation state
+     * Advances the simulation by one timestep.
+     * <p>
+     * This triggers the {@code do_timestep()} command in SUMO, updates all vehicle and traffic light managers,
+     * and captures a new {@link SimulationState} snapshot.
+     * </p>
      */
     public void step() {
         try {
@@ -213,9 +246,6 @@ public class SimulationManager {
 			return;
 		}
 		List<String> randomVehicleIDs = Util.getRandomElementsWithReplacement(vehicleIDs, N);
-//		System.out.println(vehicleIDs);
-//        System.out.println("Original List Size: " + vehicleIDs.size());
-//        System.out.println("Sampled List (N=" + N + "): " + randomVehicleIDs);
 		SumoColor sumoColor =  new SumoColor(0,0,0,0);
 		for(int i = 0; i < N; i++) {
 			String routeID = "route_" + vehicleCounter;
@@ -286,7 +316,11 @@ public class SimulationManager {
         }
     }
 
-    
+    /**
+     * Updates the path to the SUMO binary based on user input.
+     * @param textField The UI text field containing the new path.
+     * @return {@code true} if the input was valid (not null/empty), {@code false} otherwise.
+     */
     public boolean setSumoBinary(TextField textField) {
     	String userSumoPath = textField.getText();
     	if(userSumoPath != null && userSumoPath != "") {
@@ -318,26 +352,38 @@ public class SimulationManager {
      * @return SUMO connection
      */
     public SumoTraciConnection getConnection() { return sumoConnection; }
+    
+    /** @return The Map Manager instance. */
     public MapManager getMapManager() { return mapManager; }
+    
+    /** @return The most recent snapshot of the simulation state. */
     public SimulationState getState() {
-    	return this.simulationState;
+        return this.simulationState;
     }
     
+    /**
+     * Returns the simulation step length if it is a valid non-negative number.
+     *
+     * If the stored step length cannot be parsed as a number or is negative,
+     * the method returns {@code -1} to indicate an invalid value.
+     *
+     * @return step length value, or {@code -1} if the value is invalid
+     */
     public double getStepLength() {
-    	boolean check_validity = false;
-    	try {
-    		double val = Double.parseDouble(this.stepLength);
-        if(val >= 0) {
-        		check_validity = true;
+        boolean check_validity = false;
+        try {
+            double val = Double.parseDouble(this.stepLength);
+            if(val >= 0) {
+                check_validity = true;
+            }
+        } catch (NumberFormatException e) {
+            check_validity = false;
         }
-    } catch (NumberFormatException e) {
-    		check_validity = false;
-    }
-    	if(!check_validity) {
-    		return -1;
-    	}
-    	else {
-    		return Double.parseDouble(this.stepLength);
-    	}
+        if(!check_validity) {
+            return -1;
+        }
+        else {
+            return Double.parseDouble(this.stepLength);
+        }
     }
 }
