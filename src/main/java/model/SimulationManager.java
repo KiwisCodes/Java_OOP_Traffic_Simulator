@@ -33,6 +33,22 @@ import model.infrastructure.TrafficlightManager;
 import data.*;
 
 
+
+/**
+ * The central controller for the SUMO simulation logic.
+ * <p>
+ * This class acts as the <b>Facade</b> between the Java application and the TraaS (Traffic as a Service) API.
+ * It is responsible for:
+ * <ul>
+ * <li>Managing the lifecycle of the simulation (Start, Stop, Step).</li>
+ * <li>Maintaining the connection to the SUMO process via TraCI.</li>
+ * <li>Orchestrating the {@link VehicleManager}, {@link TrafficlightManager}, and {@link MapManager}.</li>
+ * <li>Handling vehicle injection and stress testing scenarios.</li>
+ * </ul>
+ * </p>
+ * @author pth
+ * @version 1.0
+ */
 public class SimulationManager {
 
     private String sumoPath = "/Users/apple/sumo/bin/sumo";
@@ -58,12 +74,29 @@ public class SimulationManager {
     private SimulationState simulationState;
     private static int vehicleCounter = 0;
 	private double standardSpeed = 3.6;
+	
+	/** Flag indicating if the simulation loop is currently active. */
 	public boolean isRunning = false;
+	
+	/**
+     * Constructs a new Simulation Manager.
+     * @param queue The queue used for thread-safe communication (not currently stored in this class but kept for architecture consistency).
+     * @param statsManager The manager responsible for calculating traffic statistics.
+     */
     public SimulationManager(SimulationQueue queue, StatisticsManager statsManager) {
     		this.sumoConnection = new SumoTraciConnection(sumoPath, sumoConfigFileName);
     		this.statisticsManager = statsManager;
     }
-
+    
+    
+    /**
+     * Establishes the connection to the SUMO server and initializes all sub-managers.
+     * <p>
+     * This method locates the configuration files, starts the SUMO binary, and creates instances
+     * of {@link MapManager}, {@link VehicleManager}, etc.
+     * </p>
+     * @return {@code true} if the connection was successfully established, {@code false} otherwise.
+     */
     public boolean startConnection() {
         if (!setupPaths()) return false;
 
@@ -102,7 +135,12 @@ public class SimulationManager {
             return false;
         }
     }
-
+    
+    
+    /**
+     * Resolves the absolute paths for the SUMO binary and the configuration file.
+     * @return {@code true} if files exist and are executable.
+     */
     private boolean setupPaths() {
         try {
             URL resource = SimulationManager.class.getClassLoader().getResource(this.sumoConfigFileName);
@@ -124,6 +162,14 @@ public class SimulationManager {
         }
     }
 
+    
+    /**
+     * Runs the main simulation loop in a blocking manner.
+     * <p>
+     * <b>Note:</b> This method blocks the calling thread until the simulation stops. 
+     * Ideally, it should be run in a separate thread from the UI.
+     * </p>
+     */
     public void runSimulationLoop() {
         System.out.println("   -> Simulation Loop Started.");
 
@@ -136,7 +182,13 @@ public class SimulationManager {
         System.out.println("Simulation loop finished.");
     }
 
-
+    /**
+     * Advances the simulation by one timestep.
+     * <p>
+     * This triggers the {@code do_timestep()} command in SUMO, updates all vehicle and traffic light managers,
+     * and captures a new {@link SimulationState} snapshot.
+     * </p>
+     */
     public void step() {
         try {
             this.sumoConnection.do_timestep();
@@ -151,6 +203,16 @@ public class SimulationManager {
         }
     }
 
+    
+    /**
+     * Injects a new vehicle into the simulation dynamically.
+     * @param vehType The type of vehicle (e.g., "car", "bus", "bike").
+     * @param sumoColor The visual color of the vehicle in the simulation.
+     * @param Speed The initial speed of the vehicle.
+     * @param firstEdge The ID of the starting edge (road segment).
+     * @param lastEdge The ID of the destination edge.
+     * @return {@code true} if the vehicle was successfully injected, {@code false} if no path could be found.
+     */
     public boolean InjectVehicle(String vehType, SumoColor sumoColor, double Speed, String firstEdge, String lastEdge) {
 		try {
 			System.out.println(sumoColor);
@@ -170,6 +232,11 @@ public class SimulationManager {
 		return true;
 	}
 	
+    /**
+     * Performs a stress test by injecting a specified number of vehicles on random valid routes.
+     * @param number The number of vehicles to inject.
+     * @throws Exception If communication with SUMO fails.
+     */
 	public void StressTest(int number) throws Exception {
 		int N = number;
 		String vehicleStringIDs = String.valueOf(sumoConnection.do_job_get(Vehicle.getIDList()));
@@ -179,9 +246,6 @@ public class SimulationManager {
 			return;
 		}
 		List<String> randomVehicleIDs = Util.getRandomElementsWithReplacement(vehicleIDs, N);
-//		System.out.println(vehicleIDs);
-//        System.out.println("Original List Size: " + vehicleIDs.size());
-//        System.out.println("Sampled List (N=" + N + "): " + randomVehicleIDs);
 		SumoColor sumoColor =  new SumoColor(0,0,0,0);
 		for(int i = 0; i < N; i++) {
 			String routeID = "route_" + vehicleCounter;
@@ -191,6 +255,11 @@ public class SimulationManager {
 			vehicleManager.injectVehicle(String.valueOf("vehicle_" + vehicleCounter++), "DEFAULT_VEHTYPE", routeID, sumoColor, standardSpeed);
 		}
 	}
+	
+	/**
+     * Performs a default stress test with 50 vehicles.
+     * @throws Exception If communication with SUMO fails.
+     */
 	public void StressTest() throws Exception {
 		int N = 50;
 		String vehicleStringIDs = String.valueOf(sumoConnection.do_job_get(Vehicle.getIDList()));
@@ -210,14 +279,28 @@ public class SimulationManager {
 		}
 	}
 	
+	/**
+     * @return A map containing all edge data (ID -> EdgeClass).
+     */
 	public Map<String, EdgeClass> getListOfEdges() {
 		return listOfEdges;
 	};
 	
+	/**
+     * @return A map containing all vehicle data (ID -> VehicleClass).
+     */
 	public Map<String, VehicleClass> getListOfVehicles() {
 		return listOfVehicles;
 	};
 	
+	/**
+     * Calculates a route between two edges using SUMO's internal routing engine.
+     * @param firstEdge The start edge ID.
+     * @param lastEdge The end edge ID.
+     * @param vehType The vehicle type (affects which lanes are valid).
+     * @return A {@link SumoStringList} containing the IDs of all edges in the route.
+     * @throws Exception If routing fails or edges are invalid.
+     */
 	public SumoStringList getRouteFromEdges(String firstEdge, String lastEdge, String vehType) throws Exception {
 		double offset = 5;
 		double currentTime = (double) sumoConnection.do_job_get(Simulation.getTime());
@@ -228,6 +311,9 @@ public class SimulationManager {
 		return edges;
 	}
 
+	/**
+     * Stops the simulation loop and closes the connection to SUMO.
+     */
     public void stopSimulation() {
         this.isRunning = false;
         if (this.sumoConnection != null && !this.sumoConnection.isClosed()) {
@@ -236,6 +322,11 @@ public class SimulationManager {
         }
     }
 
+    /**
+     * Updates the path to the SUMO binary based on user input.
+     * @param textField The UI text field containing the new path.
+     * @return {@code true} if the input was valid (not null/empty), {@code false} otherwise.
+     */
     public boolean setSumoBinary(TextField textField) {
     	String userSumoPath = textField.getText();
     	if(userSumoPath != null && userSumoPath != "") {
@@ -247,8 +338,11 @@ public class SimulationManager {
     
     
     
-
+    
+    /** @return The Statistics Manager instance. */
     public StatisticsManager getStatisticsManager() { return statisticsManager; }
+    
+    /** @return The Report Manager instance. */
     public ReportManager getReportManager() { return reportManager; }
     /**
      * Provides access to the traffic light manager instance of {@code SimulationManager}.
@@ -256,10 +350,16 @@ public class SimulationManager {
      * @return traffic light manager responsible for controlling traffic lights
      */
     public TrafficlightManager getTrafficlightManager() { return trafficlightManager; }
+    
+    /** @return The active TraCI connection object. */
     public SumoTraciConnection getConnection() { return sumoConnection; }
+    
+    /** @return The Map Manager instance. */
     public MapManager getMapManager() { return mapManager; }
+    
+    /** @return The most recent snapshot of the simulation state. */
     public SimulationState getState() {
-    	return this.simulationState;
+        return this.simulationState;
     }
     
     /**
@@ -271,20 +371,20 @@ public class SimulationManager {
      * @return step length value, or {@code -1} if the value is invalid
      */
     public double getStepLength() {
-    	boolean check_validity = false;
-    	try {
-    		double val = Double.parseDouble(this.stepLength);
-        if(val >= 0) {
-        		check_validity = true;
+        boolean check_validity = false;
+        try {
+            double val = Double.parseDouble(this.stepLength);
+            if(val >= 0) {
+                check_validity = true;
+            }
+        } catch (NumberFormatException e) {
+            check_validity = false;
         }
-    } catch (NumberFormatException e) {
-    		check_validity = false;
-    }
-    	if(!check_validity) {
-    		return -1;
-    	}
-    	else {
-    		return Double.parseDouble(this.stepLength);
-    	}
+        if(!check_validity) {
+            return -1;
+        }
+        else {
+            return Double.parseDouble(this.stepLength);
+        }
     }
 }
