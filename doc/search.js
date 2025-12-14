@@ -24,6 +24,7 @@
  */
 "use strict";
 const messages = {
+<<<<<<< HEAD
     enterTerm: "Enter a search term",
     noResult: "No results found",
     oneResult: "Found one result",
@@ -40,6 +41,24 @@ const categories = {
     types: "Classes and Interfaces",
     members: "Members",
     searchTags: "Search Tags"
+=======
+    enterTerm: "Geben Sie einen Suchbegriff ein",
+    noResult: "Keine Ergebnisse gefunden",
+    oneResult: "Ein Ergebnis gefunden",
+    manyResults: "{0} Ergebnisse gefunden",
+    loading: "Suchindex wird geladen...",
+    searching: "Suche wird ausgeführt...",
+    redirecting: "Zum ersten Ergebnis wird umgeleitet...",
+    linkIcon: "Linksymbol",
+    linkToSection: "Link zu diesem Abschnitt"
+}
+const categories = {
+    modules: "Module",
+    packages: "Packages",
+    types: "Klassen und Schnittstellen",
+    members: "Mitglieder",
+    searchTags: "Tags suchen"
+>>>>>>> minh_khoi
 };
 const highlight = "<span class='result-highlight'>$&</span>";
 const NO_MATCH = {};
