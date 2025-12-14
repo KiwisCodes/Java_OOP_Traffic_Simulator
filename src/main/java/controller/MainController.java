@@ -661,6 +661,12 @@ public class MainController {
     	}
     }
     
+    /**
+     * Switches the current traffic light to its next phase.
+     *
+     * If no traffic light is selected, the operation is aborted and a warning
+     * message is logged.
+     */
     @FXML private void switchTrafficLightPhase() {
     	if(this.trafficLightIdField.getText().isEmpty() || this.currentTrafficLightLink == null) {
     		log("Please choose a Traffic Light please");
@@ -671,6 +677,17 @@ public class MainController {
 		return;
 }
 
+    /**
+     * Sets the traffic light color and/or phase duration based on user input.
+     *
+     * The method validates user selections and applies one of the following:
+     * - Only phase duration
+     * - Only signal color
+     * - Both signal color and phase duration
+     *
+     * If traffic light id is missing or duration is invalid, the operation is aborted
+     * and an explanatory message is logged.
+     */
     @FXML private void setTrafficLightColorandorDuration() {
     	if(this.trafficLightIdField.getText().isEmpty() || this.currentTrafficLightLink == null) {
     		log("Please choose a Traffic Light please");
@@ -744,7 +761,16 @@ public class MainController {
     		}
     	}
 }
-
+    
+    /**
+     * Toggles the selection state of a traffic light color button.
+     *
+     * If the given button is already selected, it is deselected.
+     * Otherwise, the previous selection is cleared and the new button
+     * becomes the active color selection.
+     *
+     * @param button color selection button to toggle
+     */
 	private void toggleColorButton(Button button) {
 	    if (selectedColorButton == button) {
 	        // Deselect this button

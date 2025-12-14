@@ -124,9 +124,7 @@ public class ReportManager {
         }
     }
 
-    /**
-     * Helper: Creates a chart AND takes a snapshot safely on the JavaFX thread.
-     */
+
     private BufferedImage generateChartImage(Map<String, Integer> data, String title, String xLabel, String yLabel) {
         CountDownLatch latch = new CountDownLatch(1);
         final BufferedImage[] imageHolder = new BufferedImage[1];

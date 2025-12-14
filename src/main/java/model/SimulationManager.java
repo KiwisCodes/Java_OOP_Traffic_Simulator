@@ -344,8 +344,11 @@ public class SimulationManager {
     
     /** @return The Report Manager instance. */
     public ReportManager getReportManager() { return reportManager; }
-    
-    /** @return The Traffic Light Manager instance. */
+    /**
+     * Provides access to the traffic light manager instance of {@code SimulationManager}.
+     *
+     * @return traffic light manager responsible for controlling traffic lights
+     */
     public TrafficlightManager getTrafficlightManager() { return trafficlightManager; }
     
     /** @return The active TraCI connection object. */
@@ -360,8 +363,12 @@ public class SimulationManager {
     }
     
     /**
-     * Parses and returns the simulation step length.
-     * * @return The step length in seconds (e.g., 0.1), or -1 if the configured value is invalid.
+     * Returns the simulation step length if it is a valid non-negative number.
+     *
+     * If the stored step length cannot be parsed as a number or is negative,
+     * the method returns {@code -1} to indicate an invalid value.
+     *
+     * @return step length value, or {@code -1} if the value is invalid
      */
     public double getStepLength() {
         boolean check_validity = false;
