@@ -16,7 +16,7 @@ import java.util.Arrays;
  * This class stores the association between a SUMO traffic light junction
  * and one of its controlled links, including lane indices and spatial position.
  *
- * @author Group 2
+ * @author khang
  */
 public class TrafficlightObject{
 	private SumoLink link;  // the link (SumoLink)

@@ -18,7 +18,7 @@ import javafx.scene.paint.Color;
  * Manages traffic light control, duration, and state manipulation
  * for a SUMO simulation using a TraCI connection.
  *
- * @author Group 2
+ * @author khang
  */
 public class TrafficlightManager {
 	private SumoTraciConnection sumoConnection;
