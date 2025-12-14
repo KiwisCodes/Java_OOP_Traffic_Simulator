@@ -56,7 +56,7 @@ public class ColorConverter {
             r, 
             g, 
             b, 
-            a / 255.0 // Chia cho 255.0 để ra 0.0 - 1.0
+            a / 255.0 
         );
     }
 }

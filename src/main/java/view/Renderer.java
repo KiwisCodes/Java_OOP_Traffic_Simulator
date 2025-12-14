@@ -1,6 +1,6 @@
 package view;
 
-// --- Java Util ---
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,25 +41,19 @@ import de.tudresden.sumo.objects.SumoColor;     // Để hiểu màu sắc
 import javafx.scene.shape.Polygon;   // vẽ hình 
 import java.util.Map;
 public class Renderer {
-	
-	// Controller gọi hàm này để cài đặt kích thước bản đồ
     public void setConverter(MapManager mapManager) {
         this.converter.setBound(mapManager);
     }
-    // Controller gọi hàm này để lấy converter ra tính toán AutoFit
     public CoordinateConverter getConverter() {
         return this.converter;
     }
     
-    // 1. KHAI BÁO BIẾN (Ở đây!)
     private CoordinateConverter converter; 
     
     private static final DropShadow HOVER_GLOW = new DropShadow();
     
-    //Khang's
     private Map<Character, Color> tl_color_map = new HashMap<>(); // map the state of each traffic light to each color
 
-    // 2. KHỞI TẠO (Trong Constructor)
     public Renderer() {
         // Tạo mới đối tượng converter khi Renderer được sinh ra
         this.converter = new CoordinateConverter(); 
@@ -168,7 +162,7 @@ public class Renderer {
                 	e.printStackTrace();
                 }
             }
-            System.out.println("Renderer: Vẽ xong Lane.");
+            System.out.println("Renderer: Done drawing lanes.");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -315,7 +309,7 @@ public class Renderer {
                     junctionPane.getChildren().add(junctionShape);
                 }
             }
-            System.out.println("Renderer: Đã vẽ xong Junctions.");
+            System.out.println("Renderer: Done Drawing Junctions.");
         } catch (Exception e) {
             e.printStackTrace();
         }
