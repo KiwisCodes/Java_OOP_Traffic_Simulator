@@ -3,6 +3,8 @@
 /bin/
 dependency-reduced-pom.xml
 
+/doc/
+
 # --- IDE Settings (Eclipse) ---
 .classpath
 .project
