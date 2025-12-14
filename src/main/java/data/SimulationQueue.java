@@ -18,39 +18,26 @@ public class SimulationQueue {
     
     /** The underlying thread-safe queue storage. */
 	private final BlockingQueue<SimulationState> queue;
-
-    /**
-     * Constructs a new {@code SimulationQueue} with a fixed capacity.
-     *
-     * @param capacity The maximum number of simulation states (frames) the queue can hold 
-     * before blocking the producer. This prevents memory overflow if the UI lags.
-     */
+	/**
+	 * Constructor
+	 * @param capacity: the maximum length of the queue
+	 */
 	public SimulationQueue(int capacity) {
         this.queue = new ArrayBlockingQueue<>(capacity);
     }
-
-    /**
-     * Inserts a simulation state into the queue, waiting if necessary for space to become available.
-     * <p>
-     * <b>Usage:</b> This method is called by the <i>Simulation Thread (Producer)</i>.
-     * </p>
-     *
-     * @param frame The computed state of the simulation (snapshot).
-     * @throws InterruptedException if the thread is interrupted while waiting.
-     */
+	/**
+	 * put new state to the queue
+	 * @param frame: state
+	 * @throws InterruptedException throws when action is interrupted
+	 */
 	public void putState(SimulationState frame) throws InterruptedException {
         queue.put(frame);
     }
-
-    /**
-     * Retrieves and removes the head of this queue, waiting if necessary until an element becomes available.
-     * <p>
-     * <b>Usage:</b> General purpose blocking retrieval.
-     * </p>
-     *
-     * @return The next {@link SimulationState} object.
-     * @throws InterruptedException if the thread is interrupted while waiting.
-     */
+	/**
+	 * take 
+	 * @return
+	 * @throws InterruptedException
+	 */
     public SimulationState takeState() throws InterruptedException {
         return queue.take(); 
     }

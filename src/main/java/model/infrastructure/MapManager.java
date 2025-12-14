@@ -98,13 +98,24 @@ public class MapManager {
         }
     }
 
-
+    /**
+     * Return a list of EdgeId
+     * @return list of EdgeIds
+     */
     public List<String> getEdgeIdList() { 
     	return new ArrayList<> (edgeIdList); 
     }
+    /**
+     * Return a list of LaneId
+     * @return list of LaneIds
+     */
     public List<String> getLaneIdList() { 
     	return new ArrayList<>(laneIdList); 
     }
+    /**
+     * Return a list of JunctionId
+     * @return list of JunctionIds
+     */
     public List<String> getJunctionIdList() { 
     	return new ArrayList<> (junctionIdList);
     }
@@ -144,15 +155,25 @@ public class MapManager {
     		this.totalJunction++;
     	}
     }
-    
+    /**
+     * Get the Edge Objects in this Simulation
+     * @return a HashMap of Edge IDs and Edge Objects
+     */
     public Map<String, EdgeClass> getEdges() {
     	return new HashMap<>(this.edges);
 	}
-    
+    /**
+     * Get the Lane Objects in this Simulation
+     * @return a HashMap of LaneIDs and Lane Objects
+     */
     public Map<String, LaneClass> getLanes() {
     	return new HashMap<>(this.lanes);
     }
     
+    /**
+     * Get the Junction Objects in this Simulation
+     * @return a HashMap of JunctionIDs and the Junction Objects
+     */
     public Map<String, JunctionClass> getJunctions() {
     	return new HashMap<>(this.junctions);
     }
