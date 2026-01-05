@@ -55,7 +55,9 @@ import util.ColorConverter;
 // Java Imports
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -115,12 +117,18 @@ public class MainController {
     private Consumer<TrafficlightObject> trafficLightClickHandler;
     private TrafficlightObject currentTrafficLightLink;
 
-    // Filtering
-    @FXML private TextField filterColorField;
-    @FXML private TextField filterMinSpeedField;
-    @FXML private TextField filterEdgeField;
-    @FXML private Button applyFilterButton;
+    // Filtering KHOA
+    @FXML private TitledPane filterPane;
+    @FXML private CheckBox filterByColorCheck;
+    @FXML private CheckBox filterBySpeedCheck;
+    @FXML private VBox colorFilterControlsVBox;        // New FXML for Color section VBox
+    @FXML private VBox dynamicColorCheckBoxContainer;  // **THE VBOX WHERE CHECKBOXES ARE INJECTED**
+    @FXML private VBox speedFilterControlsVBox;        // New FXML for Speed section VBox
+    @FXML private Slider filterMaxSpeedSlider;
+    @FXML private Button applyFilterButton; 
     @FXML private Button clearFilterButton;
+    
+    
 
     // Stress Testing
     @FXML private TitledPane stressTestPane;
@@ -207,9 +215,13 @@ public class MainController {
     private SimulationQueue uiQueue;	
     private SimulationQueue statQueue;
     
+//     Filtering KHOA
+    private Map<Color, CheckBox> colorCheckBoxMap = new HashMap<>();
+    private List<Color> realColors = new ArrayList<>();
+    private List<String> filteredVehicleIDs = new ArrayList<>();
+    private boolean isFilterCurrentlyApplied = false;
     
 //     Initialization
-
     public MainController() {
 		this.uiQueue = new SimulationQueue(2);
 		this.statsManager = new StatisticsManager();
@@ -480,8 +492,81 @@ public class MainController {
 		try {
 			simulationState = this.uiQueue.pollState();
 			if(simulationState == null) return;
-			
-			this.renderer.renderVehicles(vehiclePane, simulationState.getVehicles());
+			// KHOA CODE UPDATE VIEW
+			this.refreshColorFilterUI(simulationState);
+			if (this.isFilterCurrentlyApplied) {
+	            this.filteredVehicleIDs.clear(); // Ensure list is cleared so it's not passed with old IDs
+				boolean filterColorActive = filterByColorCheck.isSelected();
+		        boolean filterSpeedActive = filterBySpeedCheck.isSelected();
+		        // --- 1. DETERMINE WHICH FILTER(S) TO APPLY ---
+		        if (filterColorActive || filterSpeedActive) {		            
+		            // Start the valid list with ALL vehicles (we will remove those that fail a filter)
+		            List<String> combinedValidIDs = new ArrayList<>(simulationState.getVehicles().keySet());
+		            
+		            // --- 2. APPLY COLOR FILTER (INTERSECTION) ---
+		            if (filterColorActive) {
+		                // A temporary list to hold the IDs that ONLY match the color criteria
+		                List<String> colorValidIDs = new ArrayList<>();
+		                
+		                // Get the colors the user selected
+		                List<javafx.scene.paint.Color> selectedFXColors = new ArrayList<>();
+		                for (Map.Entry<javafx.scene.paint.Color, CheckBox> entry : colorCheckBoxMap.entrySet()) {
+		                    if (entry.getValue().isSelected()) {
+		                        selectedFXColors.add(entry.getKey());
+		                    }
+		                }
+		                
+		                // Perform the color filter logic (using your existing simManager function)
+		                for (javafx.scene.paint.Color fxColor : selectedFXColors) {
+		                    int[] rgba = fxColorToRgbaInts(fxColor);
+		                    // You must update getIDColor to accept SimulationState and not call vehicleManager
+		                    List<String> idsForColor = this.simManager.getIDColor(rgba[0], rgba[1], rgba[2], 255, simulationState);
+		                    
+		                    // Union the results of different selected colors
+		                    for (String id : idsForColor) {
+		                        if (!colorValidIDs.contains(id)) {
+		                            colorValidIDs.add(id);
+		                        }
+		                    }
+		                }
+		                
+		                // CRITICAL STEP: INTERSECT (AND) the current list with the new color list
+		                combinedValidIDs.retainAll(colorValidIDs);
+		            } 
+		            
+		            // --- 3. APPLY SPEED FILTER (INTERSECTION) ---
+		            if (filterSpeedActive) {
+		                double maxSpeedCriteria = filterMaxSpeedSlider.getValue();
+		                
+		                // A temporary list to hold the IDs that ONLY match the speed criteria
+		                List<String> speedValidIDs = new ArrayList<>();
+		                
+		                // You must update getIDSpeed to accept SimulationState and not call vehicleManager
+		                speedValidIDs.addAll(this.simManager.getIDSpeed(maxSpeedCriteria, simulationState));
+		                
+		                // CRITICAL STEP: INTERSECT (AND) the current list with the new speed list
+		                combinedValidIDs.retainAll(speedValidIDs);
+		            }
+		            
+		            // --- 4. Finalize the list and Log ---
+		            this.filteredVehicleIDs.addAll(combinedValidIDs);
+
+		            if (this.filteredVehicleIDs.isEmpty()) {
+		                log("Filter applied: 0 vehicles visible.");
+		            } else {
+		                 log("Filter applied: " + this.filteredVehicleIDs.size() + " vehicles visible.");
+		            }
+
+		        } else {
+		            // No filters are active
+		            this.isFilterCurrentlyApplied = false;
+		            this.filteredVehicleIDs.clear(); // Ensure list is cleared so it's not passed with old IDs
+		        }
+			}
+			this.renderer.renderVehicles(vehiclePane, simulationState.getVehicles(),this.filteredVehicleIDs,this.isFilterCurrentlyApplied);
+			// KHOA CODE UPDATE VIEW
+
+//			this.renderer.renderVehicles(vehiclePane, simulationState.getVehicles());
 			this.renderer.renderTrafficLights(trafficLightPane, simulationState.getTrafficLights(), trafficLightClickHandler);
 			
 			int currentVehicleCount = simulationState.getVehicles().size();
@@ -676,7 +761,8 @@ public class MainController {
         Color fxColor = injectVehicleColorPickerButton.getValue();
         SumoColor sumoColor = ColorConverter.toSumoColor(fxColor);
     	if(this.simManager.InjectVehicle(vehicleType, sumoColor, speed, firstEdgeId, secondEdgeId)) {
-    		log("Injected vehicle");    		
+    		log("Injected vehicle");  
+    		this.updateView(); // KHOA FILTERING
     	}
     	else {
     		log("Fail injecting vehicle");
@@ -820,13 +906,61 @@ public class MainController {
     
     @FXML private void startSumoGUI() {}
     @FXML private void insertSumoConfigFile() {}
-    @FXML private void applyFilter() {}
-    @FXML private void clearFilter() {}
+    // KHOA FILTERING CODE
+    @FXML private void applyFilter() {
+        
+        // Clear previous filter state
+    	filteredVehicleIDs.clear();
+        
+        // 2. Determine if ANY filter checkbox is selected
+        boolean filterColorActive = filterByColorCheck.isSelected();
+        boolean filterSpeedActive = filterBySpeedCheck.isSelected();
+        
+        // 3. Set the global flag based on the UI state
+        // The filter is "applied" (ON) if either checkbox is ticked.
+        this.isFilterCurrentlyApplied = filterColorActive || filterSpeedActive;
+        
+        // 4. Log the state (and check if any color checkboxes are actually selected)
+        if (this.isFilterCurrentlyApplied) {
+            log("Filter status: ON. Color=" + filterColorActive + ", Speed=" + filterSpeedActive);
+        } else {
+            log("Filter status: OFF (No criteria selected).");
+        }
+        
+//        if (isPaused) updateView(); // Redraw immediately
+    }
+
+
+    @FXML private void clearFilter() {
+        
+        // Reset all UI controls to their default/cleared state
+        if (filterByColorCheck != null) filterByColorCheck.setSelected(false);
+        if (filterBySpeedCheck != null) filterBySpeedCheck.setSelected(false);
+        this.filteredVehicleIDs.clear();
+        this.isFilterCurrentlyApplied = false;
+        // Reset all dynamically created color checkboxes
+        for (CheckBox cb : colorCheckBoxMap.values()) {
+            cb.setSelected(false);
+        }
+        
+        // Reset slider to its maximum value (to show all speeds)
+        if (filterMaxSpeedSlider != null) {
+            filterMaxSpeedSlider.setValue(filterMaxSpeedSlider.getMax()); 
+        }
+        
+        log("✅ All filter inputs cleared. Click 'Apply Filter' to finalize.");
+        if (isPaused) updateView(); // Redraw immediately
+    }
     
+    // KHOA FILTERING CODE
     @FXML private void runStressTest() {
     	try {
 			this.simManager.StressTest();
-			log("Default Stress Test with 50 random cars with random Routes");
+			// KHOA CODED THIS
+//	        this.isFilterCurrentlyApplied = false; 
+			log("Default Stress Test with " + " random cars with random Routes");
+//			this.refreshColorFilterUI();
+			this.updateView();
 		} catch (Exception e) {
 			System.err.print(e.getMessage());
 			e.printStackTrace();
@@ -835,6 +969,7 @@ public class MainController {
     
     @FXML 
     private void runStressTestOnSpecificEdges() {
+    	clearFilter(); // KHOA CODED FILTERING
         if(this.firstEdgeField1.getText().isEmpty() || this.secondEdgeField1.getText().isEmpty()) {
             log("Please choose 2 edges first");
             return;
@@ -916,6 +1051,97 @@ public class MainController {
             });
         });
     }
+    // KHOA FILTERING CODE
+    public void refreshColorFilterUI(SimulationState state) {
+        // Submit the task to the thread pool to avoid blocking the JavaFX thread or UI thread
+        threadPool.submit(() -> {
+            try {
+                // Short delay might still be useful if injection takes a moment to register in SUMO
+                Thread.sleep(50); 
+                
+                // 1. Get the raw colors (AWT type assumed)
+                List<java.awt.Color> rawColors = this.simManager.getUniqueColors(state); 
+                
+                // 2. Convert and store
+                List<javafx.scene.paint.Color> newColors = convertAwtToFxColors(rawColors);
+                
+                // Optimization: Only update the UI if the color list has actually changed size
+                if (newColors.size() != this.realColors.size() || !newColors.containsAll(this.realColors)) {
+                    this.realColors = newColors;
+                    
+                    // 3. Update the UI on the JavaFX Application Thread
+                    Platform.runLater(() -> this.showColorsAsCheckboxes(this.realColors));
+                }
+                
+            } catch (Exception e) {
+                log("❌ Error refreshing colors: " + e.getMessage());
+                // In a real app, you might only print the stack trace for non-InterruptedException errors
+            }
+        });
+    }
     
+    private List<javafx.scene.paint.Color> convertAwtToFxColors(List<java.awt.Color> awtColors) {
+        List<javafx.scene.paint.Color> fxColors = new ArrayList<>();
+        
+        for (java.awt.Color awtColor : awtColors) {
+            // Get the R, G, B components (0-255)
+            int r = awtColor.getRed();
+            int g = awtColor.getGreen();
+            int b = awtColor.getBlue();
+            
+            // Get the Alpha component (0-255) and convert to a double for Opacity (0.0 - 1.0)
+            double opacity = awtColor.getAlpha() / 255.0;
+            
+            // Create the new JavaFX Color object
+            javafx.scene.paint.Color fxColor = javafx.scene.paint.Color.rgb(r, g, b, opacity);
+            
+            fxColors.add(fxColor);
+        }
+        return fxColors;
+    }
+    
+    private void showColorsAsCheckboxes(List<javafx.scene.paint.Color> colorsToShow) {
+        // UI manipulation must always be done on the JavaFX Application Thread
+        Platform.runLater(() -> {
+            if (dynamicColorCheckBoxContainer == null) {
+                log("Error: dynamicColorCheckBoxContainer is null. FXML load failed or ID mismatch.");
+                return;
+            }
+            
+            dynamicColorCheckBoxContainer.getChildren().clear();
+            colorCheckBoxMap.clear();
+
+            for (javafx.scene.paint.Color color : colorsToShow) {
+                String webColor = colorToWebString(color);
+                String labelText = "Color: " + webColor; 
+
+                CheckBox cb = new CheckBox(labelText);
+                cb.setUserData(color); // Store the actual Color object
+
+                // Style the text to be the color it represents
+                cb.setStyle("-fx-text-fill: " + webColor + "; -fx-font-weight: bold;"); 
+
+                dynamicColorCheckBoxContainer.getChildren().add(cb);
+                colorCheckBoxMap.put(color, cb);
+            }
+            log("✅ Filter UI Populated with " + colorsToShow.size() + " unique colors.");
+        });
+    }
+    private String colorToWebString(javafx.scene.paint.Color color) {
+        // Uses 255 * R/G/B values and formats them as a 6-digit hex string
+        return String.format("#%02X%02X%02X", 
+            (int) (color.getRed() * 255), 
+            (int) (color.getGreen() * 255), 
+            (int) (color.getBlue() * 255));
+    }
+    
+    
+    private int[] fxColorToRgbaInts(javafx.scene.paint.Color fxColor) {
+        int r = (int) (fxColor.getRed() * 255);
+        int g = (int) (fxColor.getGreen() * 255);
+        int b = (int) (fxColor.getBlue() * 255);
+        int a = 255;
+        return new int[] {r, g, b, a};
+    }
     
 }

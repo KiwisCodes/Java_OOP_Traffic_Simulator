@@ -310,24 +310,71 @@ public class Renderer {
      * @param vehiclePane The JavaFX {@link Pane} layer dedicated to displaying vehicles.
      * @param vehicleData A map containing the latest snapshot of vehicle data (ID -> Vehicle Properties) from the simulation core.
      */
-	public void renderVehicles(Pane vehiclePane, Map<String, VehicleClass> vehicleData) {
-        if (vehicleData == null || vehicleData.isEmpty()) {
-            vehiclePane.getChildren().clear();  
-            vehicleVisualCache.clear();
-            return;
-        }
-        List<String> toRemove = new ArrayList<>();
-        for (String cachedId : vehicleVisualCache.keySet()) {
-            if (!vehicleData.containsKey(cachedId)) { 
-                toRemove.add(cachedId);
-            }
-        }
-        for (String id : toRemove) {
-            Polygon shape = vehicleVisualCache.get(id); 
-            vehiclePane.getChildren().remove(shape); 
-            vehicleVisualCache.remove(id);     
-        }
-        for (String vehicleId : vehicleData.keySet()) {
+	public void renderVehicles(Pane vehiclePane, Map<String, VehicleClass> vehicleData, List<String> validIDs, boolean isFilterApplied) {
+//        if (vehicleData == null || vehicleData.isEmpty()) {
+//            vehiclePane.getChildren().clear();  
+//            vehicleVisualCache.clear();
+//            return;
+//        }
+//        List<String> toRemove = new ArrayList<>();
+//        for (String cachedId : vehicleVisualCache.keySet()) {
+//            if (!vehicleData.containsKey(cachedId)) { 
+//                toRemove.add(cachedId);
+//            }
+//        }
+//        for (String id : toRemove) {
+//            Polygon shape = vehicleVisualCache.get(id); 
+//            vehiclePane.getChildren().remove(shape); 
+//            vehicleVisualCache.remove(id);     
+//        }
+//        // KHOA CODE FILTERING
+//        List<String> vehiclesToDraw;
+//	    if (isFilterApplied && validIDs != null && !validIDs.isEmpty()) {
+//	        // If filter is applied, only draw the pre-filtered IDs
+//	        vehiclesToDraw = validIDs;
+//	    } else if (isFilterApplied && (validIDs == null || validIDs.isEmpty())) {
+//	         // If filter is applied but no vehicles match, draw nothing.
+//	         return; 
+//	    } else {
+//	        // Otherwise (no filter), draw all vehicle IDs
+//	        vehiclesToDraw = new ArrayList<>(vehicleData.keySet());
+//	    }
+//	    THIS DOESNT WORK DUE TO NEW RENDERING METHOD, CHANGING OF METHOD IS IMPLEMENTED BELOW
+		
+		// 1. Safety check: if no data, clear everything
+	    if (vehicleData == null || vehicleData.isEmpty()) {
+	        vehiclePane.getChildren().clear();  
+	        vehicleVisualCache.clear();
+	        return;
+	    }
+
+	    // 2. Determine exactly which IDs should be visible on screen
+	    // We use a Set for much faster lookup performance (.contains is faster on a Set)
+	    java.util.Set<String> visibleIDs;
+	    if (isFilterApplied) {
+	        visibleIDs = (validIDs == null) ? new java.util.HashSet<>() : new java.util.HashSet<>(validIDs);
+	    } else {
+	        visibleIDs = vehicleData.keySet(); // No filter? Everyone is visible.
+	    }
+
+	    // 3. CLEANUP: Identify shapes to remove
+	    List<String> toRemove = new ArrayList<>();
+	    for (String cachedId : vehicleVisualCache.keySet()) {
+	        // Condition A: Vehicle left the simulation
+	        // Condition B: Filter is ON, but this vehicle is NOT in the allowed list
+	        if (!vehicleData.containsKey(cachedId) || (isFilterApplied && !visibleIDs.contains(cachedId))) { 
+	            toRemove.add(cachedId);
+	        }
+	    }
+
+	    // Actually remove the "hidden" or "dead" vehicles from the UI
+	    for (String id : toRemove) {
+	        Polygon shape = vehicleVisualCache.get(id); 
+	        vehiclePane.getChildren().remove(shape); 
+	        vehicleVisualCache.remove(id);     
+	    }
+        
+        for (String vehicleId : visibleIDs) { // KHOA CODE FILTERING
             VehicleClass props = vehicleData.get(vehicleId);
             try {
 	            double simX = 0;

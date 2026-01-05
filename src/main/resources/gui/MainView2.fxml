@@ -22,6 +22,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.control.CheckBox?>
 
 <StackPane prefHeight="900.0" prefWidth="1400.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
    <children>
@@ -259,6 +260,58 @@
                                                 </VBox>
                                              </content>
                                           </TitledPane>
+                                          
+                                          
+                                          <TitledPane fx:id="filterPane" text="Filter">
+							              <content>
+							                 <VBox spacing="10.0">
+							                    <children>
+							                       <VBox spacing="5.0">
+							                          <children>
+							                             <Label style="-fx-font-size: 11px;" text="Select Filter Type" textFill="#666666" />
+							                             <HBox spacing="80.0"> 
+							                                <children>
+							                                   <CheckBox fx:id="filterByColorCheck" mnemonicParsing="false" text="Color" />
+							                                   <CheckBox fx:id="filterBySpeedCheck" mnemonicParsing="false" text="Speed" />
+							                                </children>
+							                             </HBox>
+							                          </children>
+							                       </VBox>
+							
+							                       <Separator />
+							                       
+							                       <VBox fx:id="colorFilterControlsVBox" spacing="5.0">
+							                          <children>
+							                             <Label style="-fx-font-weight: bold;" text="Available Colors:" />
+							                             <VBox fx:id="dynamicColorCheckBoxContainer" spacing="5.0"> 
+							                                <padding>
+							                                   <Insets left="10.0" />
+							                                </padding>
+							                             </VBox>
+							                          </children>
+							                       </VBox>
+							
+							                       <Separator />
+							
+							                       <VBox fx:id="speedFilterControlsVBox" spacing="5.0"> 
+							                          <children>
+							                             <Label style="-fx-font-weight: bold;" text="Select Max Speed (m/s)" />
+							                             <Slider fx:id="filterMaxSpeedSlider" max="30.0" min="0.0" value="30.0">
+							                                <padding>
+							                                   <Insets bottom="6.0" left="6.0" right="6.0" top="6.0" />
+							                                </padding>
+							                             </Slider>
+							                          </children>
+							                       </VBox>
+							
+							                       <Button fx:id="applyFilterButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#applyFilter" styleClass="action-button" text="Apply Filter" /> 
+							                       <Button fx:id="clearFilterButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#clearFilter" styleClass="secondary-button" text="Clear Filter" />
+							                    </children>
+							                 </VBox>
+							              </content>
+							           </TitledPane>
+							           
+							           
                                       </panes>
                                     </Accordion>
                                  </children>
