@@ -20,9 +20,7 @@ import it.polito.appeal.traci.SumoTraciConnection;
 import de.tudresden.sumo.cmd.Lane;           
 import de.tudresden.sumo.cmd.Junction;      
 import de.tudresden.sumo.objects.SumoGeometry;  
-import de.tudresden.sumo.objects.SumoPosition2D; 
-import model.infrastructure.MapManager;
-import model.infrastructure.TrafficlightObject;
+import de.tudresden.sumo.objects.SumoPosition2D;
 import model.vehicles.VehicleClass;
 import util.ColorConverter;
 import model.infrastructure.*;
@@ -96,10 +94,10 @@ public class Renderer {
      * are added to the {@code carPane} but set to be <b>mouse-transparent</b> (non-interactive).
      *
      * @param laneData A map containing lane IDs and their corresponding {@code LaneClass} properties.
-     * @param onLaneClick A consumer callback to handle mouse click events on the generated lane shapes.
+     * @param laneClickHandler A consumer callback to handle mouse click events on the generated lane shapes.
      */
     
-    public void renderLanes(Map<String, LaneClass> laneData, Pane lanePane, Consumer<String> onLaneClick) {
+    public void renderLanes(Map<String, LaneClass> laneData, Pane lanePane, Consumer<LaneClass> laneClickHandler) {
         // 1. Xóa các lane cũ
         lanePane.getChildren().clear();
         
@@ -115,7 +113,7 @@ public class Renderer {
                 if (props == null) continue;
 
                 // 3. Gọi hàm tạo hình (Hàm này bạn đã viết riêng)
-                Shape laneShape = createLaneShape(props, laneData, onLaneClick);
+                Shape laneShape = createLaneShape(props, laneData, laneClickHandler);
                 
                 if (laneShape != null) {
                     lanePane.getChildren().add(laneShape);
@@ -153,7 +151,7 @@ public class Renderer {
      * or {@code null} if the geometry data is invalid.
      */
     
-    private Shape createLaneShape(LaneClass props, Map<String,LaneClass> laneData,Consumer<String> onLaneClick) {
+    private Shape createLaneShape(LaneClass props, Map<String,LaneClass> laneData,Consumer<LaneClass> onLaneClick) {
         try {
             SumoGeometry geometry = props.getShape();
             Polyline lanePolyline = new Polyline();
@@ -185,7 +183,7 @@ public class Renderer {
             });
             
             lanePolyline.setOnMouseClicked(e -> {
-            	onLaneClick.accept(props.getId());
+            	onLaneClick.accept(props);
             });
 
             return lanePolyline;

@@ -1,6 +1,5 @@
 package model;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -9,6 +8,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import controller.MainController;
 import model.infrastructure.*;
@@ -22,6 +22,8 @@ import de.tudresden.sumo.objects.SumoStringList;
 import model.vehicles.VehicleClass;
 // Import your vehicle classes
 import model.vehicles.VehicleManager;
+import util.ColorConverter;
+import javafx.scene.paint.Color;
 //import model.vehicles.Car;
 //import model.vehicles.Bus;
 //import model.vehicles.Truck;
@@ -411,33 +413,17 @@ public class SimulationManager {
     // KHOA FILTERING
 	public List<Color> getUniqueColors(SimulationState state){
 		Map<String, VehicleClass> vehicleData = state.getVehicles();
-		List<String> colors = new ArrayList<>();
-		List<Color> colorRGBA = new ArrayList<>();
+		//Hung changed to SumoColor
+		List<Color> fxColorRGBA = new ArrayList<>();
 		for(Map.Entry<String, VehicleClass> vehicle : vehicleData.entrySet()) {
-			VehicleClass innerMap = vehicle.getValue();
-			String colorValue = String.valueOf(innerMap.getColor());
-			if(colors.contains(colorValue)) {
-				continue;
-			}
-			else {
-				colors.add(colorValue);
+			VehicleClass props = vehicle.getValue();
+			SumoColor sumoColor = props.getColor();
+			Color fxColor = ColorConverter.toFXColor(sumoColor);
+			if(!fxColorRGBA.contains(fxColor)) {
+				fxColorRGBA.add(ColorConverter.toFXColor(sumoColor));				
 			}
 		}
-		/**
-		 * 
-		 * hello
-		 */
-		for(String c: colors) {
-			String[] parts = c.split("#");
-			int r = (Integer.parseInt(parts[0]) + 256) % 256;
-		    int g = (Integer.parseInt(parts[1]) + 256) % 256;
-		    int b = (Integer.parseInt(parts[2]) + 256) % 256;
-		    int a =	255;
-//		    System.out.println("RGBA = " + r + ", " + g + ", " + b + ", " + a);
-		    Color color = new Color(r,g,b,a);
-		    colorRGBA.add(color);
-		}
-		return colorRGBA;
+		return fxColorRGBA;
 	}
 //	public List<String> getIDColor(int r, int g, int b, int a, SimulationState state){
 //		Map<String, VehicleClass> vehicleData = state.getVehicles();
@@ -475,13 +461,15 @@ public class SimulationManager {
 //	}
 	
 	// ADD THIS METHOD
-	public List<String> getFilteredVehicleIDs(java.util.function.Predicate<VehicleClass> criteria, SimulationState state) {
+	public List<String> getFilteredVehicleIDs(Predicate<VehicleClass> criteria, SimulationState state) {
 	    if (state == null || state.getVehicles() == null) return new ArrayList<>();
 
-	    return state.getVehicles().values().stream()
-	                .filter(criteria)       // This is where the 'rule' is applied
-	                .map(VehicleClass::getId) 
+	    List<String> list = state.getVehicles().values().stream()
+	                .filter(criteria)
+	                .map(VehicleClass::getId)
 	                .toList();
+	    
+	    return new ArrayList<>(list); // Returns a mutable copy
 	}
 	
 }

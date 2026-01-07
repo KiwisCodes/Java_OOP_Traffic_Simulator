@@ -2,12 +2,10 @@
     <input>
         <net-file value="frauasmap.net.xml"/>
         <route-files value="map.rou.xml"/>
-        
         <additional-files value="vehicle_types.add.xml"/>
     </input>
 
     <time>
         <begin value="0"/>
-        <step-length value="0.01"/> 
     </time>
 </configuration>

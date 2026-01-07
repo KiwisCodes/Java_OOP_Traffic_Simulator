@@ -59,4 +59,12 @@ public class ColorConverter {
             a / 255.0 
         );
     }
+    
+    public static String colorToWebString(Color color) {
+        // Uses 255 * R/G/B values and formats them as a 6-digit hex string
+        return String.format("#%02X%02X%02X", 
+            (int) (color.getRed() * 255), 
+            (int) (color.getGreen() * 255), 
+            (int) (color.getBlue() * 255));
+    }
 }

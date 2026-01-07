@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -66,6 +67,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+
 import de.tudresden.sumo.objects.SumoColor;
 import java.util.HashMap;
 import de.tudresden.ws.container.SumoPosition2D; 
@@ -97,18 +100,18 @@ public class MainController {
     @FXML private Button setVehicleColorButton;
     @FXML private TextField vehicleColorField;
     @FXML private TitledPane injectionPane;
-    @FXML private RadioButton carRadio;
-    @FXML private RadioButton bikeRadio;          
+//    @FXML private RadioButton carRadio;
+//    @FXML private RadioButton bikeRadio;          
     @FXML private ToggleGroup vehicleTypeGroup;   
     @FXML private TextField firstEdgeField;       
     @FXML private TextField secondEdgeField;      
     @FXML private ColorPicker injectVehicleColorPickerButton; 
     @FXML private Slider injectVehicleSpeedSlider;
-    @FXML private Button injectionSelectedVehicleTypeButton;
     @FXML private Button injectionCarButton;
     @FXML private Button injectionBikeButton;
     @FXML private Button injectionBusButton;
     @FXML private Button injectionPedestrianButton;
+    @FXML private Button injectionSelectedVehicleTypeButton;
 
     // Traffic Light Actions
     @FXML private TitledPane trafficLightControlPane;
@@ -140,19 +143,19 @@ public class MainController {
     // Stress Testing
     @FXML private TitledPane stressTestPane;
     @FXML private Button stressTestButton;
-    @FXML private RadioButton carRadio1;
-    @FXML private RadioButton bikeRadio1;
+//    @FXML private RadioButton carRadio1;
+//    @FXML private RadioButton bikeRadio1;
     @FXML private ToggleGroup vehicleTypeGroup1;
     @FXML private TextField firstEdgeField1;
     @FXML private TextField secondEdgeField1;
     @FXML private ColorPicker injectVehicleColorPickerButton1;
     @FXML private Slider injectVehicleSpeedSlider1;
     @FXML private Slider numberOfVehicleSlider1;
-    @FXML private Button stressTestSelectedVehicleTypeButton;
     @FXML private Button stressTestCarButton;
     @FXML private Button stressTestBikeButton;
     @FXML private Button stressTestBusButton;
     @FXML private Button stressTestPedestrianButton;
+    @FXML private Button stressTestSelectedVehicleTypeButton;
     
     
 
@@ -195,7 +198,7 @@ public class MainController {
     @FXML private ToggleButton toggle3DButton;
     @FXML private TitledPane bottomLogArea;
     private LinkedList<String> logHistory = new java.util.LinkedList<>();
-    private static final int MAX_LOG_LINES = 10;
+    private static final int MAX_LOG_LINES = 100;
 
 
 //    Logic & State
@@ -270,20 +273,24 @@ public class MainController {
                 }
             });
         }
-        if (vehicleTypeGroup != null) {
-            vehicleTypeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-            	updateLaneVisuals();
-                if (firstEdgeField != null) firstEdgeField.clear();   
-                if (secondEdgeField != null) secondEdgeField.clear(); 
-            });
-        }
-        if (vehicleTypeGroup1 != null) {
-            vehicleTypeGroup1.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-            	updateLaneVisuals();
-            	if (firstEdgeField1 != null) firstEdgeField1.clear();   
-                if (secondEdgeField1 != null) secondEdgeField1.clear();
-            });
-        }
+//        if (vehicleTypeGroup != null) {
+//            vehicleTypeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+//            	updateLaneVisuals();
+//                if (firstEdgeField != null) firstEdgeField.clear();   
+//                if (secondEdgeField != null) secondEdgeField.clear(); 
+//            });
+//        }
+//        if (vehicleTypeGroup1 != null) {
+//            vehicleTypeGroup1.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+//            	updateLaneVisuals();
+//            	if (firstEdgeField1 != null) firstEdgeField1.clear();   
+//                if (secondEdgeField1 != null) secondEdgeField1.clear();
+//            });
+//        }
+//        if (this.injectionSelectedVehicleTypeButton != null) {
+//        	
+//        }
+        
         
         
         disableButtons(true);
@@ -295,22 +302,30 @@ public class MainController {
 //        setYellowPhaseButton.setOnAction(e -> toggleColorButton(setYellowPhaseButton));
 //        setGreenPhaseButton.setOnAction(e -> toggleColorButton(setGreenPhaseButton));
         
-        this.carRadio.setOnMouseClicked(e -> {
-        	this.firstEdgeField.clear();
-        	this.secondEdgeField.clear();
-        });
-        this.bikeRadio.setOnMouseClicked(e -> {
-        	this.firstEdgeField.clear();
-        	this.secondEdgeField.clear();
-        });
-        this.carRadio1.setOnMouseClicked(e -> {
-        	this.firstEdgeField1.clear();
-        	this.secondEdgeField1.clear();
-        });
-        this.bikeRadio1.setOnMouseClicked(e -> {
-        	this.firstEdgeField1.clear();
-        	this.secondEdgeField1.clear();
-        });
+//        this.carRadio.setOnMouseClicked(e -> {
+//        	this.firstEdgeField.clear();
+//        	this.secondEdgeField.clear();
+//        });
+//        this.bikeRadio.setOnMouseClicked(e -> {
+//        	this.firstEdgeField.clear();
+//        	this.secondEdgeField.clear();
+//        });
+//        this.carRadio1.setOnMouseClicked(e -> {
+//        	this.firstEdgeField1.clear();
+//        	this.secondEdgeField1.clear();
+//        });
+//        this.bikeRadio1.setOnMouseClicked(e -> {
+//        	this.firstEdgeField1.clear();
+//        	this.secondEdgeField1.clear();
+//        });
+        
+     // 1. Assign the pointers to the Car buttons by default
+        this.injectionSelectedVehicleTypeButton = injectionCarButton;
+        this.stressTestSelectedVehicleTypeButton = stressTestCarButton;
+
+        // 2. Apply the CSS styling (which you already have)
+        this.injectionCarButton.getStyleClass().add("selected-button");
+        this.stressTestCarButton.getStyleClass().add("selected-button");
         
     }
 
@@ -329,23 +344,23 @@ public class MainController {
             this.renderer.setConverter(mapManager);
             
 
-            Consumer<String> laneClickHandler = (laneId) -> {
-                // get information of Lane 
-                LaneClass selectedLane = this.simManager.getMapManager().getLanes().get(laneId);
+            Consumer<LaneClass> laneClickHandler = (selectedLane) -> {
                 if (selectedLane == null) return;
+
+                // get information of Lane 
+                String laneId = selectedLane.getId();
                 
                 // Lấy edgeId từ laneId (ví dụ: "edge1_0" -> "edge1") như code hiện tại của bạn
                 String edgeId = laneId.substring(0, laneId.indexOf("_")); 
 
-                // 2. Xác định trạng thái các Menu
+                // 2. Xác định trạng thái các Menu và lấy Mode tập trung
+                String currentMode = getCurrentSelectedMode();
                 boolean isInjecting = (injectionPane != null && injectionPane.isExpanded());
                 boolean isStressTesting = (stressTestPane != null && stressTestPane.isExpanded());
 
                 if (isInjecting) {
                     // --- LOGIC CHO INJECTION PANE ---
-                    // Sử dụng đúng tên biến carRadio, bikeRadio từ FXML 
-                    String currentMode = bikeRadio.isSelected() ? "bicycle" : "passenger";
-                    
+                    // Sử dụng currentMode đã lấy từ getCurrentSelectedMode()
                     if (!selectedLane.isVehicleAllowed(currentMode)) {
                         log("Warning: This lane does not allow " + currentMode);
                         return; 
@@ -365,9 +380,7 @@ public class MainController {
 
                 } else if (isStressTesting) {
                     // --- LOGIC CHO STRESS TEST PANE ---
-                    // Sử dụng đúng tên biến carRadio1, bikeRadio1 từ FXML 
-                    String currentMode = bikeRadio1.isSelected() ? "bicycle" : "passenger";
-
+                    // Sử dụng currentMode đã lấy từ getCurrentSelectedMode()
                     if (!selectedLane.isVehicleAllowed(currentMode)) {
                         log("Warning: This lane does not allow " + currentMode);
                         return; 
@@ -416,6 +429,7 @@ public class MainController {
             		this.junctionPane,
             		juncId -> log("Selected Junction: " + juncId)
             		);
+            this.updateLaneVisuals();//this is to default the car option for both injection and stress test
             
 	        log("Static Map drawn (Separated Car/Bike lanes)");
 
@@ -506,15 +520,24 @@ public class MainController {
     }
     
     private String getCurrentSelectedMode() {
-        if (injectionPane.isExpanded()) {
-            if (bikeRadio.isSelected()) return "bicycle";
-            // Sau này thêm ở đây: if (busRadio.isSelected()) return "bus";
-            return "passenger";
-        } else if (stressTestPane.isExpanded()) {
-            if (bikeRadio1.isSelected()) return "bicycle";
-            return "passenger";
+        // If Injection is open, check those buttons
+        if (injectionPane != null && injectionPane.isExpanded()) {
+            if (injectionSelectedVehicleTypeButton == injectionBikeButton) return "bicycle";
+            if (injectionSelectedVehicleTypeButton == injectionBusButton) return "bus";
+            if (injectionSelectedVehicleTypeButton == injectionPedestrianButton) return "pedestrian";
+            return "passenger"; // Default for this pane
+        } 
+
+        // If Stress Test is open, check those buttons
+        if (stressTestPane != null && stressTestPane.isExpanded()) {
+            if (stressTestSelectedVehicleTypeButton == stressTestBikeButton) return "bicycle";
+            if (stressTestSelectedVehicleTypeButton == stressTestBusButton) return "bus";
+            if (stressTestSelectedVehicleTypeButton == stressTestPedestrianButton) return "pedestrian";
+            return "passenger"; // Default for this pane
         }
-        return "all";
+
+        // Global fallback (Discovery mode or if something is null)
+        return "passenger"; 
     }
     
     private void updateLaneVisuals() {
@@ -524,7 +547,7 @@ public class MainController {
         
         // If no Injection Pane is use, return to the original state of lane:
         if (!isInjecting && !isStressTesting) {
-            for (javafx.scene.Node node : lanePane.getChildren()) {
+            for (Node node : lanePane.getChildren()) {
                 if (node instanceof javafx.scene.shape.Shape shape) {
                     shape.setOpacity(1.0);
                     shape.setDisable(false);
@@ -533,12 +556,12 @@ public class MainController {
             return;
         }
 
-        // If a Injection pane is opened, get what vehicle is choosen by user:
+        // If a Injection pane is opened or Stress Test Pane, get what vehicle is choosen by user:
         String currentMode = getCurrentSelectedMode();
 
        // Update the color of lane base on what vehicle is being selected by user:
-        for (javafx.scene.Node node : lanePane.getChildren()) {
-            if (node instanceof javafx.scene.shape.Shape shape) {
+        for (Node node : lanePane.getChildren()) {
+            if (node instanceof Shape shape) {
                 LaneClass laneData = (LaneClass) shape.getUserData();
                 if (laneData != null) {
                     if (laneData.isVehicleAllowed(currentMode)) {
@@ -683,7 +706,7 @@ public class MainController {
 
                 // 3. Define the "Filter Rule" (Predicate)
                 // 'v' represents an individual VehicleClass object in the stream
-                java.util.function.Predicate<model.vehicles.VehicleClass> filterRule = v -> {
+                Predicate<VehicleClass> filterRule = v -> {
                     // Check Speed: Pass if filter is off OR if vehicle speed is within limit
                     boolean speedPass = !filterSpeedActive || v.getSpeed() <= maxSpeedCriteria;
 
@@ -691,8 +714,14 @@ public class MainController {
                     boolean colorPass = true;
                     if (filterColorActive && !selectedFXColors.isEmpty()) {
                         // Use your Util class to get a JavaFX-compatible color
-                        javafx.scene.paint.Color vehicleFXColor = util.ColorConverter.toFXColor(v.getColor());
-                        colorPass = selectedFXColors.contains(vehicleFXColor);
+                    	SumoColor sumoColor = v.getColor();
+                    	if(sumoColor != null) {
+                    		Color vehicleFXColor = ColorConverter.toFXColor(sumoColor);
+                    		colorPass = selectedFXColors.contains(vehicleFXColor);                    		
+                    	}
+                    }
+                    else {
+                    	colorPass = false;
                     }
 
                     return speedPass && colorPass; // Intersection Logic (AND)
@@ -1053,14 +1082,18 @@ public class MainController {
         Button button = (Button) event.getSource();
 
         if (this.injectionSelectedVehicleTypeButton == button) {
-            button.getStyleClass().remove("selected-button");
-            this.injectionSelectedVehicleTypeButton = null;
+//            button.getStyleClass().remove("selected-button");
+//            this.injectionSelectedVehicleTypeButton = null;
+            log("You must choose at least 1 type");
         } else {
             if (this.injectionSelectedVehicleTypeButton != null) {
             	this.injectionSelectedVehicleTypeButton.getStyleClass().remove("selected-button");
             }
             button.getStyleClass().add("selected-button");
             this.injectionSelectedVehicleTypeButton = button;
+            if (firstEdgeField != null) firstEdgeField.clear();
+            if (secondEdgeField != null) secondEdgeField.clear();
+            updateLaneVisuals();
         }
     }
     
@@ -1070,14 +1103,20 @@ public class MainController {
         Button button = (Button) event.getSource();
 
         if (this.stressTestSelectedVehicleTypeButton == button) {
-            button.getStyleClass().remove("selected-button");
-            this.stressTestSelectedVehicleTypeButton = null;
+//            button.getStyleClass().remove("selected-button");
+//            this.stressTestSelectedVehicleTypeButton = null;
+        	log("You must choose at least 1 type");
         } else {
             if (this.stressTestSelectedVehicleTypeButton != null) {
             	this.stressTestSelectedVehicleTypeButton.getStyleClass().remove("selected-button");
             }
             button.getStyleClass().add("selected-button");
             this.stressTestSelectedVehicleTypeButton = button;
+            if (firstEdgeField1 != null) firstEdgeField1.clear();
+            if (secondEdgeField1 != null) secondEdgeField1.clear();
+
+            // 4. Update the map visuals immediately
+            updateLaneVisuals();
         }
     }
     
@@ -1179,17 +1218,17 @@ public class MainController {
         if(this.stressTestSelectedVehicleTypeButton == this.stressTestCarButton) {
     		type = "DEFAULT_VEHTYPE";
     	}
-    	else if(this.stressTestSelectedVehicleTypeButton == this.stressTestCarButton) {
+    	else if(this.stressTestSelectedVehicleTypeButton == this.stressTestBikeButton) {
     		type = "DEFAULT_BIKETYPE";
             spd = (spd>5) ?  5: spd;
     	}
-    	else if(this.stressTestSelectedVehicleTypeButton == this.stressTestCarButton) {
+    	else if(this.stressTestSelectedVehicleTypeButton == this.stressTestBusButton) {
     		type = "BUS";
     		spd = (spd>5) ?  5: spd;
     	}
-    	else if(this.stressTestSelectedVehicleTypeButton == this.stressTestCarButton) {
+    	else if(this.stressTestSelectedVehicleTypeButton == this.stressTestPedestrianButton) {
     		type = "DEFAULT_PEDTYPE";
-            spd = (spd>4) ?  4: spd;
+            spd = (spd>3) ?  3: spd;
     	}
 
         final String vehicleType = type;
@@ -1258,50 +1297,50 @@ public class MainController {
         threadPool.submit(() -> {
             try {
                 // Short delay might still be useful if injection takes a moment to register in SUMO
-                Thread.sleep(50); 
+//                Thread.sleep(50); 
                 
                 // 1. Get the raw colors (AWT type assumed)
-                List<java.awt.Color> rawColors = this.simManager.getUniqueColors(state); 
+                List<Color> fxColorRGBA = this.simManager.getUniqueColors(state); 
                 
                 // 2. Convert and store
-                List<javafx.scene.paint.Color> newColors = convertAwtToFxColors(rawColors);
+//                List<javafx.scene.paint.Color> newColors = convertAwtToFxColors(rawColors);
                 
                 // Optimization: Only update the UI if the color list has actually changed size
-                if (newColors.size() != this.realColors.size() || !newColors.containsAll(this.realColors)) {
-                    this.realColors = newColors;
+                if (fxColorRGBA.size() != this.realColors.size() || !fxColorRGBA.containsAll(this.realColors)) {
+                    this.realColors = fxColorRGBA;
                     
                     // 3. Update the UI on the JavaFX Application Thread
                     Platform.runLater(() -> this.showColorsAsCheckboxes(this.realColors));
                 }
                 
             } catch (Exception e) {
-                log("❌ Error refreshing colors: " + e.getMessage());
+                log("Error refreshing colors: " + e.getMessage());
                 // In a real app, you might only print the stack trace for non-InterruptedException errors
             }
         });
     }
     
-    private List<javafx.scene.paint.Color> convertAwtToFxColors(List<java.awt.Color> awtColors) {
-        List<javafx.scene.paint.Color> fxColors = new ArrayList<>();
-        
-        for (java.awt.Color awtColor : awtColors) {
-            // Get the R, G, B components (0-255)
-            int r = awtColor.getRed();
-            int g = awtColor.getGreen();
-            int b = awtColor.getBlue();
-            
-            // Get the Alpha component (0-255) and convert to a double for Opacity (0.0 - 1.0)
-            double opacity = awtColor.getAlpha() / 255.0;
-            
-            // Create the new JavaFX Color object
-            javafx.scene.paint.Color fxColor = javafx.scene.paint.Color.rgb(r, g, b, opacity);
-            
-            fxColors.add(fxColor);
-        }
-        return fxColors;
-    }
+//    private List<javafx.scene.paint.Color> convertAwtToFxColors(List<java.awt.Color> awtColors) {
+//        List<javafx.scene.paint.Color> fxColors = new ArrayList<>();
+//        
+//        for (java.awt.Color awtColor : awtColors) {
+//            // Get the R, G, B components (0-255)
+//            int r = awtColor.getRed();
+//            int g = awtColor.getGreen();
+//            int b = awtColor.getBlue();
+//            
+//            // Get the Alpha component (0-255) and convert to a double for Opacity (0.0 - 1.0)
+//            double opacity = awtColor.getAlpha() / 255.0;
+//            
+//            // Create the new JavaFX Color object
+//            javafx.scene.paint.Color fxColor = javafx.scene.paint.Color.rgb(r, g, b, opacity);
+//            
+//            fxColors.add(fxColor);
+//        }
+//        return fxColors;
+//    }
     
-    private void showColorsAsCheckboxes(List<javafx.scene.paint.Color> colorsToShow) {
+    private void showColorsAsCheckboxes(List<Color> colorsToShow) {
         // UI manipulation must always be done on the JavaFX Application Thread
         Platform.runLater(() -> {
             if (dynamicColorCheckBoxContainer == null) {
@@ -1312,37 +1351,36 @@ public class MainController {
             dynamicColorCheckBoxContainer.getChildren().clear();
             colorCheckBoxMap.clear();
 
-            for (javafx.scene.paint.Color color : colorsToShow) {
-                String webColor = colorToWebString(color);
+            for (Color color : colorsToShow) {
+                String webColor = ColorConverter.colorToWebString(color);
                 String labelText = "Color: " + webColor; 
 
                 CheckBox cb = new CheckBox(labelText);
                 cb.setUserData(color); // Store the actual Color object
-
                 // Style the text to be the color it represents
                 cb.setStyle("-fx-text-fill: " + webColor + "; -fx-font-weight: bold;"); 
 
                 dynamicColorCheckBoxContainer.getChildren().add(cb);
                 colorCheckBoxMap.put(color, cb);
             }
-            log("✅ Filter UI Populated with " + colorsToShow.size() + " unique colors.");
+            log("Filter UI Populated with " + colorsToShow.size() + " unique colors.");
         });
     }
-    private String colorToWebString(javafx.scene.paint.Color color) {
-        // Uses 255 * R/G/B values and formats them as a 6-digit hex string
-        return String.format("#%02X%02X%02X", 
-            (int) (color.getRed() * 255), 
-            (int) (color.getGreen() * 255), 
-            (int) (color.getBlue() * 255));
-    }
+//    private String colorToWebString(Color color) {
+//        // Uses 255 * R/G/B values and formats them as a 6-digit hex string
+//        return String.format("#%02X%02X%02X", 
+//            (int) (color.getRed() * 255), 
+//            (int) (color.getGreen() * 255), 
+//            (int) (color.getBlue() * 255));
+//    }
     
     
-    private int[] fxColorToRgbaInts(javafx.scene.paint.Color fxColor) {
-        int r = (int) (fxColor.getRed() * 255);
-        int g = (int) (fxColor.getGreen() * 255);
-        int b = (int) (fxColor.getBlue() * 255);
-        int a = 255;
-        return new int[] {r, g, b, a};
-    }
+//    private int[] fxColorToRgbaInts(javafx.scene.paint.Color fxColor) {
+//        int r = (int) (fxColor.getRed() * 255);
+//        int g = (int) (fxColor.getGreen() * 255);
+//        int b = (int) (fxColor.getBlue() * 255);
+//        int a = 255;
+//        return new int[] {r, g, b, a};
+//    }
     
 }
