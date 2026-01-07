@@ -33,18 +33,13 @@
                     <AnchorPane fx:id="centerMapAnchorPane" />
                     <Group fx:id="centerMapPaneGroup">
                        <children>
-                          <Pane fx:id="carLanePane" pickOnBounds="false" />
-                          <Pane fx:id="mixedLanePane" pickOnBounds="false" />
-                          <Pane fx:id="bikeLanePane" pickOnBounds="false" />
-                          <Pane fx:id="junctionPane" pickOnBounds="false" />
                           <Pane fx:id="routePane" />
+                        <Pane fx:id="lanePane" prefHeight="200.0" prefWidth="200.0" />
+                          <Pane fx:id="junctionPane" pickOnBounds="false" />
                           <Pane fx:id="vehiclePane" pickOnBounds="false" />
                           <Pane fx:id="trafficLightPane" pickOnBounds="false" />
                        </children>
                     </Group>
-                    <Pane fx:id="busPane" pickOnBounds="false" />
-                    <Pane fx:id="carPane" pickOnBounds="false" />
-                    <Pane fx:id="bikePane" pickOnBounds="false" />
                 </children>
             </StackPane>
          </children>

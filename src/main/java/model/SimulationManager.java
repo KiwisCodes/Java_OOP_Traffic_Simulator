@@ -52,7 +52,7 @@ import data.*;
 public class SimulationManager {
 	
 	//TODO insert your sumoPath here to run
-    private String sumoPath = "";
+    private String sumoPath = "/Users/duongquytrang/sumo/bin/sumo";
     private String sumoConfigFileName = "SumoConfig/frauasmap.sumocfg";
     private String sumoConfigFilePath;
 
