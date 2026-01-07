@@ -99,47 +99,37 @@ public class Renderer {
      * @param onLaneClick A consumer callback to handle mouse click events on the generated lane shapes.
      */
     
-    public void renderLanes(Map<String,LaneClass> laneData, Pane carPane, Pane bikePane,Pane mixedPane,Consumer<String> onLaneClick) {
-        carPane.getChildren().clear();
-        bikePane.getChildren().clear();
-        mixedPane.getChildren().clear();
+    public void renderLanes(Map<String, LaneClass> laneData, Pane lanePane, Consumer<String> onLaneClick) {
+        // 1. Xóa các lane cũ
+        lanePane.getChildren().clear();
         
         System.out.println("Renderer: Drawing lanes...");
 
         try {
+            // 2. Duyệt qua danh sách laneId
             for (String laneId : laneData.keySet()) {
-            	LaneClass props = laneData.get(laneId);
-                if (laneId.startsWith(":")) continue;
+                // Lọc bỏ làn nội bộ (Internal Lanes)
+                if (laneId.startsWith(":")) continue; 
 
-                try {
-                	boolean allowBike = props.isBicycleAllowed();
-                	boolean allowCar = props.isPassengerAllowed();
-                    Shape laneShape = createLaneShape(props,laneData,onLaneClick);
-                    if (laneShape != null) {
-                        if (allowBike && allowCar) { 
-                            mixedPane.getChildren().add(laneShape);
-                        }
-                        else if (allowBike) {
-                            bikePane.getChildren().add(laneShape); 
-                        }
-                        else if (allowCar) {
-                            carPane.getChildren().add(laneShape);
-                        }
-                        else {
-                            laneShape.setMouseTransparent(true); 
-                            carPane.getChildren().add(laneShape);
-                        }
-                 
-                     
-                    }} catch (Exception e) {
-                	e.printStackTrace();
+                LaneClass props = laneData.get(laneId);
+                if (props == null) continue;
+
+                // 3. Gọi hàm tạo hình (Hàm này bạn đã viết riêng)
+                Shape laneShape = createLaneShape(props, laneData, onLaneClick);
+                
+                if (laneShape != null) {
+                    lanePane.getChildren().add(laneShape);
                 }
             }
+            
+            // Lệnh này phải nằm TRONG hàm và SAU vòng lặp
             System.out.println("Renderer: Done drawing lanes.");
+
         } catch (Exception e) {
+            // Bắt lỗi chung cho quá trình vẽ
             e.printStackTrace();
         }
-    }
+    } // Kết thúc hàm renderLanes
     
     /**
      * Constructs a graphical representation (Shape) of a specific lane to be rendered on the map.
@@ -181,7 +171,7 @@ public class Renderer {
             lanePolyline.setStroke(Color.rgb(50, 50, 50)); 
             lanePolyline.setStrokeWidth(laneWidth);   
             lanePolyline.setStrokeLineCap(StrokeLineCap.ROUND);
-            lanePolyline.setUserData(props.getId());
+            lanePolyline.setUserData(props);
 
             lanePolyline.setOnMouseEntered(e -> {
                 lanePolyline.setEffect(HOVER_GLOW);
@@ -195,10 +185,7 @@ public class Renderer {
             });
             
             lanePolyline.setOnMouseClicked(e -> {
-                if (onLaneClick != null) { 
-                    String clickedId = (String) lanePolyline.getUserData();
-                    onLaneClick.accept(clickedId);
-                }
+            	onLaneClick.accept(props.getId());
             });
 
             return lanePolyline;

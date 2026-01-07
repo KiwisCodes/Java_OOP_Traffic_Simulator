@@ -43,7 +43,7 @@ import java.util.Map;
  //Model & View Imports
 import model.SimulationManager;
 import model.StatisticsManager;
-
+import model.infrastructure.LaneClass;
 import model.infrastructure.MapManager;
 import model.infrastructure.TrafficlightManager;
 import model.infrastructure.TrafficlightObject;
@@ -181,20 +181,13 @@ public class MainController {
     @FXML private StackPane centerMapStackPane;
     @FXML private Group centerMapPaneGroup;
     @FXML private Pane vehiclePane;
-    @FXML private Pane carLanePane;
-    @FXML private Pane bikeLanePane;
     @FXML private ScrollPane bottomLogScrollPane;
     private MapManager mapManager;
     @FXML private Pane baseMapPane;
-    @FXML private Pane lanePane;     // Static roads go here
+    @FXML private Pane lanePane;     
     @FXML private Pane junctionPane;
     @FXML private Pane trafficLightPane;
     @FXML private Pane routePane;
-    @FXML private Pane carPane;
-    @FXML private Pane busPane;
-    @FXML private Pane truckPane;
-    @FXML private Pane bikePane;
-    @FXML private Pane mixedLanePane;
     @FXML private Label logLabel;
     @FXML private Button zoomInButton;
     @FXML private Button zoomOutButton;
@@ -258,35 +251,35 @@ public class MainController {
         this.mapInteractionHandler = new MapInteractionHandler(centerMapStackPane, centerMapPaneGroup);
         if (injectionPane != null) {
             injectionPane.expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
+            	updateLaneVisuals();
                 if (isNowExpanded) {
                     if (stressTestPane != null && stressTestPane.isExpanded()) {
                         stressTestPane.setExpanded(false);
                     }
-                    InteractWithVehicleInjectionDropMenu();
                 }
             });
         }
         
         if (stressTestPane != null) {
             stressTestPane.expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
+            	updateLaneVisuals();
                 if (isNowExpanded) {
                     if (injectionPane != null && injectionPane.isExpanded()) {
                         injectionPane.setExpanded(false);
                     }
-                    InteractWithVehicleStressTestDropMenu();
                 }
             });
         }
         if (vehicleTypeGroup != null) {
             vehicleTypeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-            	InteractWithVehicleInjectionDropMenu();
+            	updateLaneVisuals();
                 if (firstEdgeField != null) firstEdgeField.clear();   
                 if (secondEdgeField != null) secondEdgeField.clear(); 
             });
         }
         if (vehicleTypeGroup1 != null) {
             vehicleTypeGroup1.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-            	InteractWithVehicleStressTestDropMenu();
+            	updateLaneVisuals();
             	if (firstEdgeField1 != null) firstEdgeField1.clear();   
                 if (secondEdgeField1 != null) secondEdgeField1.clear();
             });
@@ -337,43 +330,66 @@ public class MainController {
             
 
             Consumer<String> laneClickHandler = (laneId) -> {
-            	String edgeId = laneId.substring(0,laneId.indexOf("_"));                
-            	//we derive the edgeId from the the laneId
-            	//ex: laneId: 3242345_234 -> we just want the things before _ so we find the index of _ and take the substring before it
-                if (injectionPane != null && injectionPane.isExpanded()) {
+                // get information of Lane 
+                LaneClass selectedLane = this.simManager.getMapManager().getLanes().get(laneId);
+                if (selectedLane == null) return;
+                
+                // Lấy edgeId từ laneId (ví dụ: "edge1_0" -> "edge1") như code hiện tại của bạn
+                String edgeId = laneId.substring(0, laneId.indexOf("_")); 
+
+                // 2. Xác định trạng thái các Menu
+                boolean isInjecting = (injectionPane != null && injectionPane.isExpanded());
+                boolean isStressTesting = (stressTestPane != null && stressTestPane.isExpanded());
+
+                if (isInjecting) {
+                    // --- LOGIC CHO INJECTION PANE ---
+                    // Sử dụng đúng tên biến carRadio, bikeRadio từ FXML 
+                    String currentMode = bikeRadio.isSelected() ? "bicycle" : "passenger";
+                    
+                    if (!selectedLane.isVehicleAllowed(currentMode)) {
+                        log("Warning: This lane does not allow " + currentMode);
+                        return; 
+                    }
+
                     if (firstEdgeField.getText().isEmpty()) {
                         firstEdgeField.setText(edgeId);
-                        log("Selected First Edge: " + edgeId);
-                        
+                        log("Selected First Edge (Injection): " + edgeId);
                     } else if (secondEdgeField.getText().isEmpty()) {
                         secondEdgeField.setText(edgeId);
-                        log("Selected Second Edge: " + edgeId);
-                        
+                        log("Selected Second Edge (Injection): " + edgeId);
                     } else {
                         firstEdgeField.setText(edgeId);
                         secondEdgeField.clear();
-                        log("Selected Another First Edge  " + edgeId);
+                        log("Selected Another First Edge (Injection): " + edgeId);
                     }
-                    
-                } else if (stressTestPane != null && stressTestPane.isExpanded()) {
+
+                } else if (isStressTesting) {
+                    // --- LOGIC CHO STRESS TEST PANE ---
+                    // Sử dụng đúng tên biến carRadio1, bikeRadio1 từ FXML 
+                    String currentMode = bikeRadio1.isSelected() ? "bicycle" : "passenger";
+
+                    if (!selectedLane.isVehicleAllowed(currentMode)) {
+                        log("Warning: This lane does not allow " + currentMode);
+                        return; 
+                    }
+
                     if (firstEdgeField1.getText().isEmpty()) {
                         firstEdgeField1.setText(edgeId);
-                        log("Selected First Edge: " + edgeId);
-                        
+                        log("Selected First Edge (Stress Test): " + edgeId);
                     } else if (secondEdgeField1.getText().isEmpty()) {
                         secondEdgeField1.setText(edgeId);
-                        log("Selected Second Edge: " + edgeId);
-                        
+                        log("Selected Second Edge (Stress Test): " + edgeId);
                     } else {
                         firstEdgeField1.setText(edgeId);
                         secondEdgeField1.clear();
-                        log("Selected Another First Edge  " + edgeId);
-                    }
-                    
-                }
-                else
-                {
-                    log("Edge ID: " + edgeId); 
+                        log("Selected Another First Edge (Stress Test): " + edgeId);
+                    }   
+
+                } 
+                else {
+                    // --- CHẾ ĐỘ KHÁM PHÁ (Discovery Mode) ---
+                    // Khi không có menu nào mở, chỉ hiện ID lên log như bạn muốn
+                    log("Edge ID: " + edgeId + " | Lane ID: " + laneId);
                 }
             };
             
@@ -391,9 +407,7 @@ public class MainController {
             
             this.renderer.renderLanes(
             	this.simManager.getMapManager().getLanes(),
-                this.carLanePane,
-                this.bikeLanePane,
-                this.mixedLanePane,
+                this.lanePane,
                 laneClickHandler
             );
 	         
@@ -403,9 +417,7 @@ public class MainController {
             		juncId -> log("Selected Junction: " + juncId)
             		);
             
-            InteractWithVehicleInjectionDropMenu();
-            InteractWithVehicleStressTestDropMenu();
-	         log("Static Map drawn (Separated Car/Bike lanes)");
+	        log("Static Map drawn (Separated Car/Bike lanes)");
 
             threadPool.submit(() -> {
                 log("Simulation Thread Started.");
@@ -492,6 +504,56 @@ public class MainController {
             log("Failed to connect to SUMO.");
         }
     }
+    
+    private String getCurrentSelectedMode() {
+        if (injectionPane.isExpanded()) {
+            if (bikeRadio.isSelected()) return "bicycle";
+            // Sau này thêm ở đây: if (busRadio.isSelected()) return "bus";
+            return "passenger";
+        } else if (stressTestPane.isExpanded()) {
+            if (bikeRadio1.isSelected()) return "bicycle";
+            return "passenger";
+        }
+        return "all";
+    }
+    
+    private void updateLaneVisuals() {
+        // 1. Check if any Injection Pane is used:
+        boolean isInjecting = injectionPane.isExpanded();
+        boolean isStressTesting = stressTestPane.isExpanded();
+        
+        // If no Injection Pane is use, return to the original state of lane:
+        if (!isInjecting && !isStressTesting) {
+            for (javafx.scene.Node node : lanePane.getChildren()) {
+                if (node instanceof javafx.scene.shape.Shape shape) {
+                    shape.setOpacity(1.0);
+                    shape.setDisable(false);
+                }
+            }
+            return;
+        }
+
+        // If a Injection pane is opened, get what vehicle is choosen by user:
+        String currentMode = getCurrentSelectedMode();
+
+       // Update the color of lane base on what vehicle is being selected by user:
+        for (javafx.scene.Node node : lanePane.getChildren()) {
+            if (node instanceof javafx.scene.shape.Shape shape) {
+                LaneClass laneData = (LaneClass) shape.getUserData();
+                if (laneData != null) {
+                    if (laneData.isVehicleAllowed(currentMode)) {
+                        shape.setOpacity(1.0);      // clear color
+                        shape.setDisable(false);    // allow click
+                    } else {
+                        shape.setOpacity(0.15);     // blur color
+                        shape.setDisable(true);     // cannot click
+                    }
+                }
+            }
+        }
+    }
+    
+    
     private void startUiLoop() {
         uiLoop = new AnimationTimer() {
             @Override
@@ -702,49 +764,7 @@ public class MainController {
     	}
     }
     
-    private void InteractWithVehicleInjectionDropMenu() {
-        if (injectionPane == null || !injectionPane.isExpanded()) {
-            if (carLanePane != null) carLanePane.setMouseTransparent(false);
-            if (bikeLanePane != null) bikeLanePane.setMouseTransparent(false);
-            if (mixedLanePane != null) mixedLanePane.setMouseTransparent(false);
-            return;
-        }
-
-        boolean isBikeMode = bikeRadio.isSelected();
-
-        if (isBikeMode) {
-            if (carLanePane != null) carLanePane.setMouseTransparent(true);
-            if (bikeLanePane != null) bikeLanePane.setMouseTransparent(false);
-            if (mixedLanePane != null) mixedLanePane.setMouseTransparent(false);
-            
-        } else {
-            if (carLanePane != null) carLanePane.setMouseTransparent(false);
-            // Đường Xe đạp: Tắt tương tác (Không sáng)
-            if (bikeLanePane != null) bikeLanePane.setMouseTransparent(true);
-            if (mixedLanePane != null) mixedLanePane.setMouseTransparent(false);
-        }
-    }
-    
-    private void InteractWithVehicleStressTestDropMenu() {
-        if (stressTestPane == null || !stressTestPane.isExpanded()) {
-            if (carLanePane != null) carLanePane.setMouseTransparent(false);
-            if (bikeLanePane != null) bikeLanePane.setMouseTransparent(false);
-            if (mixedLanePane != null) mixedLanePane.setMouseTransparent(false);
-            return;
-        }
-        boolean isBikeMode = bikeRadio1.isSelected();
-
-        if (isBikeMode) {
-            if (carLanePane != null) carLanePane.setMouseTransparent(true);
-            if (bikeLanePane != null) bikeLanePane.setMouseTransparent(false);
-            if (mixedLanePane != null) mixedLanePane.setMouseTransparent(false);
-            
-        } else {
-            if (carLanePane != null) carLanePane.setMouseTransparent(false);
-            if (bikeLanePane != null) bikeLanePane.setMouseTransparent(true);
-            if (mixedLanePane != null) mixedLanePane.setMouseTransparent(false);
-        }
-    }
+   
 
 
     public void stopSimulation() {
