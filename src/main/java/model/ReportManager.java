@@ -20,6 +20,8 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
+import data.SimulationState;
+
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -28,11 +30,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * Handles exporting simulation data into CSV files and a PDF report.
+ *
+ * This class is responsible for:
+ * - Writing vehicle and edge data to CSV files
+ * - Generating charts using JavaFX
+ * - Embedding charts and statistics into a PDF report
+ * @author khang
+ */
 public class ReportManager {
 
+	/**
+	 * Creates a new {@link ReportManager} instance.
+	 */
     public ReportManager() {}
 
-    // 1. Export Vehicles CSV
+    /**
+     * Exports vehicle information into a CSV file.
+     *
+     * @param vehicles list of vehicle data
+     * @param filepath path where the CSV file will be saved
+     */
     public void exportVehiclesCSV(List<VehicleInfo> vehicles, String filepath) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filepath))) {
             writer.write("vehicle_id,speed,time_from_spawn,color,type\n");
@@ -45,7 +64,12 @@ public class ReportManager {
         }
     }
 
-    // 2. Export Edges CSV
+    /**
+     * Exports edge statistics into a CSV file.
+     *
+     * @param edges list of edge data
+     * @param filepath path where the CSV file will be saved
+     */
     public void exportEdgesCSV(List<EdgeInfo> edges, String filepath) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filepath))) {
             writer.write("edge_id,width,density,average_speed\n");
@@ -58,11 +82,19 @@ public class ReportManager {
         }
     }
 
-    // 3. Export PDF Report
+    /**
+     * Generates a PDF report containing:
+     * - Overall simulation statistics
+     * - Vehicle density chart
+     * - Travel time distribution chart
+     *
+     * @param stat statistics manager providing simulation metrics
+     * @param filepath output PDF file path
+     * @param currentStep current simulation timestep
+     */
     public void exportReportPDF(StatisticsManager stat, String filepath, int currentStep) {
         System.out.println(">>> Starting PDF Export...");
 
-        // 1. Prepare Data
         double avgSpeed = stat.avgVehiclesSpeed();
         Map<String, Integer> densityMap = stat.calculateVehicleDensity();
         Map<String, Integer> travelTimeMap = stat.calculateTravelTimeDistribution(10);
@@ -70,10 +102,7 @@ public class ReportManager {
         try (PDDocument doc = new PDDocument()) {
             PDPage page = new PDPage(PDRectangle.A4);
             doc.addPage(page);
-
             PDPageContentStream content = new PDPageContentStream(doc, page);
-
-            // -------------------- TEXT SECTION --------------------
             content.beginText();
             content.setFont(PDType1Font.HELVETICA_BOLD, 18);
             content.newLineAtOffset(40, 780);
@@ -90,9 +119,7 @@ public class ReportManager {
             content.newLineAtOffset(0, -20);
             content.showText(String.format("Timestep in Simulation: %d", currentStep));
             content.endText();
-            // -------------------- CHART SECTION --------------------
-            
-            // 1. Generate Density Chart
+
             System.out.println("   > Generating Density Chart...");
             BufferedImage densityImg = generateChartImage(densityMap, "Vehicle Density Per Edge", "Edge", "Count");
             if (densityImg != null) {
@@ -103,7 +130,6 @@ public class ReportManager {
                 System.err.println("   ❌ Density Chart Image is NULL.");
             }
 
-            // 2. Generate Travel Time Chart
             System.out.println("   > Generating Time Chart...");
             BufferedImage timeImg = generateChartImage(travelTimeMap, "Travel Time Distribution (s)", "Time Bin", "Vehicles");
             if (timeImg != null) {
@@ -131,23 +157,18 @@ public class ReportManager {
 
         Platform.runLater(() -> {
             try {
-                // 1. Create Chart
                 BarChart<String, Number> chart = createBarChartNode(data, title, xLabel, yLabel);
                 
-                // 2. WRAP IN STACKPANE & SCENE (Crucial for Layout Calculation)
                 StackPane root = new StackPane(chart);
-                Scene dummyScene = new Scene(root, 600, 400); // Set exact size here
+                Scene dummyScene = new Scene(root, 600, 400); 
                 
-                // 3. Force CSS and Layout
                 chart.applyCss();
                 chart.layout();
                 
-                // 4. Snapshot
                 WritableImage fxImage = chart.snapshot(new SnapshotParameters(), null);
                 imageHolder[0] = SwingFXUtils.fromFXImage(fxImage, null);
                 
             } catch (Throwable t) {
-                // Catch Throwable to catch NoClassDefFoundError (Missing Libraries)
                 System.err.println("❌ CRASH INSIDE JAVAFX THREAD: " + t.getMessage());
                 t.printStackTrace();
             } finally {
@@ -156,7 +177,7 @@ public class ReportManager {
         });
 
         try {
-            latch.await(); // Wait for FX thread
+            latch.await(); 
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -177,17 +198,13 @@ public class ReportManager {
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         
-        // Sort and limit data
         data.entrySet().stream()
             .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
             .limit(15)
             .forEach(e -> series.getData().add(new XYChart.Data<>(e.getKey(), e.getValue())));
 
         chart.getData().add(series);
-        
-        // Explicitly set background to white to avoid transparent PNG issues in PDF
-        chart.setStyle("-fx-background-color: white;");
-        
+        chart.setStyle("-fx-background-color: white;");        
         return chart;
     }
 }
