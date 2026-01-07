@@ -58,6 +58,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -200,6 +201,8 @@ public class MainController {
     @FXML private Button resetViewButton;
     @FXML private ToggleButton toggle3DButton;
     @FXML private TitledPane bottomLogArea;
+    private LinkedList<String> logHistory = new java.util.LinkedList<>();
+    private static final int MAX_LOG_LINES = 10;
 
 
 //    Logic & State
@@ -499,110 +502,190 @@ public class MainController {
         uiLoop.start();
     }
 
+//    private void updateView() {
+//
+//    		SimulationState simulationState;
+//		try {
+//			simulationState = this.uiQueue.pollState();
+//			if(simulationState == null) return;
+//			// KHOA CODE UPDATE VIEW
+//			this.refreshColorFilterUI(simulationState);
+//			if (this.isFilterCurrentlyApplied) {
+//	            this.filteredVehicleIDs.clear(); // Ensure list is cleared so it's not passed with old IDs
+//				boolean filterColorActive = filterByColorCheck.isSelected();
+//		        boolean filterSpeedActive = filterBySpeedCheck.isSelected();
+//		        // --- 1. DETERMINE WHICH FILTER(S) TO APPLY ---
+//		        if (filterColorActive || filterSpeedActive) {		            
+//		            // Start the valid list with ALL vehicles (we will remove those that fail a filter)
+//		            List<String> combinedValidIDs = new ArrayList<>(simulationState.getVehicles().keySet());
+//		            
+//		            // --- 2. APPLY COLOR FILTER (INTERSECTION) ---
+//		            if (filterColorActive) {
+//		                // A temporary list to hold the IDs that ONLY match the color criteria
+//		                List<String> colorValidIDs = new ArrayList<>();
+//		                
+//		                // Get the colors the user selected
+//		                List<javafx.scene.paint.Color> selectedFXColors = new ArrayList<>();
+//		                for (Map.Entry<javafx.scene.paint.Color, CheckBox> entry : colorCheckBoxMap.entrySet()) {
+//		                    if (entry.getValue().isSelected()) {
+//		                        selectedFXColors.add(entry.getKey());
+//		                    }
+//		                }
+//		                
+//		                // Perform the color filter logic (using your existing simManager function)
+//		                for (javafx.scene.paint.Color fxColor : selectedFXColors) {
+//		                    int[] rgba = fxColorToRgbaInts(fxColor);
+//		                    // You must update getIDColor to accept SimulationState and not call vehicleManager
+//		                    List<String> idsForColor = this.simManager.getIDColor(rgba[0], rgba[1], rgba[2], 255, simulationState);
+//		                    
+//		                    // Union the results of different selected colors
+//		                    for (String id : idsForColor) {
+//		                        if (!colorValidIDs.contains(id)) {
+//		                            colorValidIDs.add(id);
+//		                        }
+//		                    }
+//		                }
+//		                
+//		                // CRITICAL STEP: INTERSECT (AND) the current list with the new color list
+//		                combinedValidIDs.retainAll(colorValidIDs);
+//		            } 
+//		            
+//		            // --- 3. APPLY SPEED FILTER (INTERSECTION) ---
+//		            if (filterSpeedActive) {
+//		                double maxSpeedCriteria = filterMaxSpeedSlider.getValue();
+//		                
+//		                // A temporary list to hold the IDs that ONLY match the speed criteria
+//		                List<String> speedValidIDs = new ArrayList<>();
+//		                
+//		                // You must update getIDSpeed to accept SimulationState and not call vehicleManager
+//		                speedValidIDs.addAll(this.simManager.getIDSpeed(maxSpeedCriteria, simulationState));
+//		                
+//		                // CRITICAL STEP: INTERSECT (AND) the current list with the new speed list
+//		                combinedValidIDs.retainAll(speedValidIDs);
+//		            }
+//		            
+//		            // --- 4. Finalize the list and Log ---
+//		            this.filteredVehicleIDs.addAll(combinedValidIDs);
+//
+//		            if (this.filteredVehicleIDs.isEmpty()) {
+//		                log("Filter applied: 0 vehicles visible.");
+//		            } else {
+//		                 log("Filter applied: " + this.filteredVehicleIDs.size() + " vehicles visible.");
+//		            }
+//
+//		        } else {
+//		            // No filters are active
+//		            this.isFilterCurrentlyApplied = false;
+//		            this.filteredVehicleIDs.clear(); // Ensure list is cleared so it's not passed with old IDs
+//		        }
+//			}
+//			this.renderer.renderVehicles(vehiclePane, simulationState.getVehicles(),this.filteredVehicleIDs,this.isFilterCurrentlyApplied);
+//			// KHOA CODE UPDATE VIEW
+//
+////			this.renderer.renderVehicles(vehiclePane, simulationState.getVehicles());
+//			this.renderer.renderTrafficLights(trafficLightPane, simulationState.getTrafficLights(), trafficLightClickHandler);
+//			
+//			int currentVehicleCount = simulationState.getVehicles().size();
+//			updateCurrentStep();
+//			updateCurrentVehicleCount(currentVehicleCount);
+//			
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//			System.err.print(e.getMessage());
+//		}
+//    }
+    
     private void updateView() {
+        SimulationState simulationState;
+        try {
+            // 1. Get the next state from the queue
+            simulationState = this.uiQueue.pollState();
+            if (simulationState == null) return;
 
-    		SimulationState simulationState;
-		try {
-			simulationState = this.uiQueue.pollState();
-			if(simulationState == null) return;
-			// KHOA CODE UPDATE VIEW
-			this.refreshColorFilterUI(simulationState);
-			if (this.isFilterCurrentlyApplied) {
-	            this.filteredVehicleIDs.clear(); // Ensure list is cleared so it's not passed with old IDs
-				boolean filterColorActive = filterByColorCheck.isSelected();
-		        boolean filterSpeedActive = filterBySpeedCheck.isSelected();
-		        // --- 1. DETERMINE WHICH FILTER(S) TO APPLY ---
-		        if (filterColorActive || filterSpeedActive) {		            
-		            // Start the valid list with ALL vehicles (we will remove those that fail a filter)
-		            List<String> combinedValidIDs = new ArrayList<>(simulationState.getVehicles().keySet());
-		            
-		            // --- 2. APPLY COLOR FILTER (INTERSECTION) ---
-		            if (filterColorActive) {
-		                // A temporary list to hold the IDs that ONLY match the color criteria
-		                List<String> colorValidIDs = new ArrayList<>();
-		                
-		                // Get the colors the user selected
-		                List<javafx.scene.paint.Color> selectedFXColors = new ArrayList<>();
-		                for (Map.Entry<javafx.scene.paint.Color, CheckBox> entry : colorCheckBoxMap.entrySet()) {
-		                    if (entry.getValue().isSelected()) {
-		                        selectedFXColors.add(entry.getKey());
-		                    }
-		                }
-		                
-		                // Perform the color filter logic (using your existing simManager function)
-		                for (javafx.scene.paint.Color fxColor : selectedFXColors) {
-		                    int[] rgba = fxColorToRgbaInts(fxColor);
-		                    // You must update getIDColor to accept SimulationState and not call vehicleManager
-		                    List<String> idsForColor = this.simManager.getIDColor(rgba[0], rgba[1], rgba[2], 255, simulationState);
-		                    
-		                    // Union the results of different selected colors
-		                    for (String id : idsForColor) {
-		                        if (!colorValidIDs.contains(id)) {
-		                            colorValidIDs.add(id);
-		                        }
-		                    }
-		                }
-		                
-		                // CRITICAL STEP: INTERSECT (AND) the current list with the new color list
-		                combinedValidIDs.retainAll(colorValidIDs);
-		            } 
-		            
-		            // --- 3. APPLY SPEED FILTER (INTERSECTION) ---
-		            if (filterSpeedActive) {
-		                double maxSpeedCriteria = filterMaxSpeedSlider.getValue();
-		                
-		                // A temporary list to hold the IDs that ONLY match the speed criteria
-		                List<String> speedValidIDs = new ArrayList<>();
-		                
-		                // You must update getIDSpeed to accept SimulationState and not call vehicleManager
-		                speedValidIDs.addAll(this.simManager.getIDSpeed(maxSpeedCriteria, simulationState));
-		                
-		                // CRITICAL STEP: INTERSECT (AND) the current list with the new speed list
-		                combinedValidIDs.retainAll(speedValidIDs);
-		            }
-		            
-		            // --- 4. Finalize the list and Log ---
-		            this.filteredVehicleIDs.addAll(combinedValidIDs);
+            // 2. Refresh the dynamic Color Checkboxes in the UI
+            this.refreshColorFilterUI(simulationState);
 
-		            if (this.filteredVehicleIDs.isEmpty()) {
-		                log("Filter applied: 0 vehicles visible.");
-		            } else {
-		                 log("Filter applied: " + this.filteredVehicleIDs.size() + " vehicles visible.");
-		            }
+            if (this.isFilterCurrentlyApplied) {
+                // --- REFACTORED FILTER LOGIC ---
+                
+                // Capture UI state once (Optimization: don't call getters inside the loop)
+                boolean filterColorActive = filterByColorCheck.isSelected();
+                boolean filterSpeedActive = filterBySpeedCheck.isSelected();
+                double maxSpeedCriteria = filterMaxSpeedSlider.getValue();
 
-		        } else {
-		            // No filters are active
-		            this.isFilterCurrentlyApplied = false;
-		            this.filteredVehicleIDs.clear(); // Ensure list is cleared so it's not passed with old IDs
-		        }
-			}
-			this.renderer.renderVehicles(vehiclePane, simulationState.getVehicles(),this.filteredVehicleIDs,this.isFilterCurrentlyApplied);
-			// KHOA CODE UPDATE VIEW
+                // Collect only the colors that are checked by the user
+                java.util.Set<javafx.scene.paint.Color> selectedFXColors = colorCheckBoxMap.entrySet().stream()
+                        .filter(entry -> entry.getValue().isSelected())
+                        .map(Map.Entry::getKey)
+                        .collect(java.util.stream.Collectors.toSet());
 
-//			this.renderer.renderVehicles(vehiclePane, simulationState.getVehicles());
-			this.renderer.renderTrafficLights(trafficLightPane, simulationState.getTrafficLights(), trafficLightClickHandler);
-			
-			int currentVehicleCount = simulationState.getVehicles().size();
-			updateCurrentStep();
-			updateCurrentVehicleCount(currentVehicleCount);
-			
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			System.err.print(e.getMessage());
-		}
+                // 3. Define the "Filter Rule" (Predicate)
+                // 'v' represents an individual VehicleClass object in the stream
+                java.util.function.Predicate<model.vehicles.VehicleClass> filterRule = v -> {
+                    // Check Speed: Pass if filter is off OR if vehicle speed is within limit
+                    boolean speedPass = !filterSpeedActive || v.getSpeed() <= maxSpeedCriteria;
+
+                    // Check Color: Pass if filter is off OR if vehicle color matches selection
+                    boolean colorPass = true;
+                    if (filterColorActive && !selectedFXColors.isEmpty()) {
+                        // Use your Util class to get a JavaFX-compatible color
+                        javafx.scene.paint.Color vehicleFXColor = util.ColorConverter.toFXColor(v.getColor());
+                        colorPass = selectedFXColors.contains(vehicleFXColor);
+                    }
+
+                    return speedPass && colorPass; // Intersection Logic (AND)
+                };
+
+                // 4. Ask the manager to execute the filter
+                this.filteredVehicleIDs = this.simManager.getFilteredVehicleIDs(filterRule, simulationState);
+
+                log("Filter applied: " + this.filteredVehicleIDs.size() + " vehicles visible.");
+                
+            } else {
+                // No filters active: Clear the list
+                this.filteredVehicleIDs.clear();
+            }
+
+            // 5. Tell the renderer what to draw (it now knows if filters are active)
+            this.renderer.renderVehicles(
+                vehiclePane, 
+                simulationState.getVehicles(), 
+                this.filteredVehicleIDs, 
+                this.isFilterCurrentlyApplied
+            );
+
+            // 6. Update Traffic Lights and Stats
+            this.renderer.renderTrafficLights(trafficLightPane, simulationState.getTrafficLights(), trafficLightClickHandler);
+            
+            int currentVehicleCount = simulationState.getVehicles().size();
+            updateCurrentStep();
+            updateCurrentVehicleCount(currentVehicleCount);
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.err.print("UI Update Interrupted: " + e.getMessage());
+        }
     }
     
 
     private void log(String message) {
-        System.out.println(message);
-        if (logLabel != null) {
-            Platform.runLater(() -> {
-                logLabel.setText(message + "\n" + logLabel.getText());
-                if (this.bottomLogScrollPane != null) {
-                    this.bottomLogScrollPane.setVvalue(1.0);
-                }
-            });
-        }
+        // 1. Ensure we update on the JavaFX Application Thread
+        Platform.runLater(() -> {
+            // 2. Add the new message with a timestamp or prefix
+            logHistory.add("> " + message);
+
+            // 3. If we exceed the limit, remove the oldest line (the head)
+            if (logHistory.size() > MAX_LOG_LINES) {
+                logHistory.removeFirst();
+            }
+
+            // 4. Join the lines back together and update the Label
+            String joinedLog = String.join("\n", logHistory);
+            logLabel.setText(joinedLog);
+
+            // 5. Auto-scroll to the bottom of the ScrollPane
+            bottomLogScrollPane.setVvalue(1.0);
+        });
     }
     
     private void updateCurrentStep() {
@@ -1073,10 +1156,21 @@ public class MainController {
         double spd = (this.injectVehicleSpeedSlider1 != null) ? this.injectVehicleSpeedSlider1.getValue() : 5;
         String type = "DEFAULT_VEHTYPE";
         
-        if (this.bikeRadio1.isSelected()){
-            type = "DEFAULT_BIKETYPE";
-            spd = (spd > 5) ? 5 : spd; 
-        }
+        if(this.stressTestSelectedVehicleTypeButton == this.stressTestCarButton) {
+    		type = "DEFAULT_VEHTYPE";
+    	}
+    	else if(this.stressTestSelectedVehicleTypeButton == this.stressTestCarButton) {
+    		type = "DEFAULT_BIKETYPE";
+            spd = (spd>5) ?  5: spd;
+    	}
+    	else if(this.stressTestSelectedVehicleTypeButton == this.stressTestCarButton) {
+    		type = "BUS";
+    		spd = (spd>5) ?  5: spd;
+    	}
+    	else if(this.stressTestSelectedVehicleTypeButton == this.stressTestCarButton) {
+    		type = "DEFAULT_PEDTYPE";
+            spd = (spd>4) ?  4: spd;
+    	}
 
         final String vehicleType = type;
         final double speed = spd;
