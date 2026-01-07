@@ -26,6 +26,7 @@ public class LaneClass {
         this.width = (double) connection.do_job_get(Lane.getWidth(laneId));
 
         String allowed = String.valueOf(connection.do_job_get(Lane.getAllowed(laneId)));
+//        System.out.println(allowed);
         this.allowsPassenger = allowed.contains("passenger") || allowed.isEmpty();
         this.allowsBicycle = allowed.contains("bicycle") || allowed.isEmpty();
     }

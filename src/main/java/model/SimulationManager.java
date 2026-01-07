@@ -31,6 +31,7 @@ import util.Util;
 import model.infrastructure.MapManager;
 import model.infrastructure.TrafficlightManager;
 import data.*;
+import de.tudresden.sumo.cmd.Vehicletype;
 
 
 
@@ -52,7 +53,7 @@ import data.*;
 public class SimulationManager {
 	
 	//TODO insert your sumoPath here to run
-    private String sumoPath = "";
+    private String sumoPath = "/Users/apple/sumo/bin/sumo";
     private String sumoConfigFileName = "SumoConfig/frauasmap.sumocfg";
     private String sumoConfigFilePath;
 
@@ -127,6 +128,20 @@ public class SimulationManager {
     			this.trafficlightManager = new TrafficlightManager(sumoConnection);
     			this.reportManager = new ReportManager();
             System.out.println("Connection established!");
+            
+         // --- DEBUG: PRINT ALL LOADED VEHICLE TYPES ---
+            System.out.println("=== LOADED VEHICLE TYPES ===");
+            
+            // Retrieve the list of IDs from SUMO
+            // Note: usage of do_job_get() is required for TraaS
+            @SuppressWarnings("unchecked")
+            List<String> types = (List<String>) this.sumoConnection.do_job_get(Vehicletype.getIDList());
+
+            for (String t : types) {
+                System.out.println("Found Type: " + t);
+            }
+            System.out.println("============================");
+            
             this.isRunning = true;
             return true;
 
@@ -203,6 +218,10 @@ public class SimulationManager {
             stopSimulation(); 
         }
     }
+    
+    
+    
+    
     
     /**
      * Inject Vehicle to SUMO

@@ -149,6 +149,14 @@
                                                   <VBox spacing="5.0">
 													   <children>
 													      <Label style="-fx-font-size: 11px;" text="Select Vehicle Type:" textFill="#666666" />
+                                                            <HBox layoutX="10.0" layoutY="29.0" spacing="10.0">
+                                                               <children>
+                                                                  <Button fx:id="injectionCarButton" mnemonicParsing="false" onAction="#toggleInjectionVehicleType" prefHeight="26.0" prefWidth="50.0" text="Car" />
+                                                                  <Button fx:id="injectionBikeButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#toggleInjectionVehicleType" prefHeight="26.0" prefWidth="50.0" text="Bike" />
+                                                                  <Button fx:id="injectionBusButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#toggleInjectionVehicleType" prefWidth="50.0" text="Bus" />
+                                                                  <Button fx:id="injectionPedestrianButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#toggleInjectionVehicleType" text="Pedestrian" />
+                                                               </children>
+                                                            </HBox>
 													      <HBox spacing="20.0">
 													         <children>
 													            <RadioButton fx:id="carRadio" selected="true" style="-fx-font-weight: bold;" text="Car ">
@@ -157,6 +165,16 @@
 													               </toggleGroup>
 													            </RadioButton>
 													            <RadioButton fx:id="bikeRadio" style="-fx-font-weight: bold;" text="Bicycle" toggleGroup="$vehicleTypeGroup" />
+                                                                  <RadioButton fx:id="bikeRadio2" layoutX="76.0" layoutY="10.0" style="-fx-font-weight: bold;" text="Bicycle">
+                                                                     <toggleGroup>
+                                                                        <ToggleGroup fx:id="vehicleTypeGroup2" />
+                                                                     </toggleGroup>
+                                                                  </RadioButton>
+                                                                  <RadioButton fx:id="bikeRadio21" layoutX="158.0" layoutY="10.0" style="-fx-font-weight: bold;" text="Bicycle">
+                                                                     <toggleGroup>
+                                                                        <ToggleGroup fx:id="vehicleTypeGroup21" />
+                                                                     </toggleGroup>
+                                                                  </RadioButton>
 													         </children>
 													      </HBox>
 													   </children>
@@ -187,11 +205,11 @@
                                                	 <TextField fx:id="trafficLightIdField" editable="false" promptText="TL ID" styleClass="read-only-field" />
                                                   <Label text="Set Color and/or Duration for the Traffic Light" textFill="#666666" />
                                                   <HBox alignment="TOP_CENTER" spacing="5.0">
-                                                     <Button fx:id="setRedPhaseButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="danger-button" text="Red" HBox.hgrow="ALWAYS" />
+                                                     <Button fx:id="setRedPhaseButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#toggleColorButton" styleClass="danger-button" text="Red" HBox.hgrow="ALWAYS" />
                                                          <Region prefHeight="26.0" prefWidth="0.0" />
-                                                         <Button fx:id="setYellowPhaseButton" maxWidth="1.7976931348623157E308" minWidth="80.0" mnemonicParsing="false" styleClass="warning-button" text="Yellow" />
+                                                         <Button fx:id="setYellowPhaseButton" maxWidth="1.7976931348623157E308" minWidth="80.0" mnemonicParsing="false" onAction="#toggleColorButton" styleClass="warning-button" text="Yellow" />
                                                          <Region prefHeight="26.0" prefWidth="0.0" />
-                                                     <Button fx:id="setGreenPhaseButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="26.0" prefWidth="52.0" styleClass="success-button" text="Green" HBox.hgrow="ALWAYS" />
+                                                     <Button fx:id="setGreenPhaseButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#toggleColorButton" prefHeight="26.0" prefWidth="52.0" styleClass="success-button" text="Green" HBox.hgrow="ALWAYS" />
                                                   </HBox>
                                                   <HBox spacing="5.0">
                                                       <TextField fx:id="phaseDurationField" promptText="Duration (s)" HBox.hgrow="ALWAYS" />
@@ -213,7 +231,7 @@
                                                     <Label fx:id="avgSpeedLabel" style="-fx-font-weight: bold;" text="Avg Speed: 0.0" />
                                                     <Label fx:id="congestionLabel" style="-fx-font-weight: bold;" text="Congestion: Low" />
                                                     <Separator />
-                                                    <Button fx:id="showChartsButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="View Live Charts" />
+                                                    <Button fx:id="showChartsButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#showCharts" styleClass="secondary-button" text="View Live Charts" />
                                                     <Button fx:id="exportVehiclesCsvButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Export CSV Vehicle Report" />
                                                       <Button fx:id="exportEdgesCsvButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Export CSV Edge Report" />
                                                       <Button fx:id="exportPdfButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Export PDF Report" />
@@ -228,6 +246,14 @@
                                                       <VBox spacing="5.0">
                                                          <children>
                                                             <Label style="-fx-font-size: 11px;" text="Select Vehicle Type:" textFill="#666666" />
+                                                            <HBox spacing="10.0">
+                                                               <children>
+                                                                  <Button fx:id="stressTestCarButton" mnemonicParsing="false" onAction="#toggleStressTestVehicleType" prefHeight="26.0" prefWidth="50.0" text="Car" />
+                                                                  <Button fx:id="stressTestBikeButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#toggleStressTestVehicleType" prefHeight="26.0" prefWidth="50.0" text="Bike" />
+                                                                  <Button fx:id="stressTestBusButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#toggleStressTestVehicleType" prefWidth="50.0" text="Bus" />
+                                                                  <Button fx:id="stressTestPedestrianButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#toggleStressTestVehicleType" text="Pedestrian" />
+                                                               </children>
+                                                            </HBox>
                                                             <HBox spacing="20.0">
                                                                <children>
                                                                   <RadioButton fx:id="carRadio1" selected="true" style="-fx-font-weight: bold;" text="Car ">

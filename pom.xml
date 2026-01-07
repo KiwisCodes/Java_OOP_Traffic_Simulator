@@ -19,6 +19,13 @@
         <!-- Example: com.yourcompany.traffic.MainApp -->
         <main.class>view.MainGUI</main.class>
     </properties>
+    
+    <repositories>
+	    <repository>
+	        <id>gluon-nexus</id>
+	        <url>https://nexus.gluonhq.com/nexus/content/repositories/releases/</url>
+	    </repository>
+	</repositories>
 
     <dependencies>
         <!-- JavaFX Controls -->
@@ -70,6 +77,12 @@
 			<artifactId>javafx-swing</artifactId>
 			<version>21.0.1</version>
 		</dependency>
+		
+		<dependency>
+		    <groupId>com.gluonhq</groupId>
+		    <artifactId>charm-glisten</artifactId>
+		    <version>6.2.3</version> 
+    	</dependency>
 
     </dependencies>
 

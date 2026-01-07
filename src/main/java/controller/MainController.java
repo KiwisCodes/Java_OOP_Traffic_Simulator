@@ -3,6 +3,7 @@ package controller;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
@@ -56,6 +57,7 @@ import util.ColorConverter;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -100,6 +102,11 @@ public class MainController {
     @FXML private TextField secondEdgeField;      
     @FXML private ColorPicker injectVehicleColorPickerButton; 
     @FXML private Slider injectVehicleSpeedSlider;
+    @FXML private Button injectionSelectedVehicleTypeButton;
+    @FXML private Button injectionCarButton;
+    @FXML private Button injectionBikeButton;
+    @FXML private Button injectionBusButton;
+    @FXML private Button injectionPedestrianButton;
 
     // Traffic Light Actions
     @FXML private TitledPane trafficLightControlPane;
@@ -111,7 +118,7 @@ public class MainController {
     @FXML private Button setTrafficLightColorandorDurationButton;
     @FXML private TextField phaseDurationField;
     @FXML private Button switchTrafficLightPhaseButton;
-    private Button selectedColorButton = null; // keep track of which button is selected
+    @FXML private Button selectedColorButton = null; // keep track of which button is selected
     private Consumer<TrafficlightObject> trafficLightClickHandler;
     private TrafficlightObject currentTrafficLightLink;
 
@@ -133,6 +140,12 @@ public class MainController {
     @FXML private ColorPicker injectVehicleColorPickerButton1;
     @FXML private Slider injectVehicleSpeedSlider1;
     @FXML private Slider numberOfVehicleSlider1;
+    @FXML private Button stressTestSelectedVehicleTypeButton;
+    @FXML private Button stressTestCarButton;
+    @FXML private Button stressTestBikeButton;
+    @FXML private Button stressTestBusButton;
+    @FXML private Button stressTestPedestrianButton;
+    
     
 
     // Sumo-GUI Integration
@@ -269,11 +282,11 @@ public class MainController {
         disableButtons(true);
         this.chartWindow = new ChartWindow();
         
-        showChartsButton.setOnAction(e -> this.chartWindow.show());
+//        showChartsButton.setOnAction(e -> this.chartWindow.show());
 
-        setRedPhaseButton.setOnAction(e -> toggleColorButton(setRedPhaseButton));
-        setYellowPhaseButton.setOnAction(e -> toggleColorButton(setYellowPhaseButton));
-        setGreenPhaseButton.setOnAction(e -> toggleColorButton(setGreenPhaseButton));
+//        setRedPhaseButton.setOnAction(e -> toggleColorButton(setRedPhaseButton));
+//        setYellowPhaseButton.setOnAction(e -> toggleColorButton(setYellowPhaseButton));
+//        setGreenPhaseButton.setOnAction(e -> toggleColorButton(setGreenPhaseButton));
         
         this.carRadio.setOnMouseClicked(e -> {
         	this.firstEdgeField.clear();
@@ -307,6 +320,7 @@ public class MainController {
             MapManager mapManager = this.simManager.getMapManager();
             this.trafficLightManager = this.simManager.getTrafficlightManager();
             this.renderer.setConverter(mapManager);
+            
 
             Consumer<String> laneClickHandler = (laneId) -> {
             	String edgeId = laneId.substring(0,laneId.indexOf("_"));                
@@ -668,11 +682,30 @@ public class MainController {
     	if(this.injectVehicleSpeedSlider!=null) {
     		speed=this.injectVehicleSpeedSlider.getValue();
     	}
-    	if(this.carRadio.isSelected()) vehicleType = "DEFAULT_VEHTYPE";
-    	else if(this.bikeRadio.isSelected()){
-            vehicleType = "DEFAULT_BIKETYPE";
+    	
+    	
+//    	if(this.carRadio.isSelected()) vehicleType = "DEFAULT_VEHTYPE";
+//    	else if(this.bikeRadio.isSelected()){
+//            vehicleType = "DEFAULT_BIKETYPE";
+//            speed = (speed>5) ?  5: speed;
+//        }
+    	
+    	if(this.injectionSelectedVehicleTypeButton == this.injectionCarButton) {
+    		vehicleType = "DEFAULT_VEHTYPE";
+    	}
+    	else if(this.injectionSelectedVehicleTypeButton == this.injectionBikeButton) {
+    		vehicleType = "DEFAULT_BIKETYPE";
             speed = (speed>5) ?  5: speed;
-        }
+    	}
+    	else if(this.injectionSelectedVehicleTypeButton == this.injectionBusButton) {
+    		vehicleType = "BUS";
+    		speed = (speed>5) ?  5: speed;
+    	}
+    	else if(this.injectionSelectedVehicleTypeButton == this.injectionPedestrianButton) {
+    		vehicleType = "DEFAULT_PEDTYPE";
+            speed = (speed>4) ?  4: speed;
+    	}
+    	
         Color fxColor = injectVehicleColorPickerButton.getValue();
         SumoColor sumoColor = ColorConverter.toSumoColor(fxColor);
     	if(this.simManager.InjectVehicle(vehicleType, sumoColor, speed, firstEdgeId, secondEdgeId)) {
@@ -795,18 +828,70 @@ public class MainController {
      *
      * @param button color selection button to toggle
      */
-	private void toggleColorButton(Button button) {
-	    if (selectedColorButton == button) {
-	        button.getStyleClass().remove("selected-button");
-	        selectedColorButton = null;
-	    } else {
-	        if (selectedColorButton != null) {
-	            selectedColorButton.getStyleClass().remove("selected-button");
-	        }
-	        button.getStyleClass().add("selected-button");
-	        selectedColorButton = button;
-	    }
-}
+//    @FXML private void toggleColorButton(Button button) {
+//	    if (selectedColorButton == button) {
+//	        button.getStyleClass().remove("selected-button");
+//	        selectedColorButton = null;
+//	    } else {
+//	        if (selectedColorButton != null) {
+//	            selectedColorButton.getStyleClass().remove("selected-button");
+//	        }
+//	        button.getStyleClass().add("selected-button");
+//	        selectedColorButton = button;
+//	    }
+//}
+    
+    //pth modified
+    @FXML
+    private void toggleColorButton(ActionEvent event) {
+        // Get the button that was clicked from the event
+        Button button = (Button) event.getSource();
+
+        if (selectedColorButton == button) {
+            button.getStyleClass().remove("selected-button");
+            selectedColorButton = null;
+        } else {
+            if (selectedColorButton != null) {
+                selectedColorButton.getStyleClass().remove("selected-button");
+            }
+            button.getStyleClass().add("selected-button");
+            selectedColorButton = button;
+        }
+    }
+    
+    @FXML
+    private void toggleInjectionVehicleType(ActionEvent event) {
+        // Get the button that was clicked from the event
+        Button button = (Button) event.getSource();
+
+        if (this.injectionSelectedVehicleTypeButton == button) {
+            button.getStyleClass().remove("selected-button");
+            this.injectionSelectedVehicleTypeButton = null;
+        } else {
+            if (this.injectionSelectedVehicleTypeButton != null) {
+            	this.injectionSelectedVehicleTypeButton.getStyleClass().remove("selected-button");
+            }
+            button.getStyleClass().add("selected-button");
+            this.injectionSelectedVehicleTypeButton = button;
+        }
+    }
+    
+    @FXML
+    private void toggleStressTestVehicleType(ActionEvent event) {
+        // Get the button that was clicked from the event
+        Button button = (Button) event.getSource();
+
+        if (this.stressTestSelectedVehicleTypeButton == button) {
+            button.getStyleClass().remove("selected-button");
+            this.stressTestSelectedVehicleTypeButton = null;
+        } else {
+            if (this.stressTestSelectedVehicleTypeButton != null) {
+            	this.stressTestSelectedVehicleTypeButton.getStyleClass().remove("selected-button");
+            }
+            button.getStyleClass().add("selected-button");
+            this.stressTestSelectedVehicleTypeButton = button;
+        }
+    }
     
     @FXML private void zoomIn() {
     	this.mapInteractionHandler.handleZoomIn();
@@ -818,6 +903,9 @@ public class MainController {
     	this.mapInteractionHandler.handleResetView();
     }
     
+    @FXML private void showCharts() {
+    	this.chartWindow.show();
+    }
     @FXML private void startSumoGUI() {}
     @FXML private void insertSumoConfigFile() {}
     @FXML private void applyFilter() {}

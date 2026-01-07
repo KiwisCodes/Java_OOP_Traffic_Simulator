@@ -11,7 +11,7 @@ import de.tudresden.sumo.objects.SumoPosition2D;
  *
  * @author Minh Khoi
  */
-public class VehicleClass {
+public class VehicleClass implements MeansOfTransportation{
 
     private String id;
     private SumoColor color;
