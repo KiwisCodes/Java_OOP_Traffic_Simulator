@@ -1,5 +1,6 @@
 package model;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -11,7 +12,6 @@ import java.util.Map;
 
 import controller.MainController;
 import model.infrastructure.*;
-import data.SimulationQueue;
 import model.infrastructure.*;
 import it.polito.appeal.traci.*;
 import javafx.scene.control.TextField;
@@ -406,4 +406,72 @@ public class SimulationManager {
             return Double.parseDouble(this.stepLength);
         }
     }
+    
+    
+    // KHOA FILTERING
+	public List<Color> getUniqueColors(SimulationState state){
+		Map<String, VehicleClass> vehicleData = state.getVehicles();
+		List<String> colors = new ArrayList<>();
+		List<Color> colorRGBA = new ArrayList<>();
+		for(Map.Entry<String, VehicleClass> vehicle : vehicleData.entrySet()) {
+			VehicleClass innerMap = vehicle.getValue();
+			String colorValue = String.valueOf(innerMap.getColor());
+			if(colors.contains(colorValue)) {
+				continue;
+			}
+			else {
+				colors.add(colorValue);
+			}
+		}
+		/**
+		 * 
+		 * hello
+		 */
+		for(String c: colors) {
+			String[] parts = c.split("#");
+			int r = (Integer.parseInt(parts[0]) + 256) % 256;
+		    int g = (Integer.parseInt(parts[1]) + 256) % 256;
+		    int b = (Integer.parseInt(parts[2]) + 256) % 256;
+		    int a =	255;
+//		    System.out.println("RGBA = " + r + ", " + g + ", " + b + ", " + a);
+		    Color color = new Color(r,g,b,a);
+		    colorRGBA.add(color);
+		}
+		return colorRGBA;
+	}
+	public List<String> getIDColor(int r, int g, int b, int a, SimulationState state){
+		Map<String, VehicleClass> vehicleData = state.getVehicles();
+		List<String> validIDs = new ArrayList<>();
+		for(Map.Entry<String, VehicleClass> vehicle : vehicleData.entrySet()) {
+			String vehicleId = vehicle.getKey();
+		    VehicleClass innerMap = vehicle.getValue();
+		    String colorValue = String.valueOf(innerMap.getColor());
+		    String[] parts = colorValue.split("#");
+		    int r1 = (Integer.parseInt(parts[0]) + 256) % 256;
+		    int g1 = (Integer.parseInt(parts[1]) + 256) % 256;
+		    int b1 = (Integer.parseInt(parts[2]) + 256) % 256;
+//		    int a1 = (Integer.parseInt(parts[3]) + 256) % 256;
+		    System.out.println("DEBUG: Vehicle Color: " + r1 + "," + g1 + "," + b1 + " | Filter Color: " + r + "," + g + "," + b);		    
+		    if (r1 == r && g1 == g && b1 == b) {
+		    	validIDs.add(vehicleId);
+		    }
+		}
+//		System.out.println(validIDs);
+		return validIDs;
+	}
+	public List<String> getIDSpeed(double speed, SimulationState state){
+		List<String> validIDs = new ArrayList<>();
+		Map<String, VehicleClass> vehicleData = state.getVehicles();
+		for(Map.Entry<String, VehicleClass> vehicle : vehicleData.entrySet()) {
+			String vehicleId = vehicle.getKey();
+		    VehicleClass innerMap = vehicle.getValue();
+		    String currentSpeed = String.valueOf(innerMap.getSpeed());
+		    double speedDouble = Double.parseDouble(currentSpeed);
+		    if(speedDouble <= speed) {
+		    	validIDs.add(vehicleId);
+		    }		    
+		}
+		return validIDs;
+	}
+	
 }
