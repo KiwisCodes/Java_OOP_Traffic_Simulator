@@ -303,6 +303,47 @@ public class MainController {
         	this.secondEdgeField1.clear();
         });
         
+        String projectPath = System.getProperty("user.dir");
+        String reportPath = projectPath + File.separator + "reports";
+        File reportDir = new File(reportPath);
+        if (!reportDir.exists()) {
+            boolean created = reportDir.mkdirs();
+            if (created) log("Created new reports directory: " + reportPath);
+        }
+        
+        if (exportVehiclesCsvButton != null) {
+            exportVehiclesCsvButton.setOnAction(e -> {
+                log("Exporting Vehicle CSV...");
+                Platform.runLater(() -> {
+	            		simManager.generateReports(reportPath, "VEHICLE", currentStep);
+	            });
+            });
+        }
+
+        if (exportEdgesCsvButton != null) {
+            exportEdgesCsvButton.setOnAction(e -> {
+                log("Exporting Edge CSV...");
+                Platform.runLater(() -> {
+            			simManager.generateReports(reportPath, "EDGE", currentStep);
+                });
+            });
+        }
+
+        if (exportPdfButton != null) {
+            exportPdfButton.setOnAction(e -> {
+                log("Exporting PDF Report...");
+                threadPool.submit(() -> {
+                		try {                            
+                			simManager.generateReports(reportPath, "PDF", currentStep);
+                			Platform.runLater(() -> log("✅ PDF Saved to Desktop!"));
+                    } catch (Throwable ex) {
+                    		System.err.println("CRITICAL THREAD ERROR:"); 
+                    		ex.printStackTrace();      
+                    		Platform.runLater(() -> log("❌ CRASH: " + ex.getClass().getSimpleName() + " - " + ex.getMessage()));
+                    	}
+                });
+            });
+        }
     }
 
     @FXML 
