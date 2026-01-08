@@ -54,8 +54,8 @@ public class MapInteractionHandler {
     private boolean isRotating = false;
     private boolean isZooming = false;
     //zoom
-    private static final double MAX_SCALE = 10.0;
-    private static final double MIN_SCALE = 0.075;
+    private static final double MAX_SCALE = 15;
+    private static final double MIN_SCALE = 0.1;
     private static final double zoomFactor = 1.2;
     //rotate
     private static final double MOUSE_ROTATION_SENSITIVITY = 0.8; //degrees per pixel dragged

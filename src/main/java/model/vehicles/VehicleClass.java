@@ -2,6 +2,9 @@ package model.vehicles;
 
 import de.tudresden.sumo.objects.SumoColor;
 import de.tudresden.sumo.objects.SumoPosition2D;
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.paint.Color;
 
 /**
  * Represents the state of a single vehicle within the SUMO simulation at a specific step
@@ -90,6 +93,11 @@ public class VehicleClass implements MeansOfTransportation{
      * @return The departure time in seconds.
      */
     public double getDeparture() { return departure; }
+    
+    public Node getShape(Color simColor) {
+    	Node node = new Group();
+    	return node;
+    }
 
     @Override
     public String toString() {
