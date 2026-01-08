@@ -18,7 +18,7 @@ import java.util.Arrays;
  *
  * @author khang
  */
-public class TrafficlightObject{
+public class TrafficlightClass{
 	private SumoLink link;  // the link (SumoLink)
 	private String host_junction_id; // the traffic light (tls_id)
 	private String link_index; // the index of this link (SumoLink) in the traffic light (tls_id)
@@ -31,7 +31,7 @@ public class TrafficlightObject{
      * @param junction_id identifier of the hosting traffic light junction
      * @param index index of the link within the traffic light definition
      */
-	public TrafficlightObject(SumoLink object_link, String junction_id, String index) {
+	public TrafficlightClass(SumoLink object_link, String junction_id, String index) {
 		this.link = object_link;
 		this.host_junction_id = junction_id;
 		this.link_index = index;

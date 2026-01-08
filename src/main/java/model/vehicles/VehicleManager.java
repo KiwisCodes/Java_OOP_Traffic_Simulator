@@ -1,5 +1,6 @@
 package model.vehicles;
 
+import de.tudresden.sumo.cmd.Person;
 import de.tudresden.sumo.cmd.Vehicle; 
 import it.polito.appeal.traci.SumoTraciConnection;
 import de.tudresden.sumo.util.SumoCommand;
@@ -27,6 +28,8 @@ public class VehicleManager {
     private SumoTraciConnection conn;
     /** A list containing the IDs of all vehicles currently active in the simulation */
     private List<String> vehiclesIds;
+    
+    private List<String> pedestrianIds;
     /** A map storing all informations related to each vehicle, using their ID */
     private Map<String, MeansOfTransportation> vehiclesData;
 
@@ -39,6 +42,7 @@ public class VehicleManager {
 		this.conn = connection;
         this.vehiclesData = new HashMap<>();
 		this.vehiclesIds = new ArrayList<>();
+		this.pedestrianIds = new ArrayList<>();
 	}
 
     /**
@@ -57,10 +61,16 @@ public class VehicleManager {
 		try {
 			SumoCommand idListCmd = Vehicle.getIDList();
 			Object response = this.conn.do_job_get(idListCmd);
-			
 			if (response instanceof SumoStringList) {
 				this.vehiclesIds = (SumoStringList) response;
 			}
+			idListCmd = Person.getIDList();
+			response = this.conn.do_job_get(idListCmd);
+			if (response instanceof SumoStringList) {
+				this.pedestrianIds = (SumoStringList) response;
+			}
+			
+			
 			
 			this.vehiclesData = new HashMap<>();
 			
@@ -93,52 +103,81 @@ public class VehicleManager {
      * The gathered information is packaged into a {@link VehicleClass} object and stored in the map.
      */
 	private void updateVehiclesInfo() {
-	    for (String id : this.vehiclesIds) {
-	        if (this.conn == null || this.conn.isClosed()) return;
+		if(this.vehiclesIds != null) {
+			for (String id : this.vehiclesIds) {
+				if (this.conn == null || this.conn.isClosed()) return;
+				
+				try {
+					// 1. Get the Vehicle Type ID (e.g., "bus", "car_express", "ped_type")
+					SumoCommand typeCmd = Vehicle.getTypeID(id); 
+					String typeId = ((String) this.conn.do_job_get(typeCmd)).toLowerCase();
+					
+					// 2. Fetch shared data from SUMO
+					SumoColor color = (SumoColor) this.conn.do_job_get(Vehicle.getColor(id));
+					SumoPosition2D position = (SumoPosition2D) this.conn.do_job_get(Vehicle.getPosition(id));
+					double speed = (Double) this.conn.do_job_get(Vehicle.getSpeed(id));
+					String edgeId = (String) this.conn.do_job_get(Vehicle.getRoadID(id));
+					double angle = (Double) this.conn.do_job_get(Vehicle.getAngle(id));
+					
+					// Fetch Departure Time (Custom Command)
+					SumoCommand departureCmd = new SumoCommand(
+							Constants.CMD_GET_VEHICLE_VARIABLE, Constants.VAR_DEPARTURE, id,
+							Constants.RESPONSE_GET_VEHICLE_VARIABLE, Constants.TYPE_DOUBLE
+							);
+					double departure = (Double) this.conn.do_job_get(departureCmd);
+					
+					// 3. Instantiate the correct subclass
+					// IMPORTANT: We use the order from your BusClass: (id, speed, position, color, edgeId, angle, departure)
+					MeansOfTransportation vehicle = null;
+					
+					if (typeId.contains("bus")) {
+						vehicle = new BusClass(id, speed, position, color, edgeId, angle, departure);
+					} else if (typeId.contains("bike") || typeId.contains("bicycle")) {
+						vehicle = new BikeClass(id, speed, position, color, edgeId, angle, departure);
+					} else if (typeId.contains("passenger") || typeId.contains("veh")) {
+						vehicle = new CarClass(id, speed, position, color, edgeId, angle, departure);
+					}
+					
+					// 4. Store in the Map
+					// Because BusClass, CarClass, etc., all EXTEND VehicleClass, this works perfectly.
+					if(vehicle != null) {
+						this.vehiclesData.put(id, vehicle);	            	
+					}
+					
+				} catch (Exception e) {
+					System.err.println("Error requesting data for vehicle: " + id);
+					e.printStackTrace();
+				}
+			}
+			
+		}
 
-	        try {
-	            // 1. Get the Vehicle Type ID (e.g., "bus", "car_express", "ped_type")
-	            SumoCommand typeCmd = Vehicle.getTypeID(id); 
-	            String typeId = ((String) this.conn.do_job_get(typeCmd)).toLowerCase();
+		if(this.pedestrianIds != null) {
+			for (String id : this.pedestrianIds) {
+				try {
+					String typeId = ((String) this.conn.do_job_get(Person.getTypeID(id))).toLowerCase();
+					SumoColor color = (SumoColor) this.conn.do_job_get(Person.getColor(id));
+					SumoPosition2D position = (SumoPosition2D) this.conn.do_job_get(Person.getPosition(id));
+					double speed = (Double) this.conn.do_job_get(Person.getSpeed(id));
+					String edgeId = (String) this.conn.do_job_get(Person.getRoadID(id));
+					double angle = (Double) this.conn.do_job_get(Person.getAngle(id));
+					
+					double departure = 0.0; 
+					
+					// Instantiate PedestrianClass
+					MeansOfTransportation pedestrian = new PedestrianClass(id, speed, position, color, edgeId, angle, departure);
+					
+					if(pedestrian != null) {
+						this.vehiclesData.put(id, pedestrian);                	
+					}
+					
+				} catch (Exception e) {
+					System.err.println("Error data for person: " + id);
+				}
+			}
+		}
 
-	            // 2. Fetch shared data from SUMO
-	            SumoColor color = (SumoColor) this.conn.do_job_get(Vehicle.getColor(id));
-	            SumoPosition2D position = (SumoPosition2D) this.conn.do_job_get(Vehicle.getPosition(id));
-	            double speed = (Double) this.conn.do_job_get(Vehicle.getSpeed(id));
-	            String edgeId = (String) this.conn.do_job_get(Vehicle.getRoadID(id));
-	            double angle = (Double) this.conn.do_job_get(Vehicle.getAngle(id));
-	            
-	            // Fetch Departure Time (Custom Command)
-	            SumoCommand departureCmd = new SumoCommand(
-	                    Constants.CMD_GET_VEHICLE_VARIABLE, Constants.VAR_DEPARTURE, id,
-	                    Constants.RESPONSE_GET_VEHICLE_VARIABLE, Constants.TYPE_DOUBLE
-	            );
-	            double departure = (Double) this.conn.do_job_get(departureCmd);
-
-	            // 3. Instantiate the correct subclass
-	            // IMPORTANT: We use the order from your BusClass: (id, speed, position, color, edgeId, angle, departure)
-	            MeansOfTransportation vehicle;
-
-	            if (typeId.contains("bus")) {
-	                vehicle = new BusClass(id, speed, position, color, edgeId, angle, departure);
-	            } else if (typeId.contains("bike") || typeId.contains("bicycle")) {
-	                vehicle = new BikeClass(id, speed, position, color, edgeId, angle, departure);
-	            } else if (typeId.contains("pedestrian") || typeId.contains("ped")) {
-	                vehicle = new PedestrianClass(id, speed, position, color, edgeId, angle, departure);
-	            } else {
-	                // Default to CarClass for anything else
-	                vehicle = new CarClass(id, speed, position, color, edgeId, angle, departure);
-	            }
-
-	            // 4. Store in the Map
-	            // Because BusClass, CarClass, etc., all EXTEND VehicleClass, this works perfectly.
-	            this.vehiclesData.put(id, vehicle);
-
-	        } catch (Exception e) {
-	            System.err.println("Error requesting data for vehicle: " + id);
-	            e.printStackTrace();
-	        }
-	    }
+	    
 	}
 
     /**
@@ -178,6 +217,37 @@ public class VehicleManager {
 		}
 	}
 	
+	public void injectPerson(String personId, String typeId, SumoStringList edgeList, SumoColor sumoColor, double speed) {
+	    try {
+	        if (edgeList == null || edgeList.size() == 0) return;
+
+	        // 1. Get the Start Edge (Person.add needs a String, NOT a list)
+	        String firstEdge = edgeList.get(0);
+	        this.conn.do_job_set(Person.add(personId, firstEdge, 0, (byte) 0, typeId));
+
+	        // 3. Set Visuals and Speed
+	        this.conn.do_job_set(Person.setColor(personId, sumoColor));
+	        this.conn.do_job_set(Person.setSpeed(personId, speed));
+
+	        // 4. FIX: Pass the 'edgeList' object directly
+	        // Do NOT convert to string. The method signature wants SumoStringList.
+	        this.conn.do_job_set(Person.appendWalkingStage(
+	            personId, 
+	            edgeList,   // <--- Pass the SumoStringList directly here
+	            0.0,        // arrivalPos (0 usually means end of edge in this context)
+	            -1.0,       // duration (-1 = calculated by speed)
+	            speed,      // speed
+	            ""          // stopID
+	        ));
+
+	        System.out.println("Person Injected: " + personId);
+
+	    } catch (Exception e) {
+	        System.out.println("Error at Injection of Person " + personId);
+	        e.printStackTrace();
+	    }
+	}
+	
 	public int getVehicleCount() {
 		try {
 	
@@ -208,11 +278,19 @@ public class VehicleManager {
 	}
 	
 	public void printIdList(int step) {
-		if (this.vehiclesIds != null) {
-			for (String id : this.vehiclesIds) {
-				System.out.println(id);
-			}
-            System.out.println("Step " + step + " Active Vehicles: " + this.vehiclesIds.size());
-		}
+	    // Print Cars
+	    if (this.vehiclesIds != null) {
+	        for (String id : this.vehiclesIds) System.out.println("Car: " + id);
+	    }
+	    
+	    // Print Pedestrians
+	    if (this.pedestrianIds != null) {
+	        for (String id : this.pedestrianIds) System.out.println("Person: " + id);
+	    }
+
+	    int vCount = (vehiclesIds != null) ? vehiclesIds.size() : 0;
+	    int pCount = (pedestrianIds != null) ? pedestrianIds.size() : 0;
+	    
+	    System.out.println("Step " + step + " | Active Cars: " + vCount + " | Active People: " + pCount);
 	}
 }

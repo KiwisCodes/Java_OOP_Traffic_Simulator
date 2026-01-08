@@ -24,12 +24,12 @@ import model.ReportManager;
 public class TrafficlightManager {
 	private SumoTraciConnection sumoConnection;
 	private List<String> trafficlightIdList = new ArrayList<>();
-	private List<TrafficlightObject> trafficlightlinkList = new ArrayList<>();
+	private List<TrafficlightClass> trafficlightlinkList = new ArrayList<>();
 	private Map<String, SumoTLSProgram> program_map = new HashMap<>();
 	
 	/**
      * Creates a traffic light manager, saves all traffic light
-     * junctions and {@link TrafficlightObject} from the SUMO simulation.
+     * junctions and {@link TrafficlightClass} from the SUMO simulation.
      *
      * @param sumoConnection active TraCI connection to the SUMO simulation
      */
@@ -54,7 +54,7 @@ public class TrafficlightManager {
 				linkIdList = (SumoLinkList) result2;
 				int run_var = 0;
 				for(SumoLink j : linkIdList) {
-					TrafficlightObject tmp = new TrafficlightObject(j, i, Integer.toString(run_var));
+					TrafficlightClass tmp = new TrafficlightClass(j, i, Integer.toString(run_var));
 					String laneId = tmp.get_from_lane_index();
 
 		            if (laneId != null && !laneId.isEmpty()) {
@@ -85,11 +85,11 @@ public class TrafficlightManager {
 	}
 	
 	/**
-     * Returns all {@link TrafficlightObject} managed by this {@code TrafficlightManager}.
+     * Returns all {@link TrafficlightClass} managed by this {@code TrafficlightManager}.
      *
-     * @return list of {@link TrafficlightObject}
+     * @return list of {@link TrafficlightClass}
      */
-	public List<TrafficlightObject> getTrafficlightlinkList(){
+	public List<TrafficlightClass> getTrafficlightlinkList(){
 		return new ArrayList<> (this.trafficlightlinkList);
 	}
 	
@@ -104,12 +104,12 @@ public class TrafficlightManager {
 
 
 	/**
-     * Retrieves the current signal state for a specific {@link TrafficlightObject}.
+     * Retrieves the current signal state for a specific {@link TrafficlightClass}.
      *
-     * @param connection {@link TrafficlightObject} to query
-     * @return signal state character of the queried {@link TrafficlightObject}
+     * @param connection {@link TrafficlightClass} to query
+     * @return signal state character of the queried {@link TrafficlightClass}
      */
-	public Character getCurrentLightState(TrafficlightObject connection) {
+	public Character getCurrentLightState(TrafficlightClass connection) {
 		Character output = 'a';
 		try {
 			Object result = this.sumoConnection.do_job_get(Trafficlight.getRedYellowGreenState(connection.get_host_junction_id()));
@@ -127,10 +127,10 @@ public class TrafficlightManager {
 	/**
      * Retrieves the full signal state string of a traffic light junction.
      *
-     * @param {@link TrafficlightObject} belonging to the junction
+     * @param {@link TrafficlightClass} belonging to the junction
      * @return full signal state string
      */
-	public String getCurrentLightFullState(TrafficlightObject connection) {
+	public String getCurrentLightFullState(TrafficlightClass connection) {
 		String output = "";
 		try {
 			Object result = this.sumoConnection.do_job_get(Trafficlight.getRedYellowGreenState(connection.get_host_junction_id()));
@@ -146,10 +146,10 @@ public class TrafficlightManager {
 	/**
      * Retrieves the simulation time of the next traffic light phase switch.
      *
-     * @param connection {@link TrafficlightObject} to query
-     * @return time of the next phase switch of the corresponding Traffic Light Junction of the queried {@link TrafficlightObject}
+     * @param connection {@link TrafficlightClass} to query
+     * @return time of the next phase switch of the corresponding Traffic Light Junction of the queried {@link TrafficlightClass}
      */
-	public double getTrafficLightNextSwitch(TrafficlightObject connection) {
+	public double getTrafficLightNextSwitch(TrafficlightClass connection) {
 		double output = 0.0;
 		try {
 			Object result = this.sumoConnection.do_job_get(Trafficlight.getNextSwitch(connection.get_host_junction_id()));
@@ -165,10 +165,10 @@ public class TrafficlightManager {
 	/**
      * Forces the traffic light junction to switch to a phase matching the given signal state of the queried {@code TrafficlightObject}.
      *
-     * @param {@link TrafficlightObject} to control
+     * @param {@link TrafficlightClass} to control
      * @param new_state desired signal state character
      */
-	public void setCurrentLightState(TrafficlightObject connection, char new_state) {
+	public void setCurrentLightState(TrafficlightClass connection, char new_state) {
 	    String cur_state = this.getCurrentLightFullState(connection);
 
 	    try {
@@ -242,10 +242,10 @@ public class TrafficlightManager {
 	/**
      * Updates the duration of the current traffic light phase for the whole junction of the queried {@code TrafficlightObject}.
      *
-     * @param {@link TrafficlightObject} to control
+     * @param {@link TrafficlightClass} to control
      * @param newPhaseDuration new phase duration value
      */
-	public void setCurrentPhaseDuration(TrafficlightObject connection, double newPhaseDuration) {
+	public void setCurrentPhaseDuration(TrafficlightClass connection, double newPhaseDuration) {
 		try {
 			this.sumoConnection.do_job_set(Trafficlight.setPhaseDuration(connection.get_host_junction_id(), newPhaseDuration));
 		}
@@ -258,11 +258,11 @@ public class TrafficlightManager {
 	/**
      * Retrieves the current signal state of all {@code TrafficlightObject}.
      *
-     * @return map of {@link TrafficlightObject} to their current signal states
+     * @return map of {@link TrafficlightClass} to their current signal states
      */
-	public Map<TrafficlightObject, Character> getTrafficlightData() {
-		Map<TrafficlightObject, Character>result_map = new HashMap<>();
-		for(TrafficlightObject i : trafficlightlinkList) {
+	public Map<TrafficlightClass, Character> getTrafficlightData() {
+		Map<TrafficlightClass, Character>result_map = new HashMap<>();
+		for(TrafficlightClass i : trafficlightlinkList) {
 			
 			result_map.put(i, this.getCurrentLightState(i));
 		}

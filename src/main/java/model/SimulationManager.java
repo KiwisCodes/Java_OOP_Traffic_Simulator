@@ -332,23 +332,43 @@ public class SimulationManager {
      * @throws Execption if no Route found between 2 edges
      */
     public boolean InjectVehicle(String vehType, SumoColor sumoColor, double Speed, String firstEdge, String lastEdge) {
-		try {
-//			System.out.println(sumoColor);
-			String routeID = "routes_" + vehicleCounter;			
-			SumoStringList edges = getRouteFromEdges(firstEdge, lastEdge, vehType);
-			if(edges == null || edges.size() == 0) {
-				System.out.println("ERROR: No path found for vehicle type " + vehType + 
-						" from edge " + firstEdge + " to edge " + lastEdge);
-				return false;
-			}
-			
-			sumoConnection.do_job_set(Route.add(routeID, edges));
-			vehicleManager.injectVehicle(String.valueOf("vehicle_" + vehicleCounter++), vehType, routeID, sumoColor, Speed);
-		} catch (Exception e){
-			System.out.println(e);
-		}
-		return true;
-	}
+        try {
+            // 1. Calculate the route using your existing function
+            // This works for Pedestrians too, as long as 'vehType' is "pedestrian" in SUMO
+            SumoStringList edges = getRouteFromEdges(firstEdge, lastEdge, vehType);
+            
+            if(edges == null || edges.size() == 0) {
+                System.out.println("ERROR: No path found for type " + vehType + 
+                        " from edge " + firstEdge + " to edge " + lastEdge);
+                return false;
+            }
+
+            // 2. CHECK IF THIS IS A PEDESTRIAN
+            // You can check via String comparison, or instanceof if you have the object.
+            // Assuming "pedestrian" is the ID string from your SUMO rou.xml
+            if (vehType.equalsIgnoreCase("DEFAULT_PEDTYPE")) {
+                
+                String personID = "person_" + vehicleCounter++;
+                
+                // Call the new specific method in VehicleManager
+                vehicleManager.injectPerson(personID, vehType, edges, sumoColor, Speed);
+                
+            } else {
+                // 3. STANDARD VEHICLE LOGIC (Existing Code)
+                String routeID = "routes_" + vehicleCounter;
+                String vehicleID = "vehicle_" + vehicleCounter++;
+                
+                sumoConnection.do_job_set(Route.add(routeID, edges));
+                vehicleManager.injectVehicle(vehicleID, vehType, routeID, sumoColor, Speed);
+            }
+
+        } catch (Exception e){
+            System.out.println("Exception in InjectVehicle: " + e);
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
 	
     /**
      * Random Stress Test a certain number of vehicles

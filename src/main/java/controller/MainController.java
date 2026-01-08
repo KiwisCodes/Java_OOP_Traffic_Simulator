@@ -48,7 +48,7 @@ import model.StatisticsManager;
 import model.infrastructure.LaneClass;
 import model.infrastructure.MapManager;
 import model.infrastructure.TrafficlightManager;
-import model.infrastructure.TrafficlightObject;
+import model.infrastructure.TrafficlightClass;
 import model.vehicles.MeansOfTransportation;
 import model.vehicles.VehicleClass;
 import model.vehicles.VehicleManager;
@@ -126,8 +126,8 @@ public class MainController {
     @FXML private TextField phaseDurationField;
     @FXML private Button switchTrafficLightPhaseButton;
     @FXML private Button selectedColorButton = null; // keep track of which button is selected
-    private Consumer<TrafficlightObject> trafficLightClickHandler;
-    private TrafficlightObject currentTrafficLightLink;
+    private Consumer<TrafficlightClass> trafficLightClickHandler;
+    private TrafficlightClass currentTrafficLightLink;
 
     // Filtering KHOA
     @FXML private TitledPane filterPane;
