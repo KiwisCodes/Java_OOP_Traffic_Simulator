@@ -21,6 +21,7 @@ import de.tudresden.sumo.cmd.*;
 import de.tudresden.sumo.objects.SumoColor;
 import de.tudresden.sumo.objects.SumoStage;
 import de.tudresden.sumo.objects.SumoStringList;
+import model.vehicles.MeansOfTransportation;
 import model.vehicles.VehicleClass;
 // Import your vehicle classes
 import model.vehicles.VehicleManager;
@@ -65,7 +66,7 @@ public class SimulationManager {
     private SumoTraciConnection sumoConnection;
 
     private	Map<String, EdgeClass> listOfEdges;
-	private	Map<String, VehicleClass> listOfVehicles;
+	private	Map<String, MeansOfTransportation> listOfVehicles;
 	private List<String> listOfTrafficlightIds;
 	private	Map<String, Map<String, String>> listOfLanes;
 	private	Map<String, Map<String, String>> listOfJunctions;
@@ -261,10 +262,10 @@ public class SimulationManager {
             if (type.equals("VEHICLE")) {
                 System.out.println("   > Collecting Vehicle Data...");
                 List<VehicleInfo> vehicleList = new ArrayList<>();
-                Map<String, VehicleClass> rawData = vehicleManager.getVehiclesData();
-                for (Map.Entry<String, VehicleClass> entry : rawData.entrySet()) {
+                Map<String, MeansOfTransportation> rawData = vehicleManager.getVehiclesData();
+                for (Map.Entry<String, MeansOfTransportation> entry : rawData.entrySet()) {
                     String id = entry.getKey();
-                    VehicleClass attr = entry.getValue();
+                    MeansOfTransportation attr = entry.getValue();
                     double speed = (Double) attr.getSpeed();
                     String color = attr.getColor().toString();
                     double depart = (Double) attr.getDeparture();
@@ -407,7 +408,7 @@ public class SimulationManager {
 	 * Get list of Vehicle Objects of the current state
 	 * @return a HashMap of Vehicle Ids and Edge Objects
 	 */
-	public Map<String, VehicleClass> getListOfVehicles() {
+	public Map<String, MeansOfTransportation> getListOfVehicles() {
 		return listOfVehicles;
 	};
 	
@@ -507,11 +508,11 @@ public class SimulationManager {
     
     // KHOA FILTERING
 	public List<Color> getUniqueColors(SimulationState state){
-		Map<String, VehicleClass> vehicleData = state.getVehicles();
+		Map<String, MeansOfTransportation> vehicleData = state.getVehicles();
 		//Hung changed to SumoColor
 		List<Color> fxColorRGBA = new ArrayList<>();
-		for(Map.Entry<String, VehicleClass> vehicle : vehicleData.entrySet()) {
-			VehicleClass props = vehicle.getValue();
+		for(Map.Entry<String, MeansOfTransportation> vehicle : vehicleData.entrySet()) {
+			MeansOfTransportation props = vehicle.getValue();
 			SumoColor sumoColor = props.getColor();
 			Color fxColor = ColorConverter.toFXColor(sumoColor);
 			if(!fxColorRGBA.contains(fxColor)) {
@@ -521,11 +522,11 @@ public class SimulationManager {
 		return fxColorRGBA;
 	}
 //	public List<String> getIDColor(int r, int g, int b, int a, SimulationState state){
-//		Map<String, VehicleClass> vehicleData = state.getVehicles();
+//		Map<String, MeansOfTransportation> vehicleData = state.getVehicles();
 //		List<String> validIDs = new ArrayList<>();
-//		for(Map.Entry<String, VehicleClass> vehicle : vehicleData.entrySet()) {
+//		for(Map.Entry<String, MeansOfTransportation> vehicle : vehicleData.entrySet()) {
 //			String vehicleId = vehicle.getKey();
-//		    VehicleClass innerMap = vehicle.getValue();
+//		    MeansOfTransportation innerMap = vehicle.getValue();
 //		    String colorValue = String.valueOf(innerMap.getColor());
 //		    String[] parts = colorValue.split("#");
 //		    int r1 = (Integer.parseInt(parts[0]) + 256) % 256;
@@ -542,10 +543,10 @@ public class SimulationManager {
 //	}
 //	public List<String> getIDSpeed(double speed, SimulationState state){
 //		List<String> validIDs = new ArrayList<>();
-//		Map<String, VehicleClass> vehicleData = state.getVehicles();
-//		for(Map.Entry<String, VehicleClass> vehicle : vehicleData.entrySet()) {
+//		Map<String, MeansOfTransportation> vehicleData = state.getVehicles();
+//		for(Map.Entry<String, MeansOfTransportation> vehicle : vehicleData.entrySet()) {
 //			String vehicleId = vehicle.getKey();
-//		    VehicleClass innerMap = vehicle.getValue();
+//		    MeansOfTransportation innerMap = vehicle.getValue();
 //		    String currentSpeed = String.valueOf(innerMap.getSpeed());
 //		    double speedDouble = Double.parseDouble(currentSpeed);
 //		    if(speedDouble <= speed) {
@@ -556,12 +557,12 @@ public class SimulationManager {
 //	}
 	
 	// ADD THIS METHOD
-	public List<String> getFilteredVehicleIDs(Predicate<VehicleClass> criteria, SimulationState state) {
+	public List<String> getFilteredVehicleIDs(Predicate<MeansOfTransportation> criteria, SimulationState state) {
 	    if (state == null || state.getVehicles() == null) return new ArrayList<>();
 
 	    List<String> list = state.getVehicles().values().stream()
 	                .filter(criteria)
-	                .map(VehicleClass::getId)
+	                .map(MeansOfTransportation::getId)
 	                .toList();
 	    
 	    return new ArrayList<>(list); // Returns a mutable copy

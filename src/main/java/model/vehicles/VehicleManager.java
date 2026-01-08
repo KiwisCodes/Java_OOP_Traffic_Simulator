@@ -28,7 +28,7 @@ public class VehicleManager {
     /** A list containing the IDs of all vehicles currently active in the simulation */
     private List<String> vehiclesIds;
     /** A map storing all informations related to each vehicle, using their ID */
-    private Map<String, VehicleClass> vehiclesData;
+    private Map<String, MeansOfTransportation> vehiclesData;
 
     /**
      * Constructs a new VehicleManager.
@@ -93,46 +93,52 @@ public class VehicleManager {
      * The gathered information is packaged into a {@link VehicleClass} object and stored in the map.
      */
 	private void updateVehiclesInfo() {
-		for (String id: this.vehiclesIds) {
-			
-			if(this.conn == null || this.conn.isClosed()) {
-				return;
-			}
-			
-			try {
-				SumoCommand colorCmd = Vehicle.getColor(id);
-				SumoColor color = (SumoColor) this.conn.do_job_get(colorCmd);
-				
-				SumoCommand posCmd = Vehicle.getPosition(id);
-				SumoPosition2D position = (SumoPosition2D) this.conn.do_job_get(posCmd);
-				
-				SumoCommand speedCmd = Vehicle.getSpeed(id);
-				double speed = (Double) this.conn.do_job_get(speedCmd);
-				
-				SumoCommand edgeCmd = Vehicle.getRoadID(id);
-				String edgeId = (String) this.conn.do_job_get(edgeCmd);
-				
-				SumoCommand angleCommand = Vehicle.getAngle(id);
-				double angle = (Double) this.conn.do_job_get(angleCommand);
-				
-				SumoCommand departureCmd = new SumoCommand(
-						Constants.CMD_GET_VEHICLE_VARIABLE,
-						Constants.VAR_DEPARTURE,
-						id,
-						Constants.RESPONSE_GET_VEHICLE_VARIABLE,
-						Constants.TYPE_DOUBLE
-				);
-				double departure = (Double) this.conn.do_job_get(departureCmd);
-				
-				VehicleClass vehicle = new VehicleClass(id, color, position, speed, edgeId, angle, departure);
-				
-				this.vehiclesData.put(id, vehicle);
-				
-			} catch (Exception e) {
-				System.err.println("Error at Request from Vehicle " + id);
-				e.printStackTrace();
-			}
-		}
+	    for (String id : this.vehiclesIds) {
+	        if (this.conn == null || this.conn.isClosed()) return;
+
+	        try {
+	            // 1. Get the Vehicle Type ID (e.g., "bus", "car_express", "ped_type")
+	            SumoCommand typeCmd = Vehicle.getTypeID(id); 
+	            String typeId = ((String) this.conn.do_job_get(typeCmd)).toLowerCase();
+
+	            // 2. Fetch shared data from SUMO
+	            SumoColor color = (SumoColor) this.conn.do_job_get(Vehicle.getColor(id));
+	            SumoPosition2D position = (SumoPosition2D) this.conn.do_job_get(Vehicle.getPosition(id));
+	            double speed = (Double) this.conn.do_job_get(Vehicle.getSpeed(id));
+	            String edgeId = (String) this.conn.do_job_get(Vehicle.getRoadID(id));
+	            double angle = (Double) this.conn.do_job_get(Vehicle.getAngle(id));
+	            
+	            // Fetch Departure Time (Custom Command)
+	            SumoCommand departureCmd = new SumoCommand(
+	                    Constants.CMD_GET_VEHICLE_VARIABLE, Constants.VAR_DEPARTURE, id,
+	                    Constants.RESPONSE_GET_VEHICLE_VARIABLE, Constants.TYPE_DOUBLE
+	            );
+	            double departure = (Double) this.conn.do_job_get(departureCmd);
+
+	            // 3. Instantiate the correct subclass
+	            // IMPORTANT: We use the order from your BusClass: (id, speed, position, color, edgeId, angle, departure)
+	            MeansOfTransportation vehicle;
+
+	            if (typeId.contains("bus")) {
+	                vehicle = new BusClass(id, speed, position, color, edgeId, angle, departure);
+	            } else if (typeId.contains("bike") || typeId.contains("bicycle")) {
+	                vehicle = new BikeClass(id, speed, position, color, edgeId, angle, departure);
+	            } else if (typeId.contains("pedestrian") || typeId.contains("ped")) {
+	                vehicle = new PedestrianClass(id, speed, position, color, edgeId, angle, departure);
+	            } else {
+	                // Default to CarClass for anything else
+	                vehicle = new CarClass(id, speed, position, color, edgeId, angle, departure);
+	            }
+
+	            // 4. Store in the Map
+	            // Because BusClass, CarClass, etc., all EXTEND VehicleClass, this works perfectly.
+	            this.vehiclesData.put(id, vehicle);
+
+	        } catch (Exception e) {
+	            System.err.println("Error requesting data for vehicle: " + id);
+	            e.printStackTrace();
+	        }
+	    }
 	}
 
     /**
@@ -140,7 +146,7 @@ public class VehicleManager {
      *
      * @return A {@link Map} where the key is the vehicle ID and the value is the {@link VehicleClass} object.
      */
-	public Map<String, VehicleClass> getVehiclesData() {
+	public Map<String, MeansOfTransportation> getVehiclesData() {
 		return new HashMap<>(this.vehiclesData);
 	}
 
@@ -191,7 +197,7 @@ public class VehicleManager {
 		
 		System.out.println("----Actual Vehicles Data----");
 		
-		for (VehicleClass v : this.vehiclesData.values()) {
+		for (MeansOfTransportation v : this.vehiclesData.values()) {
 			System.out.println("ID " + v.getId());
 			System.out.println(" - Color: " + v.getColor());
 			System.out.println(" - Position: " + v.getPosition().x + ", " + v.getPosition().y);

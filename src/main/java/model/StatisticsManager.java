@@ -1,5 +1,6 @@
 package model;
 
+import model.vehicles.MeansOfTransportation;
 import model.vehicles.VehicleClass;
 
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.Map;
 public class StatisticsManager {
 
     /** A snapshot of all vehicles currently active in the simulation. */
-    private Map<String, VehicleClass> vehiclesData;
+    private Map<String, MeansOfTransportation> vehiclesData;
 
     /** The current simulation step number. */
     private int step;
@@ -43,11 +44,11 @@ public class StatisticsManager {
      * This method should be called at the end of every simulation loop iteration
      * to ensure statistics are calculated based on the most recent data.
      *
-     * @param vehiclesInfo A map containing the current vehicles, keyed by their ID.
+     * @param statsData A map containing the current vehicles, keyed by their ID.
      * @param step         The current time step index of the simulation.
      */
-	public void step(Map<String, VehicleClass> vehiclesInfo, int step) {
-		this.vehiclesData = vehiclesInfo;
+	public void step(Map<String, MeansOfTransportation> statsData, int step) {
+		this.vehiclesData = statsData;
 		this.step = step;
 	}
 
@@ -63,7 +64,7 @@ public class StatisticsManager {
 		}
 		
 		double totalSpeed = 0;
-		for (VehicleClass vehicle : this.vehiclesData.values()) {
+		for (MeansOfTransportation vehicle : this.vehiclesData.values()) {
 			totalSpeed += vehicle.getSpeed();
 		}
 		return totalSpeed / vehiclesData.size();
@@ -80,7 +81,7 @@ public class StatisticsManager {
 	public List<String> findCongestionSpots() {
 		Map<String, List<Double>> edgeSpeeds = new HashMap<>();
 		
-		for(VehicleClass vehicle : this.vehiclesData.values()) {
+		for(MeansOfTransportation vehicle : this.vehiclesData.values()) {
 			String edgeId = vehicle.getEdgeId();
 			double speed = vehicle.getSpeed();
 			
@@ -123,7 +124,7 @@ public class StatisticsManager {
 			return densityMap;
 		}
 		
-		for (VehicleClass vehicle : this.vehiclesData.values()) {
+		for (MeansOfTransportation vehicle : this.vehiclesData.values()) {
 			String edgeId = vehicle.getEdgeId();
 			
 			densityMap.put(edgeId, densityMap.getOrDefault(edgeId, 0) + 1);
@@ -157,7 +158,7 @@ public class StatisticsManager {
 			return distribution;
 		}
 		
-		for (VehicleClass vehicle : this.vehiclesData.values()) {
+		for (MeansOfTransportation vehicle : this.vehiclesData.values()) {
 			
 			double departureTime = vehicle.getDeparture();		
 			double currentTravelTime = this.step * 0.1 - departureTime;

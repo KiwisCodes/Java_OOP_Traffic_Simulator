@@ -7,11 +7,13 @@ import java.util.HashMap;
 import java.util.function.Consumer;
 import java.util.Map;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Cursor;
 import javafx.scene.effect.DropShadow; 
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;     
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Polyline;   
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
@@ -21,6 +23,11 @@ import de.tudresden.sumo.cmd.Lane;
 import de.tudresden.sumo.cmd.Junction;      
 import de.tudresden.sumo.objects.SumoGeometry;  
 import de.tudresden.sumo.objects.SumoPosition2D;
+import model.vehicles.BikeClass;
+import model.vehicles.BusClass;
+import model.vehicles.CarClass;
+import model.vehicles.MeansOfTransportation;
+import model.vehicles.PedestrianClass;
 import model.vehicles.VehicleClass;
 import util.ColorConverter;
 import model.infrastructure.*;
@@ -272,7 +279,7 @@ public class Renderer {
     }
     
     
-    private Map<String, Polygon> vehicleVisualCache = new HashMap<>();
+    private Map<String, Node> vehicleVisualCache = new HashMap<>();
     
     /**
      * Renders and synchronizes the visual representation of vehicles on the map based on the latest simulation state.
@@ -295,132 +302,178 @@ public class Renderer {
      * @param vehiclePane The JavaFX {@link Pane} layer dedicated to displaying vehicles.
      * @param vehicleData A map containing the latest snapshot of vehicle data (ID -> Vehicle Properties) from the simulation core.
      */
-	public void renderVehicles(Pane vehiclePane, Map<String, VehicleClass> vehicleData, List<String> validIDs, boolean isFilterApplied) {
-//        if (vehicleData == null || vehicleData.isEmpty()) {
-//            vehiclePane.getChildren().clear();  
-//            vehicleVisualCache.clear();
-//            return;
-//        }
-//        List<String> toRemove = new ArrayList<>();
-//        for (String cachedId : vehicleVisualCache.keySet()) {
-//            if (!vehicleData.containsKey(cachedId)) { 
-//                toRemove.add(cachedId);
-//            }
-//        }
-//        for (String id : toRemove) {
-//            Polygon shape = vehicleVisualCache.get(id); 
-//            vehiclePane.getChildren().remove(shape); 
-//            vehicleVisualCache.remove(id);     
-//        }
-//        // KHOA CODE FILTERING
-//        List<String> vehiclesToDraw;
-//	    if (isFilterApplied && validIDs != null && !validIDs.isEmpty()) {
-//	        // If filter is applied, only draw the pre-filtered IDs
-//	        vehiclesToDraw = validIDs;
-//	    } else if (isFilterApplied && (validIDs == null || validIDs.isEmpty())) {
-//	         // If filter is applied but no vehicles match, draw nothing.
-//	         return; 
-//	    } else {
-//	        // Otherwise (no filter), draw all vehicle IDs
-//	        vehiclesToDraw = new ArrayList<>(vehicleData.keySet());
-//	    }
-//	    THIS DOESNT WORK DUE TO NEW RENDERING METHOD, CHANGING OF METHOD IS IMPLEMENTED BELOW
-		
-		// 1. Safety check: if no data, clear everything
-	    if (vehicleData == null || vehicleData.isEmpty()) {
-	        vehiclePane.getChildren().clear();  
-	        vehicleVisualCache.clear();
-	        return;
-	    }
+    public void renderVehicles(Pane vehiclePane, Map<String, MeansOfTransportation> vehicleData, List<String> validIDs, boolean isFilterApplied) {
+        if (vehicleData == null || vehicleData.isEmpty()) {
+            vehiclePane.getChildren().clear();  
+            vehicleVisualCache.clear();
+            return;
+        }
 
-	    // 2. Determine exactly which IDs should be visible on screen
-	    // We use a Set for much faster lookup performance (.contains is faster on a Set)
-	    java.util.Set<String> visibleIDs;
-	    if (isFilterApplied) {
-	        visibleIDs = (validIDs == null) ? new java.util.HashSet<>() : new java.util.HashSet<>(validIDs);
-	    } else {
-	        visibleIDs = vehicleData.keySet(); // No filter? Everyone is visible.
-	    }
+        java.util.Set<String> visibleIDs = isFilterApplied ? 
+            (validIDs == null ? new java.util.HashSet<>() : new java.util.HashSet<>(validIDs)) : 
+            vehicleData.keySet();
 
-	    // 3. CLEANUP: Identify shapes to remove
-	    List<String> toRemove = new ArrayList<>();
-	    for (String cachedId : vehicleVisualCache.keySet()) {
-	        // Condition A: Vehicle left the simulation
-	        // Condition B: Filter is ON, but this vehicle is NOT in the allowed list
-	        if (!vehicleData.containsKey(cachedId) || (isFilterApplied && !visibleIDs.contains(cachedId))) { 
-	            toRemove.add(cachedId);
-	        }
-	    }
+        // 1. CLEANUP
+        List<String> toRemove = new ArrayList<>();
+        for (String cachedId : vehicleVisualCache.keySet()) {
+            if (!vehicleData.containsKey(cachedId) || (isFilterApplied && !visibleIDs.contains(cachedId))) { 
+                toRemove.add(cachedId);
+            }
+        }
+        for (String id : toRemove) {
+            vehiclePane.getChildren().remove(vehicleVisualCache.get(id)); 
+            vehicleVisualCache.remove(id);     
+        }
 
-	    // Actually remove the "hidden" or "dead" vehicles from the UI
-	    for (String id : toRemove) {
-	        Polygon shape = vehicleVisualCache.get(id); 
-	        vehiclePane.getChildren().remove(shape); 
-	        vehicleVisualCache.remove(id);     
-	    }
-        
-        for (String vehicleId : visibleIDs) { // KHOA CODE FILTERING
-            VehicleClass props = vehicleData.get(vehicleId);
+        // 2. DRAW / UPDATE
+        for (String vehicleId : visibleIDs) {
+            MeansOfTransportation props = vehicleData.get(vehicleId);
             try {
-	            double simX = 0;
-	            double simY = 0;
-	            double angle = 0;
-	            Color carColor = Color.YELLOW;
-	            SumoPosition2D posObj = props.getPosition(); 
-	            simX = posObj.x; 
-	            simY = posObj.y;
-                double screenX = converter.toScreenX(simX);
-                double screenY = converter.toScreenY(simY);
-                angle = props.getAngle(); 
-	            SumoColor color = props.getColor();      
-	            carColor = ColorConverter.toFXColor(color);
-                Polygon carShape = vehicleVisualCache.get(vehicleId);
+                double screenX = converter.toScreenX(props.getPosition().x);
+                double screenY = converter.toScreenY(props.getPosition().y);
+                double angle = props.getAngle(); 
+                Color fxColor = ColorConverter.toFXColor(props.getColor());
 
-                if (carShape != null) {
-                    carShape.setTranslateX(screenX); 
-                    carShape.setTranslateY(screenY); 
-                    carShape.setRotate(angle); 
-                    carShape.setUserData(props); 
+                Node vehicleNode = vehicleVisualCache.get(vehicleId);
+
+                if (vehicleNode != null) {
+                    // Update existing
+                    vehicleNode.setTranslateX(screenX); 
+                    vehicleNode.setTranslateY(screenY); 
+                    vehicleNode.setRotate(angle); 
                 } else {
-                    carShape = new Polygon();
-                    double size = 2.0; 
-                    carShape.getPoints().addAll(new Double[]{
-    	                0.0, -size,      
-    	                -size/2, size,  
-    	                size/2, size    
-    	            });
-
-                    carShape.setTranslateX(screenX);
-                    carShape.setTranslateY(screenY);
-                    carShape.setRotate(angle);
-                    carShape.setFill(carColor);
-                    carShape.setStrokeWidth(1);
-                    carShape.setUserData(props);
-                    final Polygon finalShape = carShape; 
-                    carShape.setOnMouseClicked(e -> {
-                    	VehicleClass info =(VehicleClass) finalShape.getUserData();
-                        System.out.println("Clicked Vehicle: " + info.getId());
-                    });
+                    // Create new detailed shape
+                    vehicleNode = createVehicleShape(props, fxColor);
                     
-                    carShape.setOnMouseEntered(e -> {
-                        finalShape.setEffect(HOVER_GLOW);
-                        finalShape.setCursor(Cursor.HAND);
-                    });
-                    
-                    carShape.setOnMouseExited(e -> {
-                        finalShape.setEffect(null);
-                        finalShape.setCursor(Cursor.DEFAULT);
-                    });
+                    vehicleNode.setTranslateX(screenX);
+                    vehicleNode.setTranslateY(screenY);
+                    vehicleNode.setRotate(angle);
+                    vehicleNode.setUserData(props);
 
-                    vehiclePane.getChildren().add(carShape);
-                    vehicleVisualCache.put(vehicleId, carShape);
+                    // Re-add your hover effects and click events
+                    setupVehicleEvents(vehicleNode);
+
+                    vehiclePane.getChildren().add(vehicleNode);
+                    vehicleVisualCache.put(vehicleId, vehicleNode);
                 }
-
             } catch (Exception e) {
-                System.err.println("Error rendering vehicle: " + vehicleId);
                 continue;
             }
         }
+    }
+
+    // Helper for cleaner code
+    private void setupVehicleEvents(Node node) {
+        node.setOnMouseEntered(e -> {
+            node.setEffect(HOVER_GLOW);
+            node.setCursor(Cursor.HAND);
+        });
+        node.setOnMouseExited(e -> {
+            node.setEffect(null);
+            node.setCursor(Cursor.DEFAULT);
+        });
+        node.setOnMouseClicked(e -> {
+            VehicleClass info = (VehicleClass) node.getUserData();
+//            log("Clicked Vehicle: " + info.getId());
+        });
+    }
+	
+    private Node createVehicleShape(Object vehicleObj, Color color) {
+        Group group = new Group();
+        
+        // MASTER SCALE: Change this to 1.5 or 0.8 to resize everything at once
+        double s = 1.2; 
+
+        // --- CASE 1: BUS (Long, boxy, clear windshield) ---
+        if (vehicleObj instanceof BusClass) {
+            // Main Body (Long)
+            Rectangle body = new Rectangle(-1.3 * s, -3.5 * s, 2.6 * s, 7.0 * s);
+            body.setArcWidth(0.5 * s); 
+            body.setArcHeight(0.5 * s);
+            body.setFill(color);
+            body.setStroke(Color.BLACK);
+            body.setStrokeWidth(0.5);
+
+            // Windshield (Big dark rectangle at front)
+            Rectangle glass = new Rectangle(-1.1 * s, -3.3 * s, 2.2 * s, 1.2 * s);
+            glass.setFill(Color.rgb(50, 50, 50, 0.8)); // Dark tinted glass
+
+            // Rear window
+            Rectangle rearGlass = new Rectangle(-1.1 * s, 2.8 * s, 2.2 * s, 0.5 * s);
+            rearGlass.setFill(Color.rgb(50, 50, 50, 0.8));
+
+            // Headlights (Small yellow squares)
+            Rectangle leftLight = new Rectangle(-1.2 * s, -3.5 * s, 0.4 * s, 0.2 * s);
+            Rectangle rightLight = new Rectangle(0.8 * s, -3.5 * s, 0.4 * s, 0.2 * s);
+            leftLight.setFill(Color.YELLOW);
+            rightLight.setFill(Color.YELLOW);
+
+            group.getChildren().addAll(body, glass, rearGlass, leftLight, rightLight);
+
+        // --- CASE 2: CAR (Rounded, windshield, distinct front) ---
+        } else if (vehicleObj instanceof CarClass) {
+            // Main Body
+            Rectangle body = new Rectangle(-1.0 * s, -2.0 * s, 2.0 * s, 4.0 * s);
+            body.setArcWidth(0.8 * s); 
+            body.setArcHeight(0.8 * s);
+            body.setFill(color);
+            body.setStroke(Color.BLACK);
+            body.setStrokeWidth(0.5);
+
+            // Cabin/Roof (Darker inset)
+            Rectangle roof = new Rectangle(-0.8 * s, -1.0 * s, 1.6 * s, 2.2 * s);
+            roof.setArcWidth(0.3 * s); 
+            roof.setArcHeight(0.3 * s);
+            roof.setFill(color.darker());
+
+            // Windshield (Front Glass)
+            Rectangle windshield = new Rectangle(-0.8 * s, -1.4 * s, 1.6 * s, 0.5 * s);
+            windshield.setFill(Color.rgb(30, 30, 50, 0.9));
+
+            // Rear Window
+            Rectangle rearWindow = new Rectangle(-0.8 * s, 1.0 * s, 1.6 * s, 0.3 * s);
+            rearWindow.setFill(Color.rgb(30, 30, 50, 0.9));
+
+            // Headlights (Circles projecting forward)
+            Circle lLight = new Circle(-0.7 * s, -1.9 * s, 0.25 * s, Color.YELLOW);
+            Circle rLight = new Circle(0.7 * s, -1.9 * s, 0.25 * s, Color.YELLOW);
+
+            group.getChildren().addAll(body, roof, windshield, rearWindow, lLight, rLight);
+
+        // --- CASE 3: BIKE (Thin, handlebars) ---
+        } else if (vehicleObj instanceof BikeClass) {
+            // The Frame (Thin vertical line)
+            Rectangle frame = new Rectangle(-0.15 * s, -1.5 * s, 0.3 * s, 3.0 * s);
+            frame.setFill(Color.DARKGREY);
+
+            // Handlebars (Horizontal line at front)
+            Rectangle handleBars = new Rectangle(-0.8 * s, -1.2 * s, 1.6 * s, 0.15 * s);
+            handleBars.setFill(Color.BLACK);
+
+            // Rider/Seat (Circle in middle)
+            Circle rider = new Circle(0, 0.2 * s, 0.6 * s, color);
+            
+            // Helmet/Head (Smaller circle front)
+            Circle head = new Circle(0, -0.3 * s, 0.35 * s, Color.WHITE);
+            head.setStroke(Color.BLACK);
+
+            group.getChildren().addAll(frame, handleBars, rider, head);
+
+        // --- CASE 4: PEDESTRIAN (Shoulders + Head) ---
+        } else if (vehicleObj instanceof PedestrianClass) {
+            // Shoulders (Oval to show direction)
+            Ellipse shoulders = new Ellipse(0, 0, 0.6 * s, 0.3 * s);
+            shoulders.setFill(color);
+            shoulders.setStroke(Color.BLACK);
+            shoulders.setStrokeWidth(0.2);
+
+            // Head
+            Circle head = new Circle(0, 0, 0.3 * s, Color.PEACHPUFF);
+            
+            group.getChildren().addAll(shoulders, head);
+        }
+
+        return group;
     }
     
     

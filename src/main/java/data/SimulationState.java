@@ -2,6 +2,7 @@ package data;
 
 import java.util.Map;
 import model.infrastructure.TrafficlightObject;
+import model.vehicles.MeansOfTransportation;
 import model.vehicles.VehicleClass;
 
 /**
@@ -28,7 +29,7 @@ public class SimulationState {
     /** * A map containing snapshots of all vehicles active in the current tick. 
      * Key: Vehicle ID, Value: The Vehicle object (copy).
      */
-    private final Map<String, VehicleClass> lastVehicles;
+    private final Map<String, MeansOfTransportation> lastVehicles;
     
     /** * A map containing the state of all traffic lights in the current tick.
      * 
@@ -45,7 +46,7 @@ public class SimulationState {
      */
     public SimulationState(
 //    		Map<String, EdgeClass> lastEdges,
-    		Map<String, VehicleClass> lastVehicles,
+    		Map<String, MeansOfTransportation> lastVehicles,
     		Map<TrafficlightObject, Character> lastTrafficLightIDs
 //    		List<String> laneIdList
     		) 
@@ -60,7 +61,7 @@ public class SimulationState {
      * return the current data about Vehicles
      * @return current state data about Vehicles
      */
-    public Map<String, VehicleClass> getVehicles() { return lastVehicles; }
+    public Map<String, MeansOfTransportation> getVehicles() { return lastVehicles; }
     /**
      * return the current data about Traffic Lights
      * @return current state data about Traffic Lights

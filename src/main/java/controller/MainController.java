@@ -40,14 +40,16 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.Map;
+import java.util.Set;
 
- //Model & View Imports
+//Model & View Imports
 import model.SimulationManager;
 import model.StatisticsManager;
 import model.infrastructure.LaneClass;
 import model.infrastructure.MapManager;
 import model.infrastructure.TrafficlightManager;
 import model.infrastructure.TrafficlightObject;
+import model.vehicles.MeansOfTransportation;
 import model.vehicles.VehicleClass;
 import model.vehicles.VehicleManager;
 import view.Renderer;
@@ -327,47 +329,6 @@ public class MainController {
         this.injectionCarButton.getStyleClass().add("selected-button");
         this.stressTestCarButton.getStyleClass().add("selected-button");
         
-        String projectPath = System.getProperty("user.dir");
-        String reportPath = projectPath + File.separator + "reports";
-        File reportDir = new File(reportPath);
-        if (!reportDir.exists()) {
-            boolean created = reportDir.mkdirs();
-            if (created) log("Created new reports directory: " + reportPath);
-        }
-        
-        if (exportVehiclesCsvButton != null) {
-            exportVehiclesCsvButton.setOnAction(e -> {
-                log("Exporting Vehicle CSV...");
-                Platform.runLater(() -> {
-	            		simManager.generateReports(reportPath, "VEHICLE", currentStep);
-	            });
-            });
-        }
-
-        if (exportEdgesCsvButton != null) {
-            exportEdgesCsvButton.setOnAction(e -> {
-                log("Exporting Edge CSV...");
-                Platform.runLater(() -> {
-            			simManager.generateReports(reportPath, "EDGE", currentStep);
-                });
-            });
-        }
-
-        if (exportPdfButton != null) {
-            exportPdfButton.setOnAction(e -> {
-                log("Exporting PDF Report...");
-                threadPool.submit(() -> {
-                		try {                            
-                			simManager.generateReports(reportPath, "PDF", currentStep);
-                			Platform.runLater(() -> log("✅ PDF Saved to Desktop!"));
-                    } catch (Throwable ex) {
-                    		System.err.println("CRITICAL THREAD ERROR:"); 
-                    		ex.printStackTrace();      
-                    		Platform.runLater(() -> log("❌ CRASH: " + ex.getClass().getSimpleName() + " - " + ex.getMessage()));
-                    	}
-                });
-            });
-        }
     }
 
     @FXML 
@@ -538,7 +499,7 @@ public class MainController {
                         SimulationState state = statQueue.takeState(); 
                         
                         if (state == null) continue;
-                        Map<String, VehicleClass> statsData = state.getVehicles();
+                        Map<String, MeansOfTransportation> statsData = state.getVehicles();
                         this.statsManager.step(statsData, currentStep);
                         double avgSpeed = this.statsManager.avgVehiclesSpeed();
                         Map<String, Integer> density = this.statsManager.calculateVehicleDensity();
@@ -740,14 +701,14 @@ public class MainController {
                 double maxSpeedCriteria = filterMaxSpeedSlider.getValue();
 
                 // Collect only the colors that are checked by the user
-                java.util.Set<javafx.scene.paint.Color> selectedFXColors = colorCheckBoxMap.entrySet().stream()
+                Set<Color> selectedFXColors = colorCheckBoxMap.entrySet().stream()
                         .filter(entry -> entry.getValue().isSelected())
                         .map(Map.Entry::getKey)
                         .collect(java.util.stream.Collectors.toSet());
 
                 // 3. Define the "Filter Rule" (Predicate)
                 // 'v' represents an individual VehicleClass object in the stream
-                Predicate<VehicleClass> filterRule = v -> {
+                Predicate<MeansOfTransportation> filterRule = v -> {
                     // Check Speed: Pass if filter is off OR if vehicle speed is within limit
                     boolean speedPass = !filterSpeedActive || v.getSpeed() <= maxSpeedCriteria;
 
@@ -1390,7 +1351,8 @@ public class MainController {
             }
             
             dynamicColorCheckBoxContainer.getChildren().clear();
-            colorCheckBoxMap.clear();
+            colorCheckBoxMap.clear();//this will forget the last chosen filter choice that is still happening
+            //if you are filtering for green and yellow, then green is gone, you will also clear yellow too
 
             for (Color color : colorsToShow) {
                 String webColor = ColorConverter.colorToWebString(color);

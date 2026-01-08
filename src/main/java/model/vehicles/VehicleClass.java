@@ -32,7 +32,7 @@ public class VehicleClass implements MeansOfTransportation{
      * @param angle     The navigation angle of the vehicle in degrees.
      * @param departure The simulation time (in seconds) when the vehicle entered the network.
      */
-    public VehicleClass(String id, SumoColor color, SumoPosition2D position, double speed, String edgeId, double angle, double departure) {
+    public VehicleClass(String id, double speed, SumoPosition2D position, SumoColor color, String edgeId, double angle, double departure) {
         this.id = id;
         this.color = color;
         this.position = position;

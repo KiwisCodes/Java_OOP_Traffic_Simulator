@@ -13,7 +13,7 @@ public class PedestrianClass implements MeansOfTransportation {
     private double angle;
     private double departure;
 
-    public PedestrianClass(String id, SumoColor color, SumoPosition2D position, double speed, String edgeId, double angle, double departure) {
+    public PedestrianClass(String id, double speed, SumoPosition2D position, SumoColor color, String edgeId, double angle, double departure) {
         this.id = id;
         this.color = color;
         this.position = position;
