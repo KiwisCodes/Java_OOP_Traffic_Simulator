@@ -38,7 +38,19 @@ import javafx.scene.shape.Circle;
 import de.tudresden.sumo.objects.SumoColor;     
 import javafx.scene.shape.Polygon;   
 import java.util.Map;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Glow;
+import javafx.scene.image.Image;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+import javafx.scene.paint.Color;
+
 public class Renderer {
+	// Top of your Renderer class
+//	private static final Image CAR_IMAGE = new Image("/images/car_gemini.png");
+//	private static final Image BIKE_IMAGE = new Image("/images/bike.png");
+	
     public void setConverter(MapManager mapManager) {
         this.converter.setBound(mapManager);
     }
@@ -472,7 +484,6 @@ public class Renderer {
             
             group.getChildren().addAll(shoulders, head);
         }
-
         return group;
     }
     
