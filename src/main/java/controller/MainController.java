@@ -496,7 +496,7 @@ public class MainController {
             			continue;
                 	}
                 	try {
-                        SimulationState state = statQueue.takeState(); 
+                        SimulationState state = statQueue.pollState();// changed to poll 
                         
                         if (state == null) continue;
                         Map<String, MeansOfTransportation> statsData = state.getVehicles();
@@ -710,20 +710,27 @@ public class MainController {
                 // 'v' represents an individual VehicleClass object in the stream
                 Predicate<MeansOfTransportation> filterRule = v -> {
                     // Check Speed: Pass if filter is off OR if vehicle speed is within limit
+                	if(v == null) return false; 
+                	
                     boolean speedPass = !filterSpeedActive || v.getSpeed() <= maxSpeedCriteria;
 
                     // Check Color: Pass if filter is off OR if vehicle color matches selection
                     boolean colorPass = true;
-                    if (filterColorActive && !selectedFXColors.isEmpty()) {
-                        // Use your Util class to get a JavaFX-compatible color
-                    	SumoColor sumoColor = v.getColor();
-                    	if(sumoColor != null) {
-                    		Color vehicleFXColor = ColorConverter.toFXColor(sumoColor);
-                    		colorPass = selectedFXColors.contains(vehicleFXColor);                    		
-                    	}
-                    }
-                    else {
-                    	colorPass = false;
+                    if (filterColorActive) {
+                        // If Filter is ON, we must strictly check
+                        if (selectedFXColors.isEmpty()) {
+                            // Filter is ON, but user picked NO colors -> Show Nothing
+                            colorPass = false;
+                        } else {
+                            // Filter is ON, and colors are picked -> Check match
+                            SumoColor sumoColor = v.getColor();
+                            if(sumoColor != null) {
+                                Color vehicleFXColor = ColorConverter.toFXColor(sumoColor);
+                                colorPass = selectedFXColors.contains(vehicleFXColor);                          
+                            } else {
+                                colorPass = false; // No color data available
+                            }
+                        }
                     }
 
                     return speedPass && colorPass; // Intersection Logic (AND)
@@ -1201,6 +1208,7 @@ public class MainController {
     @FXML 
     private void runStressTestOnSpecificEdges() {
     	clearFilter(); // KHOA CODED FILTERING
+    	log("Clear all filtering...");
         if(this.firstEdgeField1.getText().isEmpty() || this.secondEdgeField1.getText().isEmpty()) {
             log("Please choose 2 edges first");
             return;
@@ -1309,6 +1317,9 @@ public class MainController {
                 
                 // Optimization: Only update the UI if the color list has actually changed size
                 if (fxColorRGBA.size() != this.realColors.size() || !fxColorRGBA.containsAll(this.realColors)) {
+                	log("Vehicle of 1 color type finished their journey");
+                	this.clearFilter();
+                	log("Clearing all filter...");
                     this.realColors = fxColorRGBA;
                     
                     // 3. Update the UI on the JavaFX Application Thread
