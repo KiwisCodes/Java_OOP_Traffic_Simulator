@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import controller.MainController;
 import model.infrastructure.EdgeClass;
 import model.infrastructure.LaneClass;
 import de.tudresden.sumo.cmd.Edge;
@@ -38,6 +42,7 @@ public class MapManager {
     private double minY = Double.MAX_VALUE;
     private double maxX = Double.MIN_VALUE;
     private double maxY = Double.MIN_VALUE;
+    private static final Logger logger = LogManager.getLogger(MapManager.class);
 
     public MapManager(SumoTraciConnection sumoConnection) {
         if(!sumoConnection.isClosed()) {

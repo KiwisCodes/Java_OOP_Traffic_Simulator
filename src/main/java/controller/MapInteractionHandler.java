@@ -1,5 +1,8 @@
 package controller;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
@@ -59,7 +62,7 @@ public class MapInteractionHandler {
     private static final double zoomFactor = 1.2;
     //rotate
     private static final double MOUSE_ROTATION_SENSITIVITY = 0.8; //degrees per pixel dragged
-
+    private static final Logger logger = LogManager.getLogger(MapInteractionHandler.class);
     
     /**
      * Constructs a new interaction handler.

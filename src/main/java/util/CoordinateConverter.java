@@ -3,6 +3,11 @@ package util;
 import javafx.geometry.Point2D;
 import model.infrastructure.MapManager;
 import view.MainGUI;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import controller.MainController;
 import de.tudresden.ws.container.SumoPosition2D; 
 
 
@@ -32,6 +37,7 @@ public class CoordinateConverter {
     
     private int windowWidth = MainGUI.windowWidth;
     private int windowHeight = MainGUI.windowHeight;
+    private static final Logger logger = LogManager.getLogger(CoordinateConverter.class);
     
 
     /**
