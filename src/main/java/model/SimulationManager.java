@@ -29,6 +29,7 @@ import model.vehicles.VehicleClass;
 // Import your vehicle classes
 import model.vehicles.VehicleManager;
 import util.ColorConverter;
+import util.SumoException;
 import javafx.scene.paint.Color;
 //import model.vehicles.Car;
 //import model.vehicles.Bus;
@@ -106,8 +107,9 @@ public class SimulationManager {
      * of {@link MapManager}, {@link VehicleManager}, etc.
      * </p>
      * @return {@code true} if the connection was successfully established, {@code false} otherwise.
+     * @throws SumoException 
      */
-    public boolean startConnection() {
+    public boolean startConnection() throws SumoException {
         if (!setupPaths()) return false;
 
         logger.info("Creating connection with:");
@@ -154,9 +156,8 @@ public class SimulationManager {
             return true;
 
         } catch (Exception e) {
-            logger.warn("Error starting SUMO: " + e.getMessage());
-            e.printStackTrace();
-            return false;
+            logger.error("Critical failure initiating SUMO connection.", e);
+            throw new SumoException("Failed to start SUMO. Is the path correct?", e);
         }
     }
     
@@ -169,19 +170,19 @@ public class SimulationManager {
         try {
             URL resource = SimulationManager.class.getClassLoader().getResource(this.sumoConfigFileName);
             if (resource == null) {
-                logger.warn(this.sumoConfigFileName + "' not found in resources!");
+                logger.error(this.sumoConfigFileName + "' not found in resources!");
                 return false;
             }
             File file = new File(resource.toURI());
             this.sumoConfigFilePath = file.getAbsolutePath();
             File sumoBin = new File(this.sumoPath);
             if(!sumoBin.exists() || !sumoBin.canExecute()) {
-                logger.warn("SUMO binary not found at: " + this.sumoPath);
+                logger.error("SUMO binary not found at: " + this.sumoPath);
                 return false;
             }
             return true;
         } catch (Exception e) {
-            logger.warn("Error resolving file paths: " + e.getMessage());
+            logger.error("Error resolving file paths: " + e.getMessage());
             return false;
         }
     }
@@ -248,12 +249,12 @@ public class SimulationManager {
     public void generateReports(String outputDir, Map<String, MeansOfTransportation>vehicleData, String type, List<String> filteredVehicleIDs, int currentStepCount, boolean edgeFilter, double maxAvgSpeed, int minDensity) {
         logger.debug("--- DEBUG: Starting Report Generation ---");
         if (this.reportManager == null || this.statisticsManager == null || this.mapManager == null) {
-            logger.warn("❌ ERROR: Managers are NULL. Did you click 'Start Simulation' first?");
+            logger.error("ERROR: Managers are NULL. Did you click 'Start Simulation' first?");
             return;
         }
         for(String i: filteredVehicleIDs) {
         		if(i == null) {
-        			logger.warn("❌ ERROR: Vehicles in filteredVehicleIDs is NULL!");
+        			logger.error("ERROR: Vehicles in filteredVehicleIDs is NULL!");
         		}
         }
         File folder = new File(outputDir);
@@ -297,7 +298,7 @@ public class SimulationManager {
                 logger.info("   ✅ Vehicle CSV saved.");
             }
         } catch (Exception e) {
-            logger.warn("❌ CRASH during Vehicle Export: " + e.getMessage());
+            logger.error("CRASH during Vehicle Export: " + e.getMessage());
             e.printStackTrace();
         }
         try {
@@ -321,7 +322,7 @@ public class SimulationManager {
                 logger.info("   ✅ Edge CSV saved.");
             }
         } catch (Exception e) {
-            logger.warn("❌ CRASH during Edge Export: " + e.getMessage());
+            logger.error("CRASH during Edge Export: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -333,7 +334,7 @@ public class SimulationManager {
                 logger.info("   ✅ PDF saved.");
             }
         } catch (Exception e) {
-            logger.warn("❌ CRASH during PDF Export: " + e.getMessage());
+            logger.error("CRASH during PDF Export: " + e.getMessage());
             e.printStackTrace();
         }
 

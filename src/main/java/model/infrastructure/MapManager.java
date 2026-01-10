@@ -70,8 +70,6 @@ public class MapManager {
 				fetchEdgesFromSumo();//this also fetch lanes from Sumo
 				fetchJunctionsFromSumo();
 				
-				
-				
 				SumoCommand getNetBoundary = Simulation.getNetBoundary();
 				response = this.sumoConnection.do_job_get(getNetBoundary);
 				
@@ -97,8 +95,8 @@ public class MapManager {
 				}
 				
 			} catch (Exception e) {
-				System.err.println(e.getMessage());
-				e.printStackTrace();
+				logger.warn(e.getMessage());
+				logger.trace(e);
 			}
         }
     }

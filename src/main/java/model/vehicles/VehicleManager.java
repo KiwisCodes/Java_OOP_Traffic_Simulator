@@ -116,6 +116,7 @@ public class VehicleManager {
 					SumoColor color = (SumoColor) this.conn.do_job_get(Vehicle.getColor(id));
 					SumoPosition2D position = (SumoPosition2D) this.conn.do_job_get(Vehicle.getPosition(id));
 					double speed = (Double) this.conn.do_job_get(Vehicle.getSpeed(id));
+//					System.out.println(speed);
 					String edgeId = (String) this.conn.do_job_get(Vehicle.getRoadID(id));
 					double angle = (Double) this.conn.do_job_get(Vehicle.getAngle(id));
 					
@@ -125,9 +126,6 @@ public class VehicleManager {
 							Constants.RESPONSE_GET_VEHICLE_VARIABLE, Constants.TYPE_DOUBLE
 							);
 					double departure = (Double) this.conn.do_job_get(departureCmd);
-					
-					// 3. Instantiate the correct subclass
-					// IMPORTANT: We use the order from your BusClass: (id, speed, position, color, edgeId, angle, departure)
 					MeansOfTransportation vehicle = null;
 					
 					if (typeId.contains("bus")) {
@@ -137,9 +135,7 @@ public class VehicleManager {
 					} else if (typeId.contains("passenger") || typeId.contains("veh")) {
 						vehicle = new CarClass(id, speed, position, color, edgeId, angle, departure);
 					}
-					
-					// 4. Store in the Map
-					// Because BusClass, CarClass, etc., all EXTEND VehicleClass, this works perfectly.
+
 					if(vehicle != null) {
 						this.vehiclesData.put(id, vehicle);	            	
 					}

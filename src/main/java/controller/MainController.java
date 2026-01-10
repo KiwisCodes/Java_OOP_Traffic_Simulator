@@ -54,6 +54,7 @@ import model.vehicles.VehicleClass;
 import model.vehicles.VehicleManager;
 import view.Renderer;
 import util.CoordinateConverter; // Ensure this is imported from your util/view package
+import util.SumoException;
 import util.ColorConverter;
 
 // Java Imports
@@ -327,7 +328,13 @@ public class MainController {
     private void startSimulation() {
         this.startButton.setDisable(true); // prevent double start
         log("Attempting to connect to SUMO...");
-        boolean connected = this.simManager.startConnection();
+        boolean connected = true;
+		try {
+			connected = this.simManager.startConnection();
+		} catch (SumoException e) {
+			// TODO Auto-generated catch block
+			logger.error(e);
+		}
 
         if (connected) {
             log("Connected! Preparing simulation...");
@@ -1378,6 +1385,7 @@ public class MainController {
             if (selectedVehicle == null) return;
 
             // 2. Get the info using the overridden toString()
+            log(selectedVehicle.getSpeed()+"");
             String vehicleInfo = selectedVehicle.toString();
 
             // 3. Log the information

@@ -6,6 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.function.Consumer;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -34,6 +38,7 @@ import model.vehicles.MeansOfTransportation;
 import model.vehicles.PedestrianClass;
 import model.vehicles.VehicleClass;
 import util.ColorConverter;
+import model.SimulationManager;
 import model.infrastructure.*;
 import util.CoordinateConverter;
 import de.tudresden.sumo.cmd.Trafficlight; 
@@ -51,9 +56,7 @@ import javafx.scene.paint.Stop;
 import javafx.scene.paint.Color;
 
 public class Renderer {
-	// Top of your Renderer class
-//	private static final Image CAR_IMAGE = new Image("/images/car_gemini.png");
-//	private static final Image BIKE_IMAGE = new Image("/images/bike.png");
+	private static final Logger logger = LogManager.getLogger(Renderer.class);
 	
     public void setConverter(MapManager mapManager) {
         this.converter.setBound(mapManager);
@@ -345,6 +348,7 @@ public class Renderer {
         for (String vehicleId : visibleIDs) {
             MeansOfTransportation props = vehicleData.get(vehicleId);
             try {
+            	System.out.println(props.getSpeed());
                 double screenX = converter.toScreenX(props.getPosition().x);
                 double screenY = converter.toScreenY(props.getPosition().y);
                 double angle = props.getAngle(); 
@@ -357,6 +361,7 @@ public class Renderer {
                     vehicleNode.setTranslateX(screenX); 
                     vehicleNode.setTranslateY(screenY); 
                     vehicleNode.setRotate(angle); 
+                    vehicleNode.setUserData(props);
                 } else {
                     // Create new detailed shape
 //                    vehicleNode = createVehicleShape(props, fxColor);
@@ -369,12 +374,11 @@ public class Renderer {
 
                     // Re-add your hover effects and click events
                     setupVehicleEvents(vehicleNode, props, meansOfTransportationClickHandler);
-
                     vehiclePane.getChildren().add(vehicleNode);
                     vehicleVisualCache.put(vehicleId, vehicleNode);
                 }
             } catch (Exception e) {
-                continue;
+                logger.error(e);
             }
         }
     }
@@ -389,7 +393,13 @@ public class Renderer {
             node.setCursor(Cursor.DEFAULT);
         });
         node.setOnMouseClicked(e -> {
-            meansOfTransportationClickHandler.accept(meansOfTransportation);
+            // 1. Retrieve the FRESH object stored in the node (from Step 1)
+            MeansOfTransportation freshData = (MeansOfTransportation) node.getUserData();
+            
+            // 2. Send the FRESH data to the controller
+            if (freshData != null) {
+                meansOfTransportationClickHandler.accept(freshData);
+            }
         });
     }
 	
@@ -398,8 +408,6 @@ public class Renderer {
         if(meansOfTransportation instanceof PedestrianClass) {
         	return visual;
         }
-        
-//        visual.setRotate(-90);
         return visual;
     }
 	
