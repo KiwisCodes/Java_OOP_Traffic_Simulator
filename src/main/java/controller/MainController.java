@@ -176,10 +176,16 @@ public class MainController {
     @FXML private Button showChartsButton;
 
     // Data Export
-    @FXML private CheckBox exportFilterCheck;
     @FXML private Button exportVehiclesCsvButton;
     @FXML private Button exportEdgesCsvButton;
     @FXML private Button exportPdfButton;
+    @FXML private CheckBox edgeFilterCheckbox;
+    @FXML private Slider edgeSpeedSlider;
+    @FXML private Slider edgeDensitySlider;
+    private boolean isExportingVehicleCSV;
+    private boolean isExportingEdgeCSV;
+    private boolean isExportingPDF;
+    private String reportPath;
 
     // Map & Log
     @FXML private AnchorPane centerMapAnchorPane;
@@ -227,6 +233,7 @@ public class MainController {
     private MapInteractionHandler mapInteractionHandler;
     private SimulationQueue uiQueue;	
     private SimulationQueue statQueue;
+    private SimulationQueue exportQueue;
     
 //     Filtering KHOA
     private Map<Color, CheckBox> colorCheckBoxMap = new HashMap<>();
@@ -242,6 +249,7 @@ public class MainController {
         this.renderer = new Renderer();
         this.threadPool = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
         this.statQueue = new SimulationQueue(2);
+        this.exportQueue = new SimulationQueue(2);
     }
     
     // Main entry point if running stand alone (optional)
@@ -328,7 +336,33 @@ public class MainController {
         // 2. Apply the CSS styling (which you already have)
         this.injectionCarButton.getStyleClass().add("selected-button");
         this.stressTestCarButton.getStyleClass().add("selected-button");
-        
+        String projectPath = System.getProperty("user.dir");
+        reportPath = projectPath + File.separator + "reports";
+        File reportDir = new File(reportPath);
+        if (!reportDir.exists()) {
+            boolean created = reportDir.mkdirs();
+            if (created) log("Created new reports directory: " + reportPath);
+        }
+        if (exportVehiclesCsvButton != null) {
+            exportVehiclesCsvButton.setOnAction(e -> { 
+                log("Exporting Vehicle CSV...");
+                isExportingVehicleCSV = true;
+            });
+        }
+
+        if (exportEdgesCsvButton != null) {
+            exportEdgesCsvButton.setOnAction(e -> {
+                log("Exporting Edge CSV...");
+                isExportingEdgeCSV = true;
+            });
+        }
+
+        if (exportPdfButton != null) {
+            exportPdfButton.setOnAction(e -> {
+                log("Exporting PDF Report...");
+                isExportingPDF = true;
+            });
+        }
     }
 
     @FXML 
@@ -466,6 +500,7 @@ public class MainController {
                     	}
                         this.uiQueue.offerState(simulationState);
                         this.statQueue.offerState(simulationState);
+                        this.exportQueue.offerState(simulationState);
                         currentStep++;
                     } catch (InterruptedException e) {
                         System.out.println("Simulation loop interrupted. Stopping safely.");
@@ -501,9 +536,9 @@ public class MainController {
                         if (state == null) continue;
                         Map<String, MeansOfTransportation> statsData = state.getVehicles();
                         this.statsManager.step(statsData, currentStep);
-                        double avgSpeed = this.statsManager.avgVehiclesSpeed();
-                        Map<String, Integer> density = this.statsManager.calculateVehicleDensity();
-                        Map<String, Integer> travelTimeDist = this.statsManager.calculateTravelTimeDistribution(60);
+                        double avgSpeed = this.statsManager.avgVehiclesSpeed(statsData);
+                        Map<String, Integer> density = this.statsManager.calculateVehicleDensity(statsData);
+                        Map<String, Integer> travelTimeDist = this.statsManager.calculateTravelTimeDistribution(statsData, 60);
 
                         this.chartWindow.updateData(currentStep, avgSpeed, density, travelTimeDist);
                         Thread.sleep(1000);
@@ -760,7 +795,40 @@ public class MainController {
             int currentVehicleCount = simulationState.getVehicles().size();
             updateCurrentStep();
             updateCurrentVehicleCount(currentVehicleCount);
-
+            
+            // 7. Export CSV/PDF
+            if(isExportingVehicleCSV) {
+	            	Platform.runLater(() -> {
+	            		// since there will always be some good speed, even at default, we let filter = True
+	            		simManager.generateReports(reportPath, simulationState.getVehicles(), "VEHICLE", this.filteredVehicleIDs, currentStep, false, 0, 0);
+	            });
+            		isExportingVehicleCSV = false;
+            }
+            
+            if(isExportingEdgeCSV) {
+	            	Platform.runLater(() -> {
+	            		boolean edgeFilter = edgeFilterCheckbox.isSelected();
+	            	    double maxSpeed = edgeSpeedSlider.getValue();
+	            	    int minDensity = (int) edgeDensitySlider.getValue();
+	            	    simManager.generateReports(reportPath, simulationState.getVehicles(), "EDGE", this.filteredVehicleIDs, currentStep, edgeFilter, maxSpeed, minDensity);
+	            });
+            		isExportingEdgeCSV = false;
+            }
+            
+            if(isExportingPDF) {
+            		isExportingPDF = false;
+            		threadPool.submit(() -> {
+                		try {          
+                			// since there will always be some good speed, even at default, we let filter = True
+                			simManager.generateReports(reportPath, simulationState.getVehicles(), "PDF", this.filteredVehicleIDs, currentStep, false, 0 ,0);
+                			Platform.runLater(() -> log("✅ PDF Saved to Desktop!"));
+                    } catch (Throwable ex) {
+                    		System.err.println("CRITICAL THREAD ERROR:"); 
+                    		ex.printStackTrace();      
+                    		Platform.runLater(() -> log("❌ CRASH: " + ex.getClass().getSimpleName() + " - " + ex.getMessage()));
+                    	}
+                });
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
             System.err.print("UI Update Interrupted: " + e.getMessage());

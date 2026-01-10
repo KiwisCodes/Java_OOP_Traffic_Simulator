@@ -207,8 +207,17 @@
                                                     <Separator />
                                                     <Button fx:id="showChartsButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#showCharts" styleClass="secondary-button" text="View Live Charts" />
                                                     <Button fx:id="exportVehiclesCsvButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Export CSV Vehicle Report" />
-                                                      <Button fx:id="exportEdgesCsvButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Export CSV Edge Report" />
-                                                      <Button fx:id="exportPdfButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Export PDF Report" />
+                                                    <VBox spacing="5.0" style="-fx-border-color: #cccccc; -fx-border-width: 1; -fx-border-radius: 4; -fx-padding: 8; -fx-background-color: rgba(0,0,0,0.03);">
+										               <children>
+										                  <CheckBox fx:id="edgeFilterCheckbox" text="Filter Edges" style="-fx-font-weight: bold;"/>
+										                  <Label text="Max Average Speed" style="-fx-font-size: 10px;"/>
+										                  <Slider fx:id="edgeSpeedSlider" majorTickUnit="5.0" min="5.0" max="15.0" value="15.0" minorTickCount="8" showTickLabels="true" showTickMarks="true" disable="${!edgeFilterCheckbox.selected}" />
+										              	  <Label text="Min Vehicle Density" style="-fx-font-size: 10px;"/>
+										                  <Slider fx:id="edgeDensitySlider" majorTickUnit="5" min="0" max="20" value="0" minorTickCount="4" showTickLabels="true" showTickMarks="true" disable="${!edgeFilterCheckbox.selected}" />
+										                  <Button fx:id="exportEdgesCsvButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Export CSV Edge Report" />
+										               </children>
+										            </VBox>
+                                                    <Button fx:id="exportPdfButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Export PDF Report" />
                                                  </children>
                                               </VBox>
                                            </content>
