@@ -11,6 +11,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.StackPane;
+import model.vehicles.VehicleClass;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -70,10 +71,15 @@ public class ReportManager {
      * @param edges list of edge data
      * @param filepath path where the CSV file will be saved
      */
-    public void exportEdgesCSV(List<EdgeInfo> edges, String filepath) {
+    public void exportEdgesCSV(List<EdgeInfo> edges, String filepath, boolean filter, double maxAvgSpeed, int minDensity) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filepath))) {
             writer.write("edge_id,width,density,average_speed\n");
             for (EdgeInfo e : edges) {
+            		if(filter) {
+            			if(!(e.density() >= minDensity && e.avgSpeed() <= maxAvgSpeed)) {
+            				continue;
+            			}
+            		}
                 writer.write(e.id() + "," + e.width() + "," + e.density() + "," + e.avgSpeed() + "\n");
             }
             System.out.println("Edges CSV exported to: " + filepath);
@@ -92,12 +98,12 @@ public class ReportManager {
      * @param filepath output PDF file path
      * @param currentStep current simulation timestep
      */
-    public void exportReportPDF(StatisticsManager stat, String filepath, int currentStep) {
+    public void exportReportPDF(StatisticsManager stat, String filepath, Map<String, VehicleClass> vehiclesInfo, int currentStep) {
         System.out.println(">>> Starting PDF Export...");
 
-        double avgSpeed = stat.avgVehiclesSpeed();
-        Map<String, Integer> densityMap = stat.calculateVehicleDensity();
-        Map<String, Integer> travelTimeMap = stat.calculateTravelTimeDistribution(10);
+        double avgSpeed = stat.avgVehiclesSpeed(vehiclesInfo);
+        Map<String, Integer> densityMap = stat.calculateVehicleDensity(vehiclesInfo);
+        Map<String, Integer> travelTimeMap = stat.calculateTravelTimeDistribution(vehiclesInfo, 10);
 
         try (PDDocument doc = new PDDocument()) {
             PDPage page = new PDPage(PDRectangle.A4);
@@ -114,7 +120,7 @@ public class ReportManager {
             content.newLineAtOffset(40, 750);
             content.showText(String.format("Average Network Speed: %.2f m/s", avgSpeed));
             content.newLineAtOffset(0, -20);
-            int totalVehicles = densityMap.values().stream().mapToInt(Integer::intValue).sum();
+            int totalVehicles = vehiclesInfo.size();
             content.showText("Total Active Vehicles: " + totalVehicles);
             content.newLineAtOffset(0, -20);
             content.showText(String.format("Timestep in Simulation: %d", currentStep));

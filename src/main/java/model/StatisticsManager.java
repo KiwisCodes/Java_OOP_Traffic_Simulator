@@ -56,8 +56,8 @@ public class StatisticsManager {
      *
      * @return The average speed in m/s, or 0.0 if no vehicles are active.
      */
-	public double avgVehiclesSpeed() {
-		if (this.vehiclesData.isEmpty()) {
+	public double avgVehiclesSpeed(Map<String, VehicleClass> vehiclesInfo) {
+		if (vehiclesInfo.isEmpty()) {
 			System.err.println("There are no vehicles currently");
 			return 0.0;
 		}
@@ -116,14 +116,14 @@ public class StatisticsManager {
      *
      * @return A map associating Edge IDs (Key) with the number of vehicles currently on that edge (Value).
      */
-	public Map<String, Integer> calculateVehicleDensity() {
+	public Map<String, Integer> calculateVehicleDensity(Map<String, VehicleClass> vehiclesInfo) {
 		Map<String, Integer> densityMap = new HashMap<>();
 		
-		if (this.vehiclesData.isEmpty()) {
+		if (vehiclesInfo.isEmpty()) {
 			return densityMap;
 		}
 		
-		for (VehicleClass vehicle : this.vehiclesData.values()) {
+		for (VehicleClass vehicle : vehiclesInfo.values()) {
 			String edgeId = vehicle.getEdgeId();
 			
 			densityMap.put(edgeId, densityMap.getOrDefault(edgeId, 0) + 1);
@@ -146,18 +146,18 @@ public class StatisticsManager {
      * @param binSizeSeconds The size of the time buckets in seconds (e.g., 10 for 10-second intervals).
      * @return A {@link TreeMap} sorted by time range, mapping the range string (e.g., "10-20") to the vehicle count.
      */
-	public Map<String, Integer> calculateTravelTimeDistribution(int binSizeSeconds) {
+	public Map<String, Integer> calculateTravelTimeDistribution(Map<String, VehicleClass> vehiclesInfo, int binSizeSeconds) {
 		Map<String, Integer> distribution = new TreeMap<>((a, b) -> {
 			int lowerA = Integer.parseInt(a.split("-")[0]);
 			int lowerB = Integer.parseInt(b.split("-")[0]);
 			return Integer.compare(lowerA, lowerB);
 		});
 		
-		if (this.vehiclesData.isEmpty()) {
+		if (vehiclesInfo.isEmpty()) {
 			return distribution;
 		}
 		
-		for (VehicleClass vehicle : this.vehiclesData.values()) {
+		for (VehicleClass vehicle : vehiclesInfo.values()) {
 			
 			double departureTime = vehicle.getDeparture();		
 			double currentTravelTime = this.step * 0.1 - departureTime;

@@ -241,11 +241,16 @@ public class SimulationManager {
      * @param type report type: "VEHICLE", "EDGE", or "PDF"
      * @param currentStepCount current simulation timestep
      */
-    public void generateReports(String outputDir, String type, int currentStepCount) {
+    public void generateReports(String outputDir, Map<String, VehicleClass>vehicleData, String type, List<String> filteredVehicleIDs, int currentStepCount, boolean edgeFilter, double maxAvgSpeed, int minDensity) {
         System.out.println("--- DEBUG: Starting Report Generation ---");
         if (this.reportManager == null || this.statisticsManager == null || this.mapManager == null) {
             System.err.println("❌ ERROR: Managers are NULL. Did you click 'Start Simulation' first?");
             return;
+        }
+        for(String i: filteredVehicleIDs) {
+        		if(i == null) {
+        			System.err.println("❌ ERROR: Vehicles in filteredVehicleIDs is NULL!");
+        		}
         }
         File folder = new File(outputDir);
         if (!folder.exists()) {
@@ -257,16 +262,27 @@ public class SimulationManager {
                 DateTimeFormatter.ofPattern("dd-MM-yyyy_HH-mm-ss");
 
         String timestamp = LocalDateTime.now().format(formatter);
+        Map<String, VehicleClass> filteredData = new HashMap<>();
+        if (filteredVehicleIDs == null || filteredVehicleIDs.isEmpty()) {
+        		filteredData = vehicleData;
+        }
+        else {
+        		for(String i: filteredVehicleIDs) {
+        			if(vehicleData.get(i) != null) {
+            			filteredData.put(i, vehicleData.get(i));        				
+        			}
+        		}
+        }
         try {
             if (type.equals("VEHICLE")) {
                 System.out.println("   > Collecting Vehicle Data...");
                 List<VehicleInfo> vehicleList = new ArrayList<>();
-                Map<String, VehicleClass> rawData = vehicleManager.getVehiclesData();
+                Map<String, VehicleClass> rawData = filteredData;
                 for (Map.Entry<String, VehicleClass> entry : rawData.entrySet()) {
                     String id = entry.getKey();
                     VehicleClass attr = entry.getValue();
                     double speed = (Double) attr.getSpeed();
-                    String color = attr.getColor().toString();
+                    String color = ColorConverter.colorToWebString(ColorConverter.toFXColor(attr.getColor()));
                     double depart = (Double) attr.getDeparture();
                     double timeAlive = currentStepCount - depart;
                     vehicleList.add(new VehicleInfo(id, speed, timeAlive, color, "car"));
@@ -284,20 +300,20 @@ public class SimulationManager {
             if (type.equals("EDGE")) {
                 System.out.println("   > Collecting Edge Data...");
                 List<EdgeInfo> edgeList = new ArrayList<>();
-                Map<String, Integer> densityMap = this.statisticsManager.calculateVehicleDensity();
+                Map<String, Integer> densityMap = this.statisticsManager.calculateVehicleDensity(filteredData);
                 List<String> allEdges = mapManager.getEdgeIdList();
                 
                 for (String edgeId : allEdges) {
                     double density = densityMap.getOrDefault(edgeId, 0);
                     
-                    double avgSpeed = (density > 0) ? this.statisticsManager.avgVehiclesSpeed() : 0.0;
+                    double avgSpeed = (density > 0) ? this.statisticsManager.avgVehiclesSpeed(filteredData) : 0.0;
                     double width = 3.5; 
 
                     edgeList.add(new EdgeInfo(edgeId, width, density, avgSpeed));
                 }
 
                 String fileName = outputDir + "/edges_" + timestamp + ".csv";
-                this.reportManager.exportEdgesCSV(edgeList, fileName);
+                this.reportManager.exportEdgesCSV(edgeList, fileName, edgeFilter, maxAvgSpeed, minDensity);
                 System.out.println("   ✅ Edge CSV saved.");
             }
         } catch (Exception e) {
@@ -309,7 +325,7 @@ public class SimulationManager {
             if (type.equals("PDF")) {
                 System.out.println("   > Generating PDF...");
                 String pdfName = outputDir + "/SimulationReport_" + timestamp + ".pdf";
-                reportManager.exportReportPDF(this.statisticsManager, pdfName, currentStepCount);
+                reportManager.exportReportPDF(this.statisticsManager, pdfName, filteredData, currentStepCount);
                 System.out.println("   ✅ PDF saved.");
             }
         } catch (Exception e) {
