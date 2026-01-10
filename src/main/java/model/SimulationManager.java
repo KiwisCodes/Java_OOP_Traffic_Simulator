@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import controller.MainController;
 import model.infrastructure.*;
 import model.infrastructure.*;
@@ -56,7 +59,7 @@ import de.tudresden.sumo.cmd.Vehicletype;
  * @version 1.0
  */
 public class SimulationManager {
-	
+	private static final Logger logger = LogManager.getLogger(SimulationManager.class);
 	//TODO insert your sumoPath here to run
     private String sumoPath = "/Users/apple/sumo/bin/sumo";
     private String sumoConfigFileName = "SumoConfig/frauasmap.sumocfg";
@@ -107,9 +110,9 @@ public class SimulationManager {
     public boolean startConnection() {
         if (!setupPaths()) return false;
 
-        System.out.println("Creating connection with:");
-        System.out.println("  > Binary: " + this.sumoPath);
-        System.out.println("  > Config: " + this.sumoConfigFilePath);
+        logger.info("Creating connection with:");
+        logger.info("  > Binary: " + this.sumoPath);
+        logger.info("  > Config: " + this.sumoConfigFilePath);
         
         this.sumoConnection = new SumoTraciConnection(this.sumoPath, this.sumoConfigFilePath);
         this.sumoConnection.addOption("start", null); // Auto-start simulation
@@ -118,24 +121,24 @@ public class SimulationManager {
         this.sumoConnection.printSumoError(true);
 
         try {
-            System.out.println("Launching SUMO... (This may pause until TraCI connects)");
+            logger.info("Launching SUMO... (This may pause until TraCI connects)");
             this.sumoConnection.runServer(); 
             
             if(this.sumoConnection.isClosed()) {
-        		System.out.println("Is closed");
+        		logger.info("Is closed");
         	}
         	else {
-        		System.out.println("Is not closed");
+        		logger.info("Is not closed");
         	}
 
             this.mapManager = new MapManager(sumoConnection);
             this.vehicleManager = new VehicleManager(sumoConnection);
     			this.trafficlightManager = new TrafficlightManager(sumoConnection);
     			this.reportManager = new ReportManager();
-            System.out.println("Connection established!");
+            logger.info("Connection established!");
             
          // --- DEBUG: PRINT ALL LOADED VEHICLE TYPES ---
-            System.out.println("=== LOADED VEHICLE TYPES ===");
+            logger.info("=== LOADED VEHICLE TYPES ===");
             
             // Retrieve the list of IDs from SUMO
             // Note: usage of do_job_get() is required for TraaS
@@ -143,15 +146,15 @@ public class SimulationManager {
             List<String> types = (List<String>) this.sumoConnection.do_job_get(Vehicletype.getIDList());
 
             for (String t : types) {
-                System.out.println("Found Type: " + t);
+                logger.info("Found Type: " + t);
             }
-            System.out.println("============================");
+            logger.info("============================");
             
             this.isRunning = true;
             return true;
 
         } catch (Exception e) {
-            System.err.println("Error starting SUMO: " + e.getMessage());
+            logger.warn("Error starting SUMO: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -166,19 +169,19 @@ public class SimulationManager {
         try {
             URL resource = SimulationManager.class.getClassLoader().getResource(this.sumoConfigFileName);
             if (resource == null) {
-                System.err.println(this.sumoConfigFileName + "' not found in resources!");
+                logger.warn(this.sumoConfigFileName + "' not found in resources!");
                 return false;
             }
             File file = new File(resource.toURI());
             this.sumoConfigFilePath = file.getAbsolutePath();
             File sumoBin = new File(this.sumoPath);
             if(!sumoBin.exists() || !sumoBin.canExecute()) {
-                System.err.println("SUMO binary not found at: " + this.sumoPath);
+                logger.warn("SUMO binary not found at: " + this.sumoPath);
                 return false;
             }
             return true;
         } catch (Exception e) {
-            System.err.println("Error resolving file paths: " + e.getMessage());
+            logger.warn("Error resolving file paths: " + e.getMessage());
             return false;
         }
     }
@@ -192,7 +195,7 @@ public class SimulationManager {
      * </p>
      */
     public void runSimulationLoop() {
-        System.out.println("   -> Simulation Loop Started.");
+        logger.info("   -> Simulation Loop Started.");
 
         while (isRunning && !this.sumoConnection.isClosed()) {
             step();
@@ -200,7 +203,7 @@ public class SimulationManager {
         }
         
         stopSimulation();
-        System.out.println("Simulation loop finished.");
+        logger.info("Simulation loop finished.");
     }
 
     /**
@@ -243,21 +246,21 @@ public class SimulationManager {
      * @param currentStepCount current simulation timestep
      */
     public void generateReports(String outputDir, Map<String, MeansOfTransportation>vehicleData, String type, List<String> filteredVehicleIDs, int currentStepCount, boolean edgeFilter, double maxAvgSpeed, int minDensity) {
-        System.out.println("--- DEBUG: Starting Report Generation ---");
+        logger.debug("--- DEBUG: Starting Report Generation ---");
         if (this.reportManager == null || this.statisticsManager == null || this.mapManager == null) {
-            System.err.println("❌ ERROR: Managers are NULL. Did you click 'Start Simulation' first?");
+            logger.warn("❌ ERROR: Managers are NULL. Did you click 'Start Simulation' first?");
             return;
         }
         for(String i: filteredVehicleIDs) {
         		if(i == null) {
-        			System.err.println("❌ ERROR: Vehicles in filteredVehicleIDs is NULL!");
+        			logger.warn("❌ ERROR: Vehicles in filteredVehicleIDs is NULL!");
         		}
         }
         File folder = new File(outputDir);
         if (!folder.exists()) {
             folder.mkdirs();
         }
-        System.out.println("📂 Saving files to: " + folder.getAbsolutePath());
+        logger.info("📂 Saving files to: " + folder.getAbsolutePath());
 
         DateTimeFormatter formatter =
                 DateTimeFormatter.ofPattern("dd-MM-yyyy_HH-mm-ss");
@@ -276,7 +279,7 @@ public class SimulationManager {
         }
         try {
             if (type.equals("VEHICLE")) {
-                System.out.println("   > Collecting Vehicle Data...");
+                logger.info("   > Collecting Vehicle Data...");
                 List<VehicleInfo> vehicleList = new ArrayList<>();
                 Map<String, MeansOfTransportation> rawData = filteredData;
                 for (Map.Entry<String, MeansOfTransportation> entry : rawData.entrySet()) {
@@ -291,15 +294,15 @@ public class SimulationManager {
 
                 String fileName = outputDir + "/vehicles_" + timestamp + ".csv";
                 this.reportManager.exportVehiclesCSV(vehicleList, fileName);
-                System.out.println("   ✅ Vehicle CSV saved.");
+                logger.info("   ✅ Vehicle CSV saved.");
             }
         } catch (Exception e) {
-            System.err.println("❌ CRASH during Vehicle Export: " + e.getMessage());
+            logger.warn("❌ CRASH during Vehicle Export: " + e.getMessage());
             e.printStackTrace();
         }
         try {
             if (type.equals("EDGE")) {
-                System.out.println("   > Collecting Edge Data...");
+                logger.info("   > Collecting Edge Data...");
                 List<EdgeInfo> edgeList = new ArrayList<>();
                 Map<String, Integer> densityMap = this.statisticsManager.calculateVehicleDensity(filteredData);
                 List<String> allEdges = mapManager.getEdgeIdList();
@@ -315,26 +318,26 @@ public class SimulationManager {
 
                 String fileName = outputDir + "/edges_" + timestamp + ".csv";
                 this.reportManager.exportEdgesCSV(edgeList, fileName, edgeFilter, maxAvgSpeed, minDensity);
-                System.out.println("   ✅ Edge CSV saved.");
+                logger.info("   ✅ Edge CSV saved.");
             }
         } catch (Exception e) {
-            System.err.println("❌ CRASH during Edge Export: " + e.getMessage());
+            logger.warn("❌ CRASH during Edge Export: " + e.getMessage());
             e.printStackTrace();
         }
 
         try {
             if (type.equals("PDF")) {
-                System.out.println("   > Generating PDF...");
+                logger.info("   > Generating PDF...");
                 String pdfName = outputDir + "/SimulationReport_" + timestamp + ".pdf";
                 reportManager.exportReportPDF(this.statisticsManager, pdfName, filteredData, currentStepCount);
-                System.out.println("   ✅ PDF saved.");
+                logger.info("   ✅ PDF saved.");
             }
         } catch (Exception e) {
-            System.err.println("❌ CRASH during PDF Export: " + e.getMessage());
+            logger.warn("❌ CRASH during PDF Export: " + e.getMessage());
             e.printStackTrace();
         }
 
-        System.out.println("--- DEBUG: Finished ---");
+        logger.debug("--- DEBUG: Finished ---");
     }
     
     /**
@@ -347,14 +350,14 @@ public class SimulationManager {
      * @return true if injected
      * @throws Execption if no Route found between 2 edges
      */
-    public boolean InjectVehicle(String vehType, SumoColor sumoColor, double Speed, String firstEdge, String lastEdge) {
+    public boolean injectMeansOfTransportation(String vehType, SumoColor sumoColor, double Speed, String firstEdge, String lastEdge) {
         try {
             // 1. Calculate the route using your existing function
             // This works for Pedestrians too, as long as 'vehType' is "pedestrian" in SUMO
             SumoStringList edges = getRouteFromEdges(firstEdge, lastEdge, vehType);
             
             if(edges == null || edges.size() == 0) {
-                System.out.println("ERROR: No path found for type " + vehType + 
+                logger.info("ERROR: No path found for type " + vehType + 
                         " from edge " + firstEdge + " to edge " + lastEdge);
                 return false;
             }
@@ -379,7 +382,7 @@ public class SimulationManager {
             }
 
         } catch (Exception e){
-            System.out.println("Exception in InjectVehicle: " + e);
+            logger.info("Exception in InjectVehicle: " + e);
             e.printStackTrace();
             return false;
         }
@@ -391,12 +394,12 @@ public class SimulationManager {
      * @param number: number of vehicle wanted for the Stress Test
      * @throws Exception: throws when communication with SUMO fails
      */
-	public void StressTest(int number) throws Exception {
+	public void stressTest(int number) throws Exception {
 		int N = number;
 		String vehicleStringIDs = String.valueOf(sumoConnection.do_job_get(Vehicle.getIDList()));
 		List<String> vehicleIDs = Util.parseStringToList(vehicleStringIDs);
 		if(vehicleIDs == null || vehicleIDs.size() == 0){
-			System.out.println("LOG: PLEASE TRY AGAIN");
+			logger.info("LOG: PLEASE TRY AGAIN");
 			return;
 		}
 		List<String> randomVehicleIDs = Util.getRandomElementsWithReplacement(vehicleIDs, N);
@@ -413,12 +416,12 @@ public class SimulationManager {
 	 * Random Stress Test with default number of vehicles (50)
 	 * @throws Exception throws when communication with SUMO fails
 	 */
-	public void StressTest() throws Exception {
+	public void stressTest() throws Exception {
 		int N = 50;
 		String vehicleStringIDs = String.valueOf(sumoConnection.do_job_get(Vehicle.getIDList()));
 		List<String> vehicleIDs = Util.parseStringToList(vehicleStringIDs);
 		if(vehicleIDs == null || vehicleIDs.size() == 0){
-			System.out.println("LOG: PLEASE TRY AGAIN");
+			logger.info("LOG: PLEASE TRY AGAIN");
 			return;
 		}
 		List<String> randomVehicleIDs = Util.getRandomElementsWithReplacement(vehicleIDs, N);
@@ -466,7 +469,7 @@ public class SimulationManager {
         this.isRunning = false;
         if (this.sumoConnection != null && !this.sumoConnection.isClosed()) {
             this.sumoConnection.close();
-            System.out.println("Connection closed.");
+            logger.info("Connection closed.");
         }
     }
 
@@ -544,7 +547,7 @@ public class SimulationManager {
     
     // KHOA FILTERING
 	public List<Color> getUniqueColors(SimulationState state){
-		Map<String, MeansOfTransportation> vehicleData = state.getVehicles();
+		Map<String, MeansOfTransportation> vehicleData = state.getMeansOfTransportations();
 		//Hung changed to SumoColor
 		List<Color> fxColorRGBA = new ArrayList<>();
 		for(Map.Entry<String, MeansOfTransportation> vehicle : vehicleData.entrySet()) {
@@ -557,51 +560,17 @@ public class SimulationManager {
 		}
 		return fxColorRGBA;
 	}
-//	public List<String> getIDColor(int r, int g, int b, int a, SimulationState state){
-//		Map<String, MeansOfTransportation> vehicleData = state.getVehicles();
-//		List<String> validIDs = new ArrayList<>();
-//		for(Map.Entry<String, MeansOfTransportation> vehicle : vehicleData.entrySet()) {
-//			String vehicleId = vehicle.getKey();
-//		    MeansOfTransportation innerMap = vehicle.getValue();
-//		    String colorValue = String.valueOf(innerMap.getColor());
-//		    String[] parts = colorValue.split("#");
-//		    int r1 = (Integer.parseInt(parts[0]) + 256) % 256;
-//		    int g1 = (Integer.parseInt(parts[1]) + 256) % 256;
-//		    int b1 = (Integer.parseInt(parts[2]) + 256) % 256;
-////		    int a1 = (Integer.parseInt(parts[3]) + 256) % 256;
-//		    System.out.println("DEBUG: Vehicle Color: " + r1 + "," + g1 + "," + b1 + " | Filter Color: " + r + "," + g + "," + b);		    
-//		    if (r1 == r && g1 == g && b1 == b) {
-//		    	validIDs.add(vehicleId);
-//		    }
-//		}
-////		System.out.println(validIDs);
-//		return validIDs;
-//	}
-//	public List<String> getIDSpeed(double speed, SimulationState state){
-//		List<String> validIDs = new ArrayList<>();
-//		Map<String, MeansOfTransportation> vehicleData = state.getVehicles();
-//		for(Map.Entry<String, MeansOfTransportation> vehicle : vehicleData.entrySet()) {
-//			String vehicleId = vehicle.getKey();
-//		    MeansOfTransportation innerMap = vehicle.getValue();
-//		    String currentSpeed = String.valueOf(innerMap.getSpeed());
-//		    double speedDouble = Double.parseDouble(currentSpeed);
-//		    if(speedDouble <= speed) {
-//		    	validIDs.add(vehicleId);
-//		    }		    
-//		}
-//		return validIDs;
-//	}
 	
 	// ADD THIS METHOD
 	public List<String> getFilteredVehicleIDs(Predicate<MeansOfTransportation> criteria, SimulationState state) {
-	    if (state == null || state.getVehicles() == null) return new ArrayList<>();
+	    if (state == null || state.getMeansOfTransportations() == null) return new ArrayList<>();
 
-	    List<String> list = state.getVehicles().values().stream()
+	    List<String> list = state.getMeansOfTransportations().values().stream()
 	                .filter(criteria)
 	                .map(MeansOfTransportation::getId)
 	                .toList();
 	    
-	    return new ArrayList<>(list); // Returns a mutable copy
+	    return new ArrayList<>(list); // Returns a mutable copy or else it wont work, race condition
 	}
 	
 }

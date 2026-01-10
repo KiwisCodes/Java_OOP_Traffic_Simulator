@@ -82,6 +82,10 @@ import data.SimulationQueue;
 import data.SimulationState;
 import view.ChartWindow;
 
+//Log
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class MainController {
     // --- FXML View Elements ---
     @FXML private ScrollPane leftControlPanel;
@@ -101,9 +105,7 @@ public class MainController {
     @FXML private TextField vehicleSpeedField;
     @FXML private Button setVehicleColorButton;
     @FXML private TextField vehicleColorField;
-    @FXML private TitledPane injectionPane;
-//    @FXML private RadioButton carRadio;
-//    @FXML private RadioButton bikeRadio;          
+    @FXML private TitledPane injectionPane;        
     @FXML private ToggleGroup vehicleTypeGroup;   
     @FXML private TextField firstEdgeField;       
     @FXML private TextField secondEdgeField;      
@@ -114,6 +116,7 @@ public class MainController {
     @FXML private Button injectionBusButton;
     @FXML private Button injectionPedestrianButton;
     @FXML private Button injectionSelectedVehicleTypeButton;
+    private Consumer<MeansOfTransportation> meansOfTransportationClickHandler;
 
     // Traffic Light Actions
     @FXML private TitledPane trafficLightControlPane;
@@ -145,8 +148,6 @@ public class MainController {
     // Stress Testing
     @FXML private TitledPane stressTestPane;
     @FXML private Button stressTestButton;
-//    @FXML private RadioButton carRadio1;
-//    @FXML private RadioButton bikeRadio1;
     @FXML private ToggleGroup vehicleTypeGroup1;
     @FXML private TextField firstEdgeField1;
     @FXML private TextField secondEdgeField1;
@@ -195,7 +196,8 @@ public class MainController {
     @FXML private ScrollPane bottomLogScrollPane;
     private MapManager mapManager;
     @FXML private Pane baseMapPane;
-    @FXML private Pane lanePane;     
+    @FXML private Pane lanePane;    
+    @FXML private Consumer<LaneClass> laneClickHandler;
     @FXML private Pane junctionPane;
     @FXML private Pane trafficLightPane;
     @FXML private Pane routePane;
@@ -207,6 +209,8 @@ public class MainController {
     @FXML private TitledPane bottomLogArea;
     private LinkedList<String> logHistory = new java.util.LinkedList<>();
     private static final int MAX_LOG_LINES = 100;
+    private static final Logger logger = LogManager.getLogger(MainController.class);
+    
 
 
 //    Logic & State
@@ -233,7 +237,6 @@ public class MainController {
     private MapInteractionHandler mapInteractionHandler;
     private SimulationQueue uiQueue;	
     private SimulationQueue statQueue;
-    private SimulationQueue exportQueue;
     
 //     Filtering KHOA
     private Map<Color, CheckBox> colorCheckBoxMap = new HashMap<>();
@@ -249,7 +252,6 @@ public class MainController {
         this.renderer = new Renderer();
         this.threadPool = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
         this.statQueue = new SimulationQueue(2);
-        this.exportQueue = new SimulationQueue(2);
     }
     
     // Main entry point if running stand alone (optional)
@@ -283,59 +285,15 @@ public class MainController {
                 }
             });
         }
-//        if (vehicleTypeGroup != null) {
-//            vehicleTypeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-//            	updateLaneVisuals();
-//                if (firstEdgeField != null) firstEdgeField.clear();   
-//                if (secondEdgeField != null) secondEdgeField.clear(); 
-//            });
-//        }
-//        if (vehicleTypeGroup1 != null) {
-//            vehicleTypeGroup1.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-//            	updateLaneVisuals();
-//            	if (firstEdgeField1 != null) firstEdgeField1.clear();   
-//                if (secondEdgeField1 != null) secondEdgeField1.clear();
-//            });
-//        }
-//        if (this.injectionSelectedVehicleTypeButton != null) {
-//        	
-//        }
-        
-        
         
         disableButtons(true);
         this.chartWindow = new ChartWindow();
-        
-//        showChartsButton.setOnAction(e -> this.chartWindow.show());
-
-//        setRedPhaseButton.setOnAction(e -> toggleColorButton(setRedPhaseButton));
-//        setYellowPhaseButton.setOnAction(e -> toggleColorButton(setYellowPhaseButton));
-//        setGreenPhaseButton.setOnAction(e -> toggleColorButton(setGreenPhaseButton));
-        
-//        this.carRadio.setOnMouseClicked(e -> {
-//        	this.firstEdgeField.clear();
-//        	this.secondEdgeField.clear();
-//        });
-//        this.bikeRadio.setOnMouseClicked(e -> {
-//        	this.firstEdgeField.clear();
-//        	this.secondEdgeField.clear();
-//        });
-//        this.carRadio1.setOnMouseClicked(e -> {
-//        	this.firstEdgeField1.clear();
-//        	this.secondEdgeField1.clear();
-//        });
-//        this.bikeRadio1.setOnMouseClicked(e -> {
-//        	this.firstEdgeField1.clear();
-//        	this.secondEdgeField1.clear();
-//        });
-        
-     // 1. Assign the pointers to the Car buttons by default
+        //set default injection and stress test to cars
         this.injectionSelectedVehicleTypeButton = injectionCarButton;
         this.stressTestSelectedVehicleTypeButton = stressTestCarButton;
-
-        // 2. Apply the CSS styling (which you already have)
         this.injectionCarButton.getStyleClass().add("selected-button");
         this.stressTestCarButton.getStyleClass().add("selected-button");
+        
         String projectPath = System.getProperty("user.dir");
         reportPath = projectPath + File.separator + "reports";
         File reportDir = new File(reportPath);
@@ -367,7 +325,7 @@ public class MainController {
 
     @FXML 
     private void startSimulation() {
-        this.startButton.setDisable(true); // Prevent double start
+        this.startButton.setDisable(true); // prevent double start
         log("Attempting to connect to SUMO...");
         boolean connected = this.simManager.startConnection();
 
@@ -378,82 +336,7 @@ public class MainController {
             MapManager mapManager = this.simManager.getMapManager();
             this.trafficLightManager = this.simManager.getTrafficlightManager();
             this.renderer.setConverter(mapManager);
-            
-
-            Consumer<LaneClass> laneClickHandler = (selectedLane) -> {
-                if (selectedLane == null) return;
-
-                // get information of Lane 
-                String laneId = selectedLane.getId();
-                
-                // Lấy edgeId từ laneId (ví dụ: "edge1_0" -> "edge1") như code hiện tại của bạn
-                String edgeId = laneId.substring(0, laneId.indexOf("_")); 
-
-                // 2. Xác định trạng thái các Menu và lấy Mode tập trung
-                String currentMode = getCurrentSelectedMode();
-                boolean isInjecting = (injectionPane != null && injectionPane.isExpanded());
-                boolean isStressTesting = (stressTestPane != null && stressTestPane.isExpanded());
-
-                if (isInjecting) {
-                    // --- LOGIC CHO INJECTION PANE ---
-                    // Sử dụng currentMode đã lấy từ getCurrentSelectedMode()
-                    if (!selectedLane.isVehicleAllowed(currentMode)) {
-                        log("Warning: This lane does not allow " + currentMode);
-                        return; 
-                    }
-
-                    if (firstEdgeField.getText().isEmpty()) {
-                        firstEdgeField.setText(edgeId);
-                        log("Selected First Edge (Injection): " + edgeId);
-                    } else if (secondEdgeField.getText().isEmpty()) {
-                        secondEdgeField.setText(edgeId);
-                        log("Selected Second Edge (Injection): " + edgeId);
-                    } else {
-                        firstEdgeField.setText(edgeId);
-                        secondEdgeField.clear();
-                        log("Selected Another First Edge (Injection): " + edgeId);
-                    }
-
-                } else if (isStressTesting) {
-                    // --- LOGIC CHO STRESS TEST PANE ---
-                    // Sử dụng currentMode đã lấy từ getCurrentSelectedMode()
-                    if (!selectedLane.isVehicleAllowed(currentMode)) {
-                        log("Warning: This lane does not allow " + currentMode);
-                        return; 
-                    }
-
-                    if (firstEdgeField1.getText().isEmpty()) {
-                        firstEdgeField1.setText(edgeId);
-                        log("Selected First Edge (Stress Test): " + edgeId);
-                    } else if (secondEdgeField1.getText().isEmpty()) {
-                        secondEdgeField1.setText(edgeId);
-                        log("Selected Second Edge (Stress Test): " + edgeId);
-                    } else {
-                        firstEdgeField1.setText(edgeId);
-                        secondEdgeField1.clear();
-                        log("Selected Another First Edge (Stress Test): " + edgeId);
-                    }   
-
-                } 
-                else {
-                    // --- CHẾ ĐỘ KHÁM PHÁ (Discovery Mode) ---
-                    // Khi không có menu nào mở, chỉ hiện ID lên log như bạn muốn
-                    log("Edge ID: " + edgeId + " | Lane ID: " + laneId);
-                }
-            };
-            
-            trafficLightClickHandler = (trafficLightLink) -> {
-                if (trafficLightControlPane != null && trafficLightControlPane.isExpanded()) {
-                    	trafficLightIdField.setText(trafficLightLink.get_link_id().toString());
-                    	this.currentTrafficLightLink = trafficLightLink;
-                    log("Selected Traffic Light: " + trafficLightLink.get_link_id().toString());   
-                } else {
-                    log("Traffic Light ID: " + trafficLightLink.get_link_id().toString());
-                }
-            };
-            
-            
-            
+            this.setClickHandler();
             this.renderer.renderLanes(
             	this.simManager.getMapManager().getLanes(),
                 this.lanePane,
@@ -467,7 +350,7 @@ public class MainController {
             		);
             this.updateLaneVisuals();//this is to default the car option for both injection and stress test
             
-	        log("Static Map drawn (Separated Car/Bike lanes)");
+	        log("Static Map drawn");
 
             threadPool.submit(() -> {
                 log("Simulation Thread Started.");
@@ -500,7 +383,7 @@ public class MainController {
                     	}
                         this.uiQueue.offerState(simulationState);
                         this.statQueue.offerState(simulationState);
-                        this.exportQueue.offerState(simulationState);
+
                         currentStep++;
                     } catch (InterruptedException e) {
                         System.out.println("Simulation loop interrupted. Stopping safely.");
@@ -534,7 +417,7 @@ public class MainController {
                         SimulationState state = statQueue.pollState();// changed to poll 
                         
                         if (state == null) continue;
-                        Map<String, MeansOfTransportation> statsData = state.getVehicles();
+                        Map<String, MeansOfTransportation> statsData = state.getMeansOfTransportations();
                         this.statsManager.step(statsData, currentStep);
                         double avgSpeed = this.statsManager.avgVehiclesSpeed(statsData);
                         Map<String, Integer> density = this.statsManager.calculateVehicleDensity(statsData);
@@ -782,17 +665,21 @@ public class MainController {
             }
 
             // 5. Tell the renderer what to draw (it now knows if filters are active)
-            this.renderer.renderVehicles(
+            this.renderer.renderMeansOfTransportation(
                 vehiclePane, 
-                simulationState.getVehicles(), 
+                simulationState.getMeansOfTransportations(), 
                 this.filteredVehicleIDs, 
-                this.isFilterCurrentlyApplied
+                this.isFilterCurrentlyApplied,
+                this.meansOfTransportationClickHandler
             );
 
             // 6. Update Traffic Lights and Stats
-            this.renderer.renderTrafficLights(trafficLightPane, simulationState.getTrafficLights(), trafficLightClickHandler);
+            this.renderer.renderTrafficLights(
+            		trafficLightPane, 
+            		simulationState.getTrafficLights(), 
+            		trafficLightClickHandler);
             
-            int currentVehicleCount = simulationState.getVehicles().size();
+            int currentVehicleCount = simulationState.getMeansOfTransportations().size();
             updateCurrentStep();
             updateCurrentVehicleCount(currentVehicleCount);
             
@@ -800,7 +687,7 @@ public class MainController {
             if(isExportingVehicleCSV) {
 	            	Platform.runLater(() -> {
 	            		// since there will always be some good speed, even at default, we let filter = True
-	            		simManager.generateReports(reportPath, simulationState.getVehicles(), "VEHICLE", this.filteredVehicleIDs, currentStep, false, 0, 0);
+	            		simManager.generateReports(reportPath, simulationState.getMeansOfTransportations(), "VEHICLE", this.filteredVehicleIDs, currentStep, false, 0, 0);
 	            });
             		isExportingVehicleCSV = false;
             }
@@ -810,7 +697,7 @@ public class MainController {
 	            		boolean edgeFilter = edgeFilterCheckbox.isSelected();
 	            	    double maxSpeed = edgeSpeedSlider.getValue();
 	            	    int minDensity = (int) edgeDensitySlider.getValue();
-	            	    simManager.generateReports(reportPath, simulationState.getVehicles(), "EDGE", this.filteredVehicleIDs, currentStep, edgeFilter, maxSpeed, minDensity);
+	            	    simManager.generateReports(reportPath, simulationState.getMeansOfTransportations(), "EDGE", this.filteredVehicleIDs, currentStep, edgeFilter, maxSpeed, minDensity);
 	            });
             		isExportingEdgeCSV = false;
             }
@@ -820,7 +707,7 @@ public class MainController {
             		threadPool.submit(() -> {
                 		try {          
                 			// since there will always be some good speed, even at default, we let filter = True
-                			simManager.generateReports(reportPath, simulationState.getVehicles(), "PDF", this.filteredVehicleIDs, currentStep, false, 0 ,0);
+                			simManager.generateReports(reportPath, simulationState.getMeansOfTransportations(), "PDF", this.filteredVehicleIDs, currentStep, false, 0 ,0);
                 			Platform.runLater(() -> log("✅ PDF Saved to Desktop!"));
                     } catch (Throwable ex) {
                     		System.err.println("CRITICAL THREAD ERROR:"); 
@@ -838,6 +725,7 @@ public class MainController {
 
     private void log(String message) {
         // 1. Ensure we update on the JavaFX Application Thread
+    	logger.info(message);
         Platform.runLater(() -> {
             // 2. Add the new message with a timestamp or prefix
             logHistory.add("> " + message);
@@ -1001,7 +889,7 @@ public class MainController {
     	
         Color fxColor = injectVehicleColorPickerButton.getValue();
         SumoColor sumoColor = ColorConverter.toSumoColor(fxColor);
-    	if(this.simManager.InjectVehicle(vehicleType, sumoColor, speed, firstEdgeId, secondEdgeId)) {
+    	if(this.simManager.injectMeansOfTransportation(vehicleType, sumoColor, speed, firstEdgeId, secondEdgeId)) {
     		log("Injected vehicle");  
     		this.updateView(); // KHOA FILTERING
     	}
@@ -1113,27 +1001,6 @@ public class MainController {
     	}
 }
     
-    /**
-     * Toggles the selection state of a traffic light color button.
-     *
-     * If the given button is already selected, it is deselected.
-     * Otherwise, the previous selection is cleared and the new button
-     * becomes the active color selection.
-     *
-     * @param button color selection button to toggle
-     */
-//    @FXML private void toggleColorButton(Button button) {
-//	    if (selectedColorButton == button) {
-//	        button.getStyleClass().remove("selected-button");
-//	        selectedColorButton = null;
-//	    } else {
-//	        if (selectedColorButton != null) {
-//	            selectedColorButton.getStyleClass().remove("selected-button");
-//	        }
-//	        button.getStyleClass().add("selected-button");
-//	        selectedColorButton = button;
-//	    }
-//}
     
     //pth modified
     @FXML
@@ -1261,7 +1128,7 @@ public class MainController {
     // KHOA FILTERING CODE
     @FXML private void runStressTest() {
     	try {
-			this.simManager.StressTest();
+			this.simManager.stressTest();
 			// KHOA CODED THIS
 //	        this.isFilterCurrentlyApplied = false; 
 			log("Default Stress Test with " + " random cars with random Routes");
@@ -1340,13 +1207,17 @@ public class MainController {
                          break;
                     }
 
-                    boolean success = this.simManager.InjectVehicle(vehicleType, sumoColor, speed, firstEdgeId, secondEdgeId);
-                    
+                    boolean success = this.simManager.injectMeansOfTransportation(vehicleType, sumoColor, speed, firstEdgeId, secondEdgeId);
+                    final int stressTestVehicleCount = i;
                     if (success) {
                         successCount++;
-                        Platform.runLater(() -> log("Injected vehicle")); 
+                        Platform.runLater(() -> log("Injected vehicle " + stressTestVehicleCount)); 
                     } else {
-                        Platform.runLater(() -> log("Injection failed"));
+                        Platform.runLater(() -> {
+                        	log("Injection failed, no route between 2 edges");
+                        	}
+                        );
+                        break;
                     }
                     Thread.sleep(200); 
                     
@@ -1354,7 +1225,7 @@ public class MainController {
                     Thread.currentThread().interrupt();
                     break; 
                 } catch (Exception e) {
-                    if (e.toString().contains("connection is closed")) {
+                    if (e.toString().contains("Connection is closed")) {
                         break; 
                     }
                     e.printStackTrace(); 
@@ -1401,26 +1272,6 @@ public class MainController {
         });
     }
     
-//    private List<javafx.scene.paint.Color> convertAwtToFxColors(List<java.awt.Color> awtColors) {
-//        List<javafx.scene.paint.Color> fxColors = new ArrayList<>();
-//        
-//        for (java.awt.Color awtColor : awtColors) {
-//            // Get the R, G, B components (0-255)
-//            int r = awtColor.getRed();
-//            int g = awtColor.getGreen();
-//            int b = awtColor.getBlue();
-//            
-//            // Get the Alpha component (0-255) and convert to a double for Opacity (0.0 - 1.0)
-//            double opacity = awtColor.getAlpha() / 255.0;
-//            
-//            // Create the new JavaFX Color object
-//            javafx.scene.paint.Color fxColor = javafx.scene.paint.Color.rgb(r, g, b, opacity);
-//            
-//            fxColors.add(fxColor);
-//        }
-//        return fxColors;
-//    }
-    
     private void showColorsAsCheckboxes(List<Color> colorsToShow) {
         // UI manipulation must always be done on the JavaFX Application Thread
         Platform.runLater(() -> {
@@ -1448,21 +1299,94 @@ public class MainController {
             log("Filter UI Populated with " + colorsToShow.size() + " unique colors.");
         });
     }
-//    private String colorToWebString(Color color) {
-//        // Uses 255 * R/G/B values and formats them as a 6-digit hex string
-//        return String.format("#%02X%02X%02X", 
-//            (int) (color.getRed() * 255), 
-//            (int) (color.getGreen() * 255), 
-//            (int) (color.getBlue() * 255));
-//    }
-    
-    
-//    private int[] fxColorToRgbaInts(javafx.scene.paint.Color fxColor) {
-//        int r = (int) (fxColor.getRed() * 255);
-//        int g = (int) (fxColor.getGreen() * 255);
-//        int b = (int) (fxColor.getBlue() * 255);
-//        int a = 255;
-//        return new int[] {r, g, b, a};
-//    }
+
+    private void setClickHandler() {
+    	laneClickHandler = (selectedLane) -> {
+            if (selectedLane == null) return;
+
+            // get information of Lane 
+            String laneId = selectedLane.getId();
+            
+            // Lấy edgeId từ laneId (ví dụ: "edge1_0" -> "edge1") như code hiện tại của bạn
+            String edgeId = laneId.substring(0, laneId.indexOf("_")); 
+
+            // 2. Xác định trạng thái các Menu và lấy Mode tập trung
+            String currentMode = getCurrentSelectedMode();
+            boolean isInjecting = (injectionPane != null && injectionPane.isExpanded());
+            boolean isStressTesting = (stressTestPane != null && stressTestPane.isExpanded());
+
+            if (isInjecting) {
+                // --- LOGIC CHO INJECTION PANE ---
+                // Sử dụng currentMode đã lấy từ getCurrentSelectedMode()
+                if (!selectedLane.isVehicleAllowed(currentMode)) {
+                    log("Warning: This lane does not allow " + currentMode);
+                    return; 
+                }
+
+                if (firstEdgeField.getText().isEmpty()) {
+                    firstEdgeField.setText(edgeId);
+                    log("Selected First Edge (Injection): " + edgeId);
+                } else if (secondEdgeField.getText().isEmpty()) {
+                    secondEdgeField.setText(edgeId);
+                    log("Selected Second Edge (Injection): " + edgeId);
+                } else {
+                    firstEdgeField.setText(edgeId);
+                    secondEdgeField.clear();
+                    log("Selected Another First Edge (Injection): " + edgeId);
+                }
+
+            } else if (isStressTesting) {
+                // --- LOGIC CHO STRESS TEST PANE ---
+                // Sử dụng currentMode đã lấy từ getCurrentSelectedMode()
+                if (!selectedLane.isVehicleAllowed(currentMode)) {
+                    log("Warning: This lane does not allow " + currentMode);
+                    return; 
+                }
+
+                if (firstEdgeField1.getText().isEmpty()) {
+                    firstEdgeField1.setText(edgeId);
+                    log("Selected First Edge (Stress Test): " + edgeId);
+                } else if (secondEdgeField1.getText().isEmpty()) {
+                    secondEdgeField1.setText(edgeId);
+                    log("Selected Second Edge (Stress Test): " + edgeId);
+                } else {
+                    firstEdgeField1.setText(edgeId);
+                    secondEdgeField1.clear();
+                    log("Selected Another First Edge (Stress Test): " + edgeId);
+                }   
+
+            } 
+            else {
+                // --- CHẾ ĐỘ KHÁM PHÁ (Discovery Mode) ---
+                // Khi không có menu nào mở, chỉ hiện ID lên log như bạn muốn
+                log("Edge ID: " + edgeId + " | Lane ID: " + laneId);
+            }
+        };
+        
+        trafficLightClickHandler = (trafficLightLink) -> {
+            if (trafficLightControlPane != null && trafficLightControlPane.isExpanded()) {
+                	trafficLightIdField.setText(trafficLightLink.get_link_id().toString());
+                	this.currentTrafficLightLink = trafficLightLink;
+                log("Selected Traffic Light: " + trafficLightLink.get_link_id().toString());   
+            } else {
+                log("Traffic Light ID: " + trafficLightLink.get_link_id().toString());
+            }
+        };
+        
+        meansOfTransportationClickHandler = (selectedVehicle) -> {
+            // 1. Safety check
+            if (selectedVehicle == null) return;
+
+            // 2. Get the info using the overridden toString()
+            String vehicleInfo = selectedVehicle.toString();
+
+            // 3. Log the information
+            // You can format this however you like, but this fulfills the requirement
+            log("Vehicle Selected: " + vehicleInfo);
+
+            // Optional: If you want to show the specific ID separately (assuming it has getId())
+            // log("Vehicle ID: " + selectedVehicle.getId() + " | Details: " + vehicleInfo);
+        };
+    }
     
 }

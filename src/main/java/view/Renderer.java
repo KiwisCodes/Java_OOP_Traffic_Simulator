@@ -4,8 +4,11 @@ package view;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.function.Consumer;
 import java.util.Map;
+import java.util.Set;
+
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Cursor;
@@ -315,15 +318,15 @@ public class Renderer {
      * @param vehiclePane The JavaFX {@link Pane} layer dedicated to displaying vehicles.
      * @param vehicleData A map containing the latest snapshot of vehicle data (ID -> Vehicle Properties) from the simulation core.
      */
-    public void renderVehicles(Pane vehiclePane, Map<String, MeansOfTransportation> vehicleData, List<String> validIDs, boolean isFilterApplied) {
+    public void renderMeansOfTransportation(Pane vehiclePane, Map<String, MeansOfTransportation> vehicleData, List<String> validIDs, boolean isFilterApplied, Consumer<MeansOfTransportation> meansOfTransportationClickHandler) {
         if (vehicleData == null || vehicleData.isEmpty()) {
             vehiclePane.getChildren().clear();  
             vehicleVisualCache.clear();
             return;
         }
 
-        java.util.Set<String> visibleIDs = isFilterApplied ? 
-            (validIDs == null ? new java.util.HashSet<>() : new java.util.HashSet<>(validIDs)) : 
+        Set<String> visibleIDs = isFilterApplied ? 
+            (validIDs == null ? new HashSet<>() : new HashSet<>(validIDs)) : 
             vehicleData.keySet();
 
         // 1. CLEANUP
@@ -365,7 +368,7 @@ public class Renderer {
                     vehicleNode.setUserData(props);
 
                     // Re-add your hover effects and click events
-                    setupVehicleEvents(vehicleNode);
+                    setupVehicleEvents(vehicleNode, props, meansOfTransportationClickHandler);
 
                     vehiclePane.getChildren().add(vehicleNode);
                     vehicleVisualCache.put(vehicleId, vehicleNode);
@@ -376,8 +379,7 @@ public class Renderer {
         }
     }
 
-    // Helper for cleaner code
-    private void setupVehicleEvents(Node node) {
+    private void setupVehicleEvents(Node node, MeansOfTransportation meansOfTransportation, Consumer<MeansOfTransportation> meansOfTransportationClickHandler) {
         node.setOnMouseEntered(e -> {
             node.setEffect(HOVER_GLOW);
             node.setCursor(Cursor.HAND);
@@ -387,8 +389,7 @@ public class Renderer {
             node.setCursor(Cursor.DEFAULT);
         });
         node.setOnMouseClicked(e -> {
-            VehicleClass info = (VehicleClass) node.getUserData();
-//            log("Clicked Vehicle: " + info.getId());
+            meansOfTransportationClickHandler.accept(meansOfTransportation);
         });
     }
 	

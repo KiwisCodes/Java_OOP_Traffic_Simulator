@@ -29,7 +29,7 @@ public class SimulationState {
     /** * A map containing snapshots of all vehicles active in the current tick. 
      * Key: Vehicle ID, Value: The Vehicle object (copy).
      */
-    private final Map<String, MeansOfTransportation> lastVehicles;
+    private final Map<String, MeansOfTransportation> lastMeansOfTransportations;
     
     /** * A map containing the state of all traffic lights in the current tick.
      * 
@@ -52,7 +52,7 @@ public class SimulationState {
     		) 
     {	
 //    	this.lastEdges = lastEdges;
-		this.lastVehicles = lastVehicles;
+		this.lastMeansOfTransportations = lastVehicles;
 		this.lastTrafficLightIDs = lastTrafficLightIDs;
 //		this.laneIdList = laneIdList;
 	}
@@ -61,7 +61,7 @@ public class SimulationState {
      * return the current data about Vehicles
      * @return current state data about Vehicles
      */
-    public Map<String, MeansOfTransportation> getVehicles() { return lastVehicles; }
+    public Map<String, MeansOfTransportation> getMeansOfTransportations() { return lastMeansOfTransportations; }
     /**
      * return the current data about Traffic Lights
      * @return current state data about Traffic Lights
