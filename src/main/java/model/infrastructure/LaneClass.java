@@ -2,13 +2,18 @@ package model.infrastructure;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import de.tudresden.sumo.cmd.Lane;
 import de.tudresden.sumo.objects.SumoGeometry;
 import it.polito.appeal.traci.SumoTraciConnection;
+import model.SimulationManager;
 
 
 //lane and edge have composition relationship (1 cant live without another)
 public class LaneClass {
+	private static final Logger logger = LogManager.getLogger(LaneClass.class);
     private final String id;
     private final SumoGeometry geometry; 
     private final double width; 
@@ -34,6 +39,8 @@ public class LaneClass {
         
         // Sumo return list off all allowed vehicles in this lane:
         this.allowedClasses = (List<String>) connection.do_job_get(Lane.getAllowed(laneId));
+        logger.info("Lanes created.");
+        
     }
         
        // Function that check the allowed vehices:

@@ -665,6 +665,7 @@ public class MainController {
                 this.filteredVehicleIDs = this.simManager.getFilteredVehicleIDs(filterRule, simulationState);
 
                 log("Filter applied: " + this.filteredVehicleIDs.size() + " vehicles visible.");
+                logger.info("Filter applied: " + this.filteredVehicleIDs.size() + " vehicles visible.");
                 
             } else {
                 // No filters active: Clear the list
@@ -1057,6 +1058,7 @@ public class MainController {
 //            button.getStyleClass().remove("selected-button");
 //            this.stressTestSelectedVehicleTypeButton = null;
         	log("You must choose at least 1 type");
+        	logger.info("Not sufficient edges chosen");
         } else {
             if (this.stressTestSelectedVehicleTypeButton != null) {
             	this.stressTestSelectedVehicleTypeButton.getStyleClass().remove("selected-button");
@@ -1103,8 +1105,10 @@ public class MainController {
         // 4. Log the state (and check if any color checkboxes are actually selected)
         if (this.isFilterCurrentlyApplied) {
             log("Filter status: ON. Color=" + filterColorActive + ", Speed=" + filterSpeedActive);
+            logger.info("Filter is currently applied. Color=" + filterColorActive + ", Speed=" + filterSpeedActive);
         } else {
             log("Filter status: OFF (No criteria selected).");
+            logger.info("Filter is not currently applied");
         }
         
 //        if (isPaused) updateView(); // Redraw immediately
@@ -1129,7 +1133,9 @@ public class MainController {
         }
         
         log("✅ All filter inputs cleared. Click 'Apply Filter' to finalize.");
+        logger.info("All filter cleared");
         if (isPaused) updateView(); // Redraw immediately
+        
     }
     
     // KHOA FILTERING CODE
@@ -1139,11 +1145,13 @@ public class MainController {
 			// KHOA CODED THIS
 //	        this.isFilterCurrentlyApplied = false; 
 			log("Default Stress Test with " + " random cars with random Routes");
+			logger.info("Default Stress Test with random cars with random Routes");
 //			this.refreshColorFilterUI();
 			this.updateView();
 		} catch (Exception e) {
 			System.err.print(e.getMessage());
 			e.printStackTrace();
+			logger.error("Error in running StressTest " + e.getMessage());
 		}
     }
     
@@ -1190,7 +1198,7 @@ public class MainController {
         SumoColor sumoColor = ColorConverter.toSumoColor(fxColor);
 
         log("Starting Stress Test: Injecting " + totalVehicles + " vehicles...");
-
+        logger.info("Stress Test is injecting " + totalVehicles + " vehicles");
         threadPool.submit(() -> {
             int successCount = 0;
             
@@ -1218,10 +1226,15 @@ public class MainController {
                     final int stressTestVehicleCount = i;
                     if (success) {
                         successCount++;
-                        Platform.runLater(() -> log("Injected vehicle " + stressTestVehicleCount)); 
+                        Platform.runLater(() -> {
+                        	log("Injected vehicle " + stressTestVehicleCount);
+                        	logger.info("Injected vehicle: " + stressTestVehicleCount);
+                        	}
+                        ); 
                     } else {
                         Platform.runLater(() -> {
                         	log("Injection failed, no route between 2 edges");
+                        	logger.info("Failed to inject, no route between 2 edges");
                         	}
                         );
                         break;
@@ -1230,9 +1243,11 @@ public class MainController {
                     
                 } catch (InterruptedException e) { 
                     Thread.currentThread().interrupt();
+                    logger.error("Thread is interupted");
                     break; 
                 } catch (Exception e) {
                     if (e.toString().contains("Connection is closed")) {
+                    	logger.error("Connection is closed");
                         break; 
                     }
                     e.printStackTrace(); 
@@ -1242,6 +1257,7 @@ public class MainController {
             final int finalCount = successCount;
             Platform.runLater(() -> {
             	log("Stress Test Complete. Total: " + finalCount);
+            	logger.info("Stress Test Completed. Total: " + finalCount + " vehicles injected to Simulation");
             	this.firstEdgeField1.clear();
             	this.secondEdgeField1.clear();
             });
@@ -1264,8 +1280,10 @@ public class MainController {
                 // Optimization: Only update the UI if the color list has actually changed size
                 if (fxColorRGBA.size() != this.realColors.size() || !fxColorRGBA.containsAll(this.realColors)) {
                 	log("Vehicle of 1 color type finished their journey");
+                	logger.info("Vehicle of 1 color type finished their journey");
                 	this.clearFilter();
                 	log("Clearing all filter...");
+                	logger.info("All filter is cleared");
                     this.realColors = fxColorRGBA;
                     
                     // 3. Update the UI on the JavaFX Application Thread
@@ -1274,6 +1292,7 @@ public class MainController {
                 
             } catch (Exception e) {
                 log("Error refreshing colors: " + e.getMessage());
+                logger.error("Error refressing colors: " + e.getMessage());
                 // In a real app, you might only print the stack trace for non-InterruptedException errors
             }
         });
@@ -1304,6 +1323,7 @@ public class MainController {
                 colorCheckBoxMap.put(color, cb);
             }
             log("Filter UI Populated with " + colorsToShow.size() + " unique colors.");
+            logger.info("Filter UI now populated with " + colorsToShow.size() + " unique colors.");
         });
     }
 
