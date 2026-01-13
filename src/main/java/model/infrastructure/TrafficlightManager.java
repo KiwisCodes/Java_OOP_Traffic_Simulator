@@ -9,9 +9,15 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.HashMap;
 import javafx.scene.paint.Color;
 import model.ReportManager;
+import model.SimulationManager;
+import util.SumoException;
 
 
 
@@ -26,6 +32,7 @@ public class TrafficlightManager {
 	private List<String> trafficlightIdList = new ArrayList<>();
 	private List<TrafficlightClass> trafficlightlinkList = new ArrayList<>();
 	private Map<String, SumoTLSProgram> program_map = new HashMap<>();
+	private static final Logger logger = LogManager.getLogger(SimulationManager.class);
 	
 	/**
      * Creates a traffic light manager, saves all traffic light
@@ -43,8 +50,7 @@ public class TrafficlightManager {
 			this.trafficlightIdList.addAll(tlsIdList);
 		}
 		catch (Exception e) {
-//            alertError("SUMO Traffic Light Connection Failed", e.getMessage());
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
         }
 		
 		try {
@@ -70,8 +76,7 @@ public class TrafficlightManager {
 			}
 		}
 		catch (Exception e) {
-//            alertError("SUMO Traffic Light Connection Failed", e.getMessage());
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
         }
 	}
 	
@@ -85,7 +90,7 @@ public class TrafficlightManager {
 	}
 	
 	/**
-     * Returns all {@link TrafficlightClass} managed by this {@code TrafficlightManager}.
+     * Returns all {@link TrafficlightClass} managed by this {@link TrafficlightManager}.
      *
      * @return list of {@link TrafficlightClass}
      */
@@ -117,8 +122,7 @@ public class TrafficlightManager {
 			output = tmp.charAt(Integer.parseInt(connection.get_link_index()));
 		}
 		catch (Exception e) {
-//            alertError("SUMO Get Current Light State Failed", e.getMessage());
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
         }
 		return output;
 	}
@@ -137,8 +141,7 @@ public class TrafficlightManager {
 			output = (String) result;
 		}
 		catch (Exception e) {
-//            alertError("SUMO Get Current Light State Failed", e.getMessage());
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
         }
 		return output;
 	}
@@ -156,8 +159,7 @@ public class TrafficlightManager {
 			output = (double) result;
 		}
 		catch (Exception e) {
-//            alertError("SUMO Get Current Light State Failed", e.getMessage());
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
         }
 		return output;
 	}
@@ -235,7 +237,7 @@ public class TrafficlightManager {
 
 	    } catch (Exception e) {
 	        // handle error
-			System.err.println(e.getMessage());
+	    		logger.error(e.getMessage());
 	    }
 	}
 
@@ -251,7 +253,7 @@ public class TrafficlightManager {
 		}
 		catch (Exception e) {
 //            alertError("SUMO Set Current Light Phase Duration Failed", e.getMessage());
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
         }
 	}
 	
