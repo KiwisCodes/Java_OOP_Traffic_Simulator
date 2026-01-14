@@ -35,7 +35,7 @@ import data.*;
 
 public class SimulationManager {
 
-    private String sumoPath = "/Users/apple/sumo/bin/sumo";
+    private String sumoPath = "/Users/nguyenvominhkhoi/sumo/bin/sumo";
     private String sumoConfigFileName = "frauasmap.sumocfg";
     private String sumoConfigFilePath;
 

@@ -3,15 +3,23 @@ package model.vehicles;
 import de.tudresden.sumo.objects.SumoColor;
 import de.tudresden.sumo.objects.SumoPosition2D;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- * Represents the state of a single vehicle within the SUMO simulation at a specific step
+ * Represents the state of a single vehicle within the SUMO simulation at a specific step.
  * <p>
  * This class stores a snapshot of a vehicle's
- * attributes (such as position, speed, and color) retrieved from the simulation via TraCI
+ * attributes (such as position, speed, and color) retrieved from the simulation via TraCI.
+ * <p>
+ * Logging is implemented using {@link java.util.logging.Logger}.
  *
  * @author Minh Khoi
  */
 public class VehicleClass {
+
+    /** Logger for this class. */
+    private static final Logger LOGGER = Logger.getLogger(VehicleClass.class.getName());
 
     private String id;
     private SumoColor color;
@@ -40,6 +48,12 @@ public class VehicleClass {
         this.edgeId = edgeId;
         this.angle = angle;
         this.departure = departure;
+
+        // Logging at FINER level because this constructor is called extremely frequently (per vehicle per step).
+        // Standard INFO or FINE logging here would flood the logs and impact performance.
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.finer("Created Vehicle snapshot: [ID=" + id + ", Speed=" + speed + ", Edge=" + edgeId + "]");
+        }
     }
 
     /**

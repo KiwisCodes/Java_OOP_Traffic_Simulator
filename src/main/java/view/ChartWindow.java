@@ -12,9 +12,13 @@ import javafx.stage.Stage;
 
 import java.util.Map;
 
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * This {@code ChartWindow} represents a separate window for visualization
- * of Live-Simulation statistic using JavaFX
+ * of Live-Simulation statistic using JavaFX.
  * <p>
  * It includes these three different diagrams:
  * <ul>
@@ -22,10 +26,16 @@ import java.util.Map;
  *     <li>A bar chart for the vehicle density per edge id</li>
  *     <li>A bar chart for the distribution of vehicle travel time</li>
  * </ul>
+ * <p>
+ * Logging is implemented using {@link java.util.logging.Logger}.
  *
  * @author Minh Khoi
  */
 public class ChartWindow {
+
+    /** Logger for this class. */
+    private static final Logger LOGGER = Logger.getLogger(ChartWindow.class.getName());
+
     /** Main Window (Stage) for the diagrams.*/
     private final Stage stage;
 
@@ -45,22 +55,33 @@ public class ChartWindow {
      * over {@link #initCharts()} and sets the layout of the Scene
      */
     public ChartWindow() {
+        LOGGER.info("Initializing ChartWindow...");
+
         this.stage = new Stage();
         this.stage.setTitle("Live Simulation Statistics");
 
-        initCharts();
+        try {
+            initCharts();
 
-        VBox layout = new VBox(10);
-        layout.getChildren().addAll(speedChart, densityChart, travelTimeChart);
+            VBox layout = new VBox(10);
+            layout.getChildren().addAll(speedChart, densityChart, travelTimeChart);
 
-        Scene scene = new Scene(layout, 600, 900);
-        stage.setScene(scene);
+            Scene scene = new Scene(layout, 600, 900);
+            stage.setScene(scene);
+
+            LOGGER.info("ChartWindow initialized successfully.");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error while initializing ChartWindow UI components.", e);
+            throw e; // Rethrow if critical, or handle gracefully
+        }
     }
 
     /**
      * Initialises the axes, titles and data rows for all three diagrams
      */
     private void initCharts() {
+        LOGGER.config("Configuring chart axes and series...");
+
         // Speed Chart
         NumberAxis xAxisSpeed = new NumberAxis();
         xAxisSpeed.setLabel("Step");
@@ -108,12 +129,14 @@ public class ChartWindow {
      * Shows the statistic window
      * <p>
      * In case if the window is not yet shown, it would be opened.
-     * In case if it is already open, it would
+     * In case if it is already open, it would be brought to front.
      */
     public void show() {
         if (!stage.isShowing()) {
+            LOGGER.info("Showing ChartWindow stage.");
             stage.show();
         } else {
+            LOGGER.fine("ChartWindow is already showing, bringing to front.");
             stage.toFront();
         }
     }
@@ -133,17 +156,35 @@ public class ChartWindow {
      */
     public void updateData(int currentStep, double avgSpeed,
                            Map<String, Integer> densityMap, Map<String, Integer> travelTimeMap) {
+
+        // Log incoming data processing (Debug info)
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Received update request for step: " + currentStep);
+        }
+
         Platform.runLater(() -> {
-            speedSeries.getData().add(new XYChart.Data<>(currentStep, avgSpeed));
+            try {
+                // Safety check: Input data should not be null
+                if (densityMap == null || travelTimeMap == null) {
+                    LOGGER.warning("Received null map(s) in updateData. Skipping UI update for step " + currentStep);
+                    return;
+                }
 
-            densitySeries.getData().clear();
-            for (Map.Entry<String, Integer> entry : densityMap.entrySet()) {
-                densitySeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
-            }
+                speedSeries.getData().add(new XYChart.Data<>(currentStep, avgSpeed));
 
-            travelTimeSeries.getData().clear();
-            for (Map.Entry<String, Integer> entry : travelTimeMap.entrySet()) {
-                travelTimeSeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+                densitySeries.getData().clear();
+                for (Map.Entry<String, Integer> entry : densityMap.entrySet()) {
+                    densitySeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+                }
+
+                travelTimeSeries.getData().clear();
+                for (Map.Entry<String, Integer> entry : travelTimeMap.entrySet()) {
+                    travelTimeSeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+                }
+
+            } catch (Exception e) {
+                // Log exceptional program flow during UI update
+                LOGGER.log(Level.SEVERE, "Failed to update charts in step " + currentStep, e);
             }
         });
     }
