@@ -348,7 +348,7 @@ public class Renderer {
         for (String vehicleId : visibleIDs) {
             MeansOfTransportation props = vehicleData.get(vehicleId);
             try {
-            	System.out.println(props.getSpeed());
+//            	System.out.println(props.getSpeed());
                 double screenX = converter.toScreenX(props.getPosition().x);
                 double screenY = converter.toScreenY(props.getPosition().y);
                 double angle = props.getAngle(); 

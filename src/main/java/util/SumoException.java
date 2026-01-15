@@ -10,8 +10,6 @@ public class SumoException extends Exception {
         super(message);
     }
 
-    // 2. Constructor that takes a message AND the original cause (another exception)
-    // This is useful for "Exception Chaining"
     public SumoException(String message, Throwable cause) {
         super(message, cause);
     }

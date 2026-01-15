@@ -71,9 +71,6 @@ public class SimulationManager {
 
     private	Map<String, EdgeClass> listOfEdges;
 	private	Map<String, MeansOfTransportation> listOfVehicles;
-	private List<String> listOfTrafficlightIds;
-	private	Map<String, Map<String, String>> listOfLanes;
-	private	Map<String, Map<String, String>> listOfJunctions;
     
     private StatisticsManager statisticsManager;
     private ReportManager reportManager;
@@ -135,8 +132,8 @@ public class SimulationManager {
 
             this.mapManager = new MapManager(sumoConnection);
             this.vehicleManager = new VehicleManager(sumoConnection);
-    			this.trafficlightManager = new TrafficlightManager(sumoConnection);
-    			this.reportManager = new ReportManager();
+			this.trafficlightManager = new TrafficlightManager(sumoConnection);
+			this.reportManager = new ReportManager();
             logger.info("Connection established!");
             
          // --- DEBUG: PRINT ALL LOADED VEHICLE TYPES ---
@@ -150,8 +147,6 @@ public class SimulationManager {
             for (String t : types) {
                 logger.info("Found Type: " + t);
             }
-            logger.info("============================");
-            
             this.isRunning = true;
             return true;
 
@@ -295,7 +290,7 @@ public class SimulationManager {
 
                 String fileName = outputDir + "/vehicles_" + timestamp + ".csv";
                 this.reportManager.exportVehiclesCSV(vehicleList, fileName);
-                logger.info("   ✅ Vehicle CSV saved.");
+                logger.info("Vehicle CSV saved.");
             }
         } catch (Exception e) {
             logger.error("CRASH during Vehicle Export: " + e.getMessage());
@@ -319,7 +314,7 @@ public class SimulationManager {
 
                 String fileName = outputDir + "/edges_" + timestamp + ".csv";
                 this.reportManager.exportEdgesCSV(edgeList, fileName, edgeFilter, maxAvgSpeed, minDensity);
-                logger.info("   ✅ Edge CSV saved.");
+                logger.info("Edge CSV saved.");
             }
         } catch (Exception e) {
             logger.error("CRASH during Edge Export: " + e.getMessage());
@@ -331,7 +326,7 @@ public class SimulationManager {
                 logger.info("   > Generating PDF...");
                 String pdfName = outputDir + "/SimulationReport_" + timestamp + ".pdf";
                 reportManager.exportReportPDF(this.statisticsManager, pdfName, filteredData, currentStepCount);
-                logger.info("   ✅ PDF saved.");
+                logger.info("PDF saved.");
             }
         } catch (Exception e) {
             logger.error("CRASH during PDF Export: " + e.getMessage());
