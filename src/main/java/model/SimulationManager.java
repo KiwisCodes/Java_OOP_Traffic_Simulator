@@ -428,6 +428,7 @@ public class SimulationManager {
 			sumoConnection.do_job_set(Route.add(routeID, edges));
 			
 			vehicleManager.injectVehicle(String.valueOf("vehicle_" + vehicleCounter++), "DEFAULT_VEHTYPE", routeID, sumoColor, standardSpeed);
+			
 		}
 	}
 	
@@ -455,6 +456,7 @@ public class SimulationManager {
 		int routingMode = 0;
 		SumoStage stage =  (SumoStage) sumoConnection.do_job_get(Simulation.findRoute(firstEdge, lastEdge, vehType, depart, routingMode));
 		SumoStringList edges = stage.edges;
+		logger.info("Route found for given edges!");
 		return edges;
 	}
 	
@@ -542,6 +544,11 @@ public class SimulationManager {
     
     
     // KHOA FILTERING
+    /**
+     * Get Unique Colors currently in the Simulation
+     * @param state
+     * @return List<Color>
+     */
 	public List<Color> getUniqueColors(SimulationState state){
 		Map<String, MeansOfTransportation> vehicleData = state.getMeansOfTransportations();
 		//Hung changed to SumoColor
@@ -554,6 +561,7 @@ public class SimulationManager {
 				fxColorRGBA.add(ColorConverter.toFXColor(sumoColor));				
 			}
 		}
+		logger.info("Unique Colors obtained.");
 		return fxColorRGBA;
 	}
 	

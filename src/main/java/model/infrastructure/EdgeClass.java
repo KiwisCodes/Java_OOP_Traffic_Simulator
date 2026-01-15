@@ -3,9 +3,14 @@ package model.infrastructure;
 import de.tudresden.sumo.cmd.Edge;
 import de.tudresden.sumo.cmd.Lane;
 import it.polito.appeal.traci.SumoTraciConnection;
+import model.SimulationManager;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Represent an Edge Object on the map
@@ -13,6 +18,7 @@ import java.util.Map;
  * @author khoale
  */
 public class EdgeClass {
+	private static final Logger logger = LogManager.getLogger(EdgeClass.class);
     private final SumoTraciConnection sumoConnection;
     private final String edgeId;
     private final int laneCount;
@@ -38,6 +44,7 @@ public class EdgeClass {
         this.laneCount = (int) sumoConnection.do_job_get(Edge.getLaneNumber(edgeId));
         this.lanes = new HashMap<>();
         fetchLanes();
+        logger.info("Edges Created");
     }
 
     private void fetchLanes() throws Exception {

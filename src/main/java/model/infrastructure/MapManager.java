@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import controller.MainController;
+import model.SimulationManager;
 import model.infrastructure.EdgeClass;
 import model.infrastructure.LaneClass;
 import de.tudresden.sumo.cmd.Edge;
