@@ -59,6 +59,7 @@ import util.ColorConverter;
 
 // Java Imports
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -766,9 +768,9 @@ public class MainController {
     	}
     }
     
-   
-
-
+    /**
+     * Stop the Simulation
+     */
     public void stopSimulation() {
         System.out.println("Stopping simulation...");
         
@@ -1148,10 +1150,17 @@ public class MainController {
 			logger.info("Default Stress Test with random cars with random Routes");
 //			this.refreshColorFilterUI();
 			this.updateView();
+		} catch (IllegalStateException ex) {
+		    log("Simulation is not in a valid state to run stress test");
+		    logger.warn("Stress test failed: invalid state", ex);
+
+		} catch (IOException ex) {
+		    log("Connection error while running stress test");
+		    logger.error("I/O error during stress test", ex);
 		} catch (Exception e) {
-			System.err.print(e.getMessage());
 			e.printStackTrace();
-			logger.error("Error in running StressTest " + e.getMessage());
+			log("Unexpected error happened in Stress Test");
+		    logger.error("Unexpected error happened in Stress Test", e);
 		}
     }
     
@@ -1264,6 +1273,10 @@ public class MainController {
         });
     }
     // KHOA FILTERING CODE
+    /**
+     * Refresh colors currently on the Simulation
+     * @param state
+     */
     public void refreshColorFilterUI(SimulationState state) {
         // Submit the task to the thread pool to avoid blocking the JavaFX thread or UI thread
         threadPool.submit(() -> {
@@ -1290,9 +1303,14 @@ public class MainController {
                     Platform.runLater(() -> this.showColorsAsCheckboxes(this.realColors));
                 }
                 
+            } catch (IllegalStateException ex) {
+                logger.warn("Simulation not ready while refreshing color filters", ex);
+
+            } catch (RejectedExecutionException ex) {
+                logger.error("Thread pool rejected color refresh task", ex);
             } catch (Exception e) {
-                log("Error refreshing colors: " + e.getMessage());
-                logger.error("Error refressing colors: " + e.getMessage());
+                log("Unexpected error happened in refreshing colors: " + e.getMessage());
+                logger.error("Unexpected error happened in refressing colors: " + e.getMessage());
                 // In a real app, you might only print the stack trace for non-InterruptedException errors
             }
         });

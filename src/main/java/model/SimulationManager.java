@@ -383,7 +383,7 @@ public class SimulationManager {
             }
 
         } catch (Exception e){
-            logger.info("Exception in InjectVehicle: " + e);
+            logger.info("Unexpected error happened in InjectVehicle: " + e);
             e.printStackTrace();
             return false;
         }
