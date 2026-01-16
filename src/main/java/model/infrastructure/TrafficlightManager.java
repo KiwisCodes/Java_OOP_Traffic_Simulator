@@ -6,6 +6,7 @@ import de.tudresden.sumo.cmd.*;
 import de.tudresden.sumo.objects.*;
 import it.polito.appeal.traci.SumoTraciConnection;
 import java.util.List;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -49,34 +50,54 @@ public class TrafficlightManager {
 			tlsIdList = (SumoStringList) result1;
 			this.trafficlightIdList.addAll(tlsIdList);
 		}
-		catch (Exception e) {
-			logger.error(e.getMessage());
+		catch (SumoException e) {
+            logger.error("SUMO error fetching traffic light IDs: {}", e.getMessage());
+        } catch (ClassCastException e) {
+            logger.error("Type error fetching traffic light IDs: {}", e.getMessage());
+        } catch (NullPointerException e) {
+            logger.error("Null value fetching traffic light IDs: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected exception fetching traffic light IDs: {}", e.getMessage());
         }
-		
-		try {
-			for(String i: this.trafficlightIdList) {
-				SumoLinkList linkIdList = new SumoLinkList();
-				Object result2 = this.sumoConnection.do_job_get(Trafficlight.getControlledLinks(i));
-				linkIdList = (SumoLinkList) result2;
-				int run_var = 0;
-				for(SumoLink j : linkIdList) {
-					TrafficlightClass tmp = new TrafficlightClass(j, i, Integer.toString(run_var));
-					String laneId = tmp.get_from_lane_index();
+		for (String tlId : this.trafficlightIdList) {
+            try {
+                Object result2 = this.sumoConnection.do_job_get(Trafficlight.getControlledLinks(tlId));
+                SumoLinkList linkIdList = (SumoLinkList) result2;
 
-		            if (laneId != null && !laneId.isEmpty()) {
-		                Object tmp_obj = sumoConnection.do_job_get(
-		                    Lane.getShape(laneId)   // returns list of coordinates
-		                );
-		                SumoPosition2D posObj = ((SumoGeometry) tmp_obj).coords.getLast();
-		                tmp.set_position(posObj);
-		            }
-		            trafficlightlinkList.add(tmp);
-					run_var++;
-				}
-			}
-		}
-		catch (Exception e) {
-			logger.error(e.getMessage());
+                int run_var = 0;
+                for (SumoLink link : linkIdList) {
+                    TrafficlightClass tmp = new TrafficlightClass(link, tlId, Integer.toString(run_var));
+                    String laneId = tmp.getFromLaneIndex();
+
+                    if (laneId != null && !laneId.isEmpty()) {
+                        try {
+                            Object tmp_obj = sumoConnection.do_job_get(Lane.getShape(laneId));
+                            SumoPosition2D posObj = ((SumoGeometry) tmp_obj).coords.getLast();
+                            tmp.setPosition(posObj);
+                        } catch (SumoException e) {
+                            logger.error("SUMO error getting lane shape for {}: {}", laneId, e.getMessage());
+                        } catch (ClassCastException e) {
+                            logger.error("Type error getting lane shape for {}: {}", laneId, e.getMessage());
+                        } catch (NullPointerException | IndexOutOfBoundsException e) {
+                            logger.error("Invalid lane shape data for {}: {}", laneId, e.getMessage());
+                        } catch (Exception e) {
+                            logger.error("Unexpected exception getting lane shape for {}: {}", laneId, e.getMessage());
+                        }
+                    }
+
+                    trafficlightlinkList.add(tmp);
+                    run_var++;
+                }
+
+            } catch (SumoException e) {
+                logger.error("SUMO error getting controlled links for {}: {}", tlId, e.getMessage());
+            } catch (ClassCastException e) {
+                logger.error("Type error getting controlled links for {}: {}", tlId, e.getMessage());
+            } catch (NullPointerException e) {
+                logger.error("Null value getting controlled links for {}: {}", tlId, e.getMessage());
+            } catch (Exception e) {
+                logger.error("Unexpected exception getting controlled links for {}: {}", tlId, e.getMessage());
+            }
         }
 	}
 	
@@ -117,12 +138,19 @@ public class TrafficlightManager {
 	public Character getCurrentLightState(TrafficlightClass connection) {
 		Character output = 'a';
 		try {
-			Object result = this.sumoConnection.do_job_get(Trafficlight.getRedYellowGreenState(connection.get_host_junction_id()));
+			Object result = this.sumoConnection.do_job_get(Trafficlight.getRedYellowGreenState(connection.getHostJunctionId()));
 			String tmp = (String) result;
-			output = tmp.charAt(Integer.parseInt(connection.get_link_index()));
-		}
-		catch (Exception e) {
-			logger.error(e.getMessage());
+			output = tmp.charAt(Integer.parseInt(connection.getLinkIndex()));
+		} catch (SumoException e) {
+            logger.error("SUMO error getting current light state for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        } catch (ClassCastException e) {
+            logger.error("Type error getting current light state for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        } catch (IndexOutOfBoundsException e) {
+            logger.error("Invalid link index for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        } catch (NullPointerException e) {
+            logger.error("Null reference getting current light state for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected exception getting current light state for {}: {}", connection.getHostJunctionId(), e.getMessage());
         }
 		return output;
 	}
@@ -137,11 +165,14 @@ public class TrafficlightManager {
 	public String getCurrentLightFullState(TrafficlightClass connection) {
 		String output = "";
 		try {
-			Object result = this.sumoConnection.do_job_get(Trafficlight.getRedYellowGreenState(connection.get_host_junction_id()));
+			Object result = this.sumoConnection.do_job_get(Trafficlight.getRedYellowGreenState(connection.getHostJunctionId()));
 			output = (String) result;
-		}
-		catch (Exception e) {
-			logger.error(e.getMessage());
+		} catch (SumoException e) {
+            logger.error("SUMO error getting full light state for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        } catch (ClassCastException e) {
+            logger.error("Type error getting full light state for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected exception getting full light state for {}: {}", connection.getHostJunctionId(), e.getMessage());
         }
 		return output;
 	}
@@ -152,14 +183,17 @@ public class TrafficlightManager {
      * @param connection {@link TrafficlightClass} to query
      * @return time of the next phase switch of the corresponding Traffic Light Junction of the queried {@link TrafficlightClass}
      */
-	public double getTrafficLightNextSwitch(TrafficlightClass connection) {
+	public double getTrafficlightNextSwitch(TrafficlightClass connection) {
 		double output = 0.0;
 		try {
-			Object result = this.sumoConnection.do_job_get(Trafficlight.getNextSwitch(connection.get_host_junction_id()));
+			Object result = this.sumoConnection.do_job_get(Trafficlight.getNextSwitch(connection.getHostJunctionId()));
 			output = (double) result;
-		}
-		catch (Exception e) {
-			logger.error(e.getMessage());
+		} catch (SumoException e) {
+            logger.error("SUMO error getting next switch time for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        } catch (ClassCastException e) {
+            logger.error("Type error getting next switch time for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected exception getting next switch time for {}: {}", connection.getHostJunctionId(), e.getMessage());
         }
 		return output;
 	}
@@ -174,13 +208,13 @@ public class TrafficlightManager {
 	    String cur_state = this.getCurrentLightFullState(connection);
 
 	    try {
-	        SumoTLSController controller = (SumoTLSController) this.sumoConnection.do_job_get(Trafficlight.getCompleteRedYellowGreenDefinition(connection.get_host_junction_id()));
+	        SumoTLSController controller = (SumoTLSController) this.sumoConnection.do_job_get(Trafficlight.getCompleteRedYellowGreenDefinition(connection.getHostJunctionId()));
 	        SumoTLSProgram prog = controller.programs.get("0");
 	        int colorIndex = -1;
 	        List<SumoTLSPhase> phases = prog.phases;
 	        for(int run_var = 0; run_var < phases.size(); run_var++) {
 	        		SumoTLSPhase curPhase = phases.get(run_var);
-	        		if(curPhase.phasedef.charAt(Integer.parseInt(connection.get_link_index())) == new_state){
+	        		if(curPhase.phasedef.charAt(Integer.parseInt(connection.getLinkIndex())) == new_state){
 	        			colorIndex = run_var;
 	        			break;
 	        		}
@@ -194,7 +228,7 @@ public class TrafficlightManager {
 	        		}
 	        		for(int run_var = 0; run_var < phases.size(); run_var++) {
 		        		SumoTLSPhase curPhase = phases.get(run_var);
-		        		if(curPhase.phasedef.charAt(Integer.parseInt(connection.get_link_index())) == new_state){
+		        		if(curPhase.phasedef.charAt(Integer.parseInt(connection.getLinkIndex())) == new_state){
 		        			colorIndex = run_var;
 		        			break;
 		        		}
@@ -231,14 +265,25 @@ public class TrafficlightManager {
 	            System.out.println(origPhase.duration);
 	        }
 
-	        this.sumoConnection.do_job_set(Trafficlight.setCompleteRedYellowGreenDefinition(connection.get_host_junction_id(), new_prog));
-	        this.sumoConnection.do_job_set(Trafficlight.setProgram(connection.get_host_junction_id(), "0")); // without this the program will not run recursively your program
-	        this.sumoConnection.do_job_set(Trafficlight.setPhase(connection.get_host_junction_id(), 0));
+	        try {
+                this.sumoConnection.do_job_set(Trafficlight.setCompleteRedYellowGreenDefinition(connection.getHostJunctionId(), new_prog));
+                this.sumoConnection.do_job_set(Trafficlight.setProgram(connection.getHostJunctionId(), "0"));
+                this.sumoConnection.do_job_set(Trafficlight.setPhase(connection.getHostJunctionId(), 0));
+            } catch (Exception e) {
+                logger.error("Unexpected exception setting traffic light state for {}: {}", connection.getHostJunctionId(), e.getMessage());
+            }
 
-	    } catch (Exception e) {
-	        // handle error
-	    		logger.error(e.getMessage());
-	    }
+	    } catch (SumoException e) {
+            logger.error("SUMO error preparing light state for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        } catch (ClassCastException e) {
+            logger.error("Type error preparing light state for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        } catch (IndexOutOfBoundsException e) {
+            logger.error("Invalid link index preparing light state for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        } catch (NullPointerException e) {
+            logger.error("Null reference preparing light state for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected exception preparing light state for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        }
 	}
 
 	/**
@@ -249,11 +294,11 @@ public class TrafficlightManager {
      */
 	public void setCurrentPhaseDuration(TrafficlightClass connection, double newPhaseDuration) {
 		try {
-			this.sumoConnection.do_job_set(Trafficlight.setPhaseDuration(connection.get_host_junction_id(), newPhaseDuration));
-		}
-		catch (Exception e) {
-//            alertError("SUMO Set Current Light Phase Duration Failed", e.getMessage());
-			logger.error(e.getMessage());
+			this.sumoConnection.do_job_set(Trafficlight.setPhaseDuration(connection.getHostJunctionId(), newPhaseDuration));
+		} catch (SumoException e) {
+            logger.error("SUMO error setting phase duration for {}: {}", connection.getHostJunctionId(), e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected exception setting phase duration for {}: {}", connection.getHostJunctionId(), e.getMessage());
         }
 	}
 	

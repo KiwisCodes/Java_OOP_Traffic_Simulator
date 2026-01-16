@@ -1122,11 +1122,11 @@ public class MainController {
         
         trafficLightClickHandler = (trafficLightLink) -> {
             if (trafficLightControlPane != null && trafficLightControlPane.isExpanded()) {
-                	trafficLightIdField.setText(trafficLightLink.get_link_id().toString());
+                	trafficLightIdField.setText(trafficLightLink.getLinkId().toString());
                 	this.currentTrafficLightLink = trafficLightLink;
-                log("Selected Traffic Light: " + trafficLightLink.get_link_id().toString());   
+                log("Selected Traffic Light: " + trafficLightLink.getLinkId().toString());   
             } else {
-                log("Traffic Light ID: " + trafficLightLink.get_link_id().toString());
+                log("Traffic Light ID: " + trafficLightLink.getLinkId().toString());
             }
         };
         

@@ -66,7 +66,9 @@ public class ReportManager {
             }
             logger.info("Vehicles CSV exported to: " + filepath);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("IOException exporting vehicles CSV to {}: {}", filepath, e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error("Unexpected exception exporting vehicles CSV to {}: {}", filepath, e.getMessage(), e);
         }
     }
 
@@ -88,8 +90,10 @@ public class ReportManager {
                 writer.write(e.id() + "," + e.width() + "," + e.density() + "," + e.avgSpeed() + "\n");
             }
             logger.info("Edges CSV exported to: " + filepath);
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (IOException e) {
+            logger.error("IOException exporting edges CSV to {}: {}", filepath, e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error("Unexpected exception exporting edges CSV to {}: {}", filepath, e.getMessage(), e);
         }
     }
 
@@ -104,7 +108,7 @@ public class ReportManager {
      * @param currentStep current simulation timestep
      */
     public void exportReportPDF(StatisticsManager stat, String filepath, Map<String, MeansOfTransportation> vehiclesInfo, int currentStep) {
-    		logger.info(">>> Starting PDF Export...");
+        logger.info(">>> Starting PDF Export...");
 
         double avgSpeed = stat.avgVehiclesSpeed(vehiclesInfo);
         Map<String, Integer> densityMap = stat.calculateVehicleDensity(vehiclesInfo);
@@ -113,51 +117,58 @@ public class ReportManager {
         try (PDDocument doc = new PDDocument()) {
             PDPage page = new PDPage(PDRectangle.A4);
             doc.addPage(page);
-            PDPageContentStream content = new PDPageContentStream(doc, page);
-            content.beginText();
-            content.setFont(PDType1Font.HELVETICA_BOLD, 18);
-            content.newLineAtOffset(40, 780);
-            content.showText("SUMO Simulation Report");
-            content.endText();
 
-            content.beginText();
-            content.setFont(PDType1Font.HELVETICA, 12);
-            content.newLineAtOffset(40, 750);
-            content.showText(String.format("Average Network Speed: %.2f m/s", avgSpeed));
-            content.newLineAtOffset(0, -20);
-            int totalVehicles = vehiclesInfo.size();
-            content.showText("Total Active Vehicles: " + totalVehicles);
-            content.newLineAtOffset(0, -20);
-            content.showText(String.format("Timestep in Simulation: %d", currentStep));
-            content.endText();
+            try (PDPageContentStream content = new PDPageContentStream(doc, page)) {
+                content.beginText();
+                content.setFont(PDType1Font.HELVETICA_BOLD, 18);
+                content.newLineAtOffset(40, 780);
+                content.showText("SUMO Simulation Report");
+                content.endText();
 
-            logger.info("   > Generating Density Chart...");
-            BufferedImage densityImg = generateChartImage(densityMap, "Vehicle Density Per Edge", "Edge", "Count");
-            if (densityImg != null) {
-                PDImageXObject pdImage = LosslessFactory.createFromImage(doc, densityImg);
-                content.drawImage(pdImage, 40, 350, 500, 350);
-                logger.info("   > Density Chart added.");
-            } else {
-            		logger.info("   ❌ Density Chart Image is NULL.");
+                content.beginText();
+                content.setFont(PDType1Font.HELVETICA, 12);
+                content.newLineAtOffset(40, 750);
+                content.showText(String.format("Average Network Speed: %.2f m/s", avgSpeed));
+                content.newLineAtOffset(0, -20);
+                content.showText("Total Active Vehicles: " + vehiclesInfo.size());
+                content.newLineAtOffset(0, -20);
+                content.showText(String.format("Timestep in Simulation: %d", currentStep));
+                content.endText();
+
+                logger.info("   > Generating Density Chart...");
+                BufferedImage densityImg = generateChartImage(densityMap, "Vehicle Density Per Edge", "Edge", "Count");
+                if (densityImg != null) {
+                    PDImageXObject pdImage = LosslessFactory.createFromImage(doc, densityImg);
+                    content.drawImage(pdImage, 40, 350, 500, 350);
+                    logger.info("   > Density Chart added.");
+                } else {
+                    logger.warn("   ❌ Density Chart Image is NULL.");
+                }
+
+                logger.info("   > Generating Time Chart...");
+                BufferedImage timeImg = generateChartImage(travelTimeMap, "Travel Time Distribution (s)", "Time Bin", "Vehicles");
+                if (timeImg != null) {
+                    PDImageXObject pdImage = LosslessFactory.createFromImage(doc, timeImg);
+                    content.drawImage(pdImage, 40, 10, 500, 350);
+                    logger.info("   > Time Chart added.");
+                } else {
+                    logger.warn("   ❌ Time Chart Image is NULL.");
+                }
+            } catch (IOException e) {
+                logger.error("IOException writing content stream in PDF {}: {}", filepath, e.getMessage(), e);
             }
 
-            logger.info("   > Generating Time Chart...");
-            BufferedImage timeImg = generateChartImage(travelTimeMap, "Travel Time Distribution (s)", "Time Bin", "Vehicles");
-            if (timeImg != null) {
-                PDImageXObject pdImage = LosslessFactory.createFromImage(doc, timeImg);
-                content.drawImage(pdImage, 40, 10, 500, 350);
-                logger.info("   > Time Chart added.");
-            } else {
-            		logger.info("   ❌ Time Chart Image is NULL.");
+            try {
+                doc.save(filepath);
+                logger.info("✅ PDF Report exported successfully to: " + filepath);
+            } catch (IOException e) {
+                logger.error("IOException saving PDF {}: {}", filepath, e.getMessage(), e);
             }
 
-            content.close();
-            doc.save(filepath);
-            logger.info("✅ PDF Report exported successfully to: " + filepath);
-
+        } catch (IOException e) {
+            logger.error("IOException creating PDF document {}: {}", filepath, e.getMessage(), e);
         } catch (Exception e) {
-            logger.error("❌ CRASH in PDF Generation: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Unexpected exception generating PDF {}: {}", filepath, e.getMessage(), e);
         }
     }
 

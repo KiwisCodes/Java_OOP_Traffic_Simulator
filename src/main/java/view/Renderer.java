@@ -441,7 +441,7 @@ public class Renderer {
 		        for (TrafficlightClass tl_link : trafficLightsData.keySet()) {
 		            Character tl_color_char = trafficLightsData.get(tl_link);
 		            try {
-		                SumoPosition2D pos = tl_link.get_position();
+		                SumoPosition2D pos = tl_link.getPosition();
 		                double screenX = converter.toScreenX(pos.x);
 		                double screenY = converter.toScreenY(pos.y);
 

@@ -47,7 +47,7 @@ public class TrafficlightClass{
      *
      * @return traffic light junction id
      */
-	public String get_host_junction_id() {
+	public String getHostJunctionId() {
 		String result = this.host_junction_id;
 		return result;
 	}
@@ -57,7 +57,7 @@ public class TrafficlightClass{
      *
      * @return link index as a string
      */
-	public String get_link_index() {
+	public String getLinkIndex() {
 		String result = this.link_index;
 		return result;
 	}
@@ -68,7 +68,7 @@ public class TrafficlightClass{
      * @return source lane id
      */
 
-	public String get_from_lane_index() {
+	public String getFromLaneIndex() {
 		String result = this.link.from;
 		return result;
 	}
@@ -78,7 +78,7 @@ public class TrafficlightClass{
      *
      * @return target lane id
      */
-	public String get_to_lane_index() {
+	public String getToLaneIndex() {
 		String result = this.link.to;
 		return result;
 	}
@@ -88,7 +88,7 @@ public class TrafficlightClass{
      *
      * @return intermediate lane id
      */
-	public String get_over_lane_index() {
+	public String getOverLaneIndex() {
 		String result = this.link.over;
 		return result;
 	}
@@ -98,7 +98,7 @@ public class TrafficlightClass{
      *
      * @param pos position in simulation coordinates
      */
-	public void set_position(SumoPosition2D pos) {
+	public void setPosition(SumoPosition2D pos) {
 		this.link_pos = pos;
 		return;
 	}
@@ -108,7 +108,7 @@ public class TrafficlightClass{
      *
      * @return position in simulation coordinates
      */
-	public SumoPosition2D get_position() {
+	public SumoPosition2D getPosition() {
 		SumoPosition2D result = this.link_pos;
 		return result;
 	}
@@ -118,7 +118,7 @@ public class TrafficlightClass{
      *
      * @return controlled SumoLink
      */
-	public SumoLink get_link_id() {
+	public SumoLink getLinkId() {
 		SumoLink result = this.link;
 		return result;
 	}
