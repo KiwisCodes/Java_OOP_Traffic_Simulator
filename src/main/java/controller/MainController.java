@@ -19,24 +19,12 @@ import javafx.scene.control.ColorPicker;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
-import javafx.scene.transform.Scale;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.geometry.Pos;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 
 //Charts
-import javafx.scene.Scene;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.LineChart;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.Map;
@@ -50,37 +38,27 @@ import model.infrastructure.MapManager;
 import model.infrastructure.TrafficlightManager;
 import model.infrastructure.TrafficlightClass;
 import model.vehicles.MeansOfTransportation;
-import model.vehicles.VehicleClass;
-import model.vehicles.VehicleManager;
 import view.Renderer;
-import util.CoordinateConverter; // Ensure this is imported from your util/view package
 import util.SumoException;
 import util.ColorConverter;
 
 // Java Imports
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import de.tudresden.sumo.objects.SumoColor;
-import java.util.HashMap;
-import de.tudresden.ws.container.SumoPosition2D; 
-import de.tudresden.sumo.objects.SumoColor;    
-import javafx.animation.AnimationTimer;
 import data.SimulationState;
 
 import data.SimulationQueue;
-import data.SimulationState;
 import view.ChartWindow;
 
 //Log
@@ -88,9 +66,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class MainController {
-    // --- FXML View Elements ---
+    // FXML View Elements
     @FXML private ScrollPane leftControlPanel;
-//    @FXML private ScrollPane mapScrollPane;
     @FXML private StackPane rootStackPane;
 
     // Simulation Control
@@ -129,17 +106,17 @@ public class MainController {
     @FXML private Button setTrafficLightColorandorDurationButton;
     @FXML private TextField phaseDurationField;
     @FXML private Button switchTrafficLightPhaseButton;
-    @FXML private Button selectedColorButton = null; // keep track of which button is selected
+    @FXML private Button selectedColorButton = null; 
     private Consumer<TrafficlightClass> trafficLightClickHandler;
     private TrafficlightClass currentTrafficLightLink;
 
-    // Filtering KHOA
+    // Filtering
     @FXML private TitledPane filterPane;
     @FXML private CheckBox filterByColorCheck;
     @FXML private CheckBox filterBySpeedCheck;
-    @FXML private VBox colorFilterControlsVBox;        // New FXML for Color section VBox
-    @FXML private VBox dynamicColorCheckBoxContainer;  // **THE VBOX WHERE CHECKBOXES ARE INJECTED**
-    @FXML private VBox speedFilterControlsVBox;        // New FXML for Speed section VBox
+    @FXML private VBox colorFilterControlsVBox;       
+    @FXML private VBox dynamicColorCheckBoxContainer;  
+    @FXML private VBox speedFilterControlsVBox;        
     @FXML private Slider filterMaxSpeedSlider;
     @FXML private Button applyFilterButton; 
     @FXML private Button clearFilterButton;
@@ -195,7 +172,6 @@ public class MainController {
     @FXML private Group centerMapPaneGroup;
     @FXML private Pane vehiclePane;
     @FXML private ScrollPane bottomLogScrollPane;
-    private MapManager mapManager;
     @FXML private Pane baseMapPane;
     @FXML private Pane lanePane;    
     @FXML private Consumer<LaneClass> laneClickHandler;
@@ -208,7 +184,7 @@ public class MainController {
     @FXML private Button resetViewButton;
     @FXML private ToggleButton toggle3DButton;
     @FXML private TitledPane bottomLogArea;
-    private LinkedList<String> logHistory = new java.util.LinkedList<>();
+    private LinkedList<String> logHistory = new LinkedList<>();
     private static final int MAX_LOG_LINES = 100;
     private static final Logger logger = LogManager.getLogger(MainController.class);
     
@@ -233,19 +209,16 @@ public class MainController {
     private volatile static boolean isPaused = false;
 
 //     Visualization
-    private Map<String, Shape> vehicleVisuals = new HashMap<>();
-    private Group mapContentGroup; // Container for zooming/panning
     private MapInteractionHandler mapInteractionHandler;
     private SimulationQueue uiQueue;	
     private SimulationQueue statQueue;
     
-//     Filtering KHOA
+//     Filtering
     private Map<Color, CheckBox> colorCheckBoxMap = new HashMap<>();
     private List<Color> realColors = new ArrayList<>();
     private List<String> filteredVehicleIDs = new ArrayList<>();
     private boolean isFilterCurrentlyApplied = false;
     
-//     Initialization
     public MainController() {
 		this.uiQueue = new SimulationQueue(2);
 		this.statsManager = new StatisticsManager();
@@ -255,14 +228,12 @@ public class MainController {
         this.statQueue = new SimulationQueue(2);
     }
     
-    // Main entry point if running stand alone (optional)
     public static void main(String[] args) {
-        // JavaFX launching logic usually goes in MainGUI.java
+        //this is used to test if we are dont use the MainGUI
     }
 
     @FXML
     public void initialize() {
-    	
         log("Controller initialized. Waiting to start...");
         this.mapInteractionHandler = new MapInteractionHandler(centerMapStackPane, centerMapPaneGroup);
         if (injectionPane != null) {
@@ -289,7 +260,6 @@ public class MainController {
         
         disableButtons(true);
         this.chartWindow = new ChartWindow();
-        //set default injection and stress test to cars
         this.injectionSelectedVehicleTypeButton = injectionCarButton;
         this.stressTestSelectedVehicleTypeButton = stressTestCarButton;
         this.injectionCarButton.getStyleClass().add("selected-button");
@@ -304,21 +274,21 @@ public class MainController {
         }
         if (exportVehiclesCsvButton != null) {
             exportVehiclesCsvButton.setOnAction(e -> { 
-                logger.info("Exporting Vehicle CSV...");
+                log("Exporting Vehicle CSV...");
                 isExportingVehicleCSV = true;
             });
         }
 
         if (exportEdgesCsvButton != null) {
             exportEdgesCsvButton.setOnAction(e -> {
-            		logger.info("Exporting Edge CSV...");
+                log("Exporting Edge CSV...");
                 isExportingEdgeCSV = true;
             });
         }
 
         if (exportPdfButton != null) {
             exportPdfButton.setOnAction(e -> {
-            		logger.info("Exporting PDF Report...");
+                log("Exporting PDF Report...");
                 isExportingPDF = true;
             });
         }
@@ -332,7 +302,6 @@ public class MainController {
 		try {
 			connected = this.simManager.startConnection();
 		} catch (SumoException e) {
-			// TODO Auto-generated catch block
 			logger.error(e);
 		}
 
@@ -393,10 +362,10 @@ public class MainController {
 
                         currentStep++;
                     } catch (InterruptedException e) {
-                        System.out.println("Simulation loop interrupted. Stopping safely.");
+                        log("Simulation loop interrupted. Stopping safely.");
                         break;
                     } catch (Exception e) {
-                        System.err.println("Unexpected error in simulation loop:");
+                        logger.error("Unexpected error in simulation loop:");
                         e.printStackTrace();
                         break;
                     }
@@ -421,15 +390,13 @@ public class MainController {
             			continue;
                 	}
                 	try {
-                        SimulationState state = statQueue.pollState();// changed to poll 
-                        
+                        SimulationState state = statQueue.pollState();
                         if (state == null) continue;
                         Map<String, MeansOfTransportation> statsData = state.getMeansOfTransportations();
                         this.statsManager.step(statsData, currentStep);
                         double avgSpeed = this.statsManager.avgVehiclesSpeed(statsData);
                         Map<String, Integer> density = this.statsManager.calculateVehicleDensity(statsData);
                         Map<String, Integer> travelTimeDist = this.statsManager.calculateTravelTimeDistribution(statsData, 60);
-
                         this.chartWindow.updateData(currentStep, avgSpeed, density, travelTimeDist);
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -447,63 +414,49 @@ public class MainController {
     }
     
     private String getCurrentSelectedMode() {
-        // If Injection is open, check those buttons
         if (injectionPane != null && injectionPane.isExpanded()) {
             if (injectionSelectedVehicleTypeButton == injectionBikeButton) return "bicycle";
             if (injectionSelectedVehicleTypeButton == injectionBusButton) return "bus";
             if (injectionSelectedVehicleTypeButton == injectionPedestrianButton) return "pedestrian";
-            return "passenger"; // Default for this pane
+            return "passenger";
         } 
-
-        // If Stress Test is open, check those buttons
         if (stressTestPane != null && stressTestPane.isExpanded()) {
             if (stressTestSelectedVehicleTypeButton == stressTestBikeButton) return "bicycle";
             if (stressTestSelectedVehicleTypeButton == stressTestBusButton) return "bus";
             if (stressTestSelectedVehicleTypeButton == stressTestPedestrianButton) return "pedestrian";
-            return "passenger"; // Default for this pane
+            return "passenger";
         }
-
-        // Global fallback (Discovery mode or if something is null)
         return "passenger"; 
     }
     
     private void updateLaneVisuals() {
-        // 1. Check if any Injection Pane is used:
         boolean isInjecting = injectionPane.isExpanded();
         boolean isStressTesting = stressTestPane.isExpanded();
-        
-        // If no Injection Pane is use, return to the original state of lane:
         if (!isInjecting && !isStressTesting) {
             for (Node node : lanePane.getChildren()) {
-                if (node instanceof javafx.scene.shape.Shape shape) {
+                if (node instanceof Shape shape) {
                     shape.setOpacity(1.0);
                     shape.setDisable(false);
                 }
             }
             return;
         }
-
-        // If a Injection pane is opened or Stress Test Pane, get what vehicle is choosen by user:
         String currentMode = getCurrentSelectedMode();
-
-       // Update the color of lane base on what vehicle is being selected by user:
         for (Node node : lanePane.getChildren()) {
             if (node instanceof Shape shape) {
                 LaneClass laneData = (LaneClass) shape.getUserData();
                 if (laneData != null) {
                     if (laneData.isVehicleAllowed(currentMode)) {
-                        shape.setOpacity(1.0);      // clear color
-                        shape.setDisable(false);    // allow click
+                        shape.setOpacity(1.0);     
+                        shape.setDisable(false);    
                     } else {
-                        shape.setOpacity(0.15);     // blur color
-                        shape.setDisable(true);     // cannot click
+                        shape.setOpacity(0.15);     
+                        shape.setDisable(true);    
                     }
                 }
             }
         }
     }
-    
-    
     private void startUiLoop() {
         uiLoop = new AnimationTimer() {
             @Override
@@ -518,69 +471,46 @@ public class MainController {
     private void updateView() {
         SimulationState simulationState;
         try {
-            // 1. Get the next state from the queue
             simulationState = this.uiQueue.pollState();
             if (simulationState == null) return;
-
-            // 2. Refresh the dynamic Color Checkboxes in the UI
+            
             this.refreshColorFilterUI(simulationState);
-
+            
             if (this.isFilterCurrentlyApplied) {
-                // --- REFACTORED FILTER LOGIC ---
-                
-                // Capture UI state once (Optimization: don't call getters inside the loop)
                 boolean filterColorActive = filterByColorCheck.isSelected();
                 boolean filterSpeedActive = filterBySpeedCheck.isSelected();
                 double maxSpeedCriteria = filterMaxSpeedSlider.getValue();
-
-                // Collect only the colors that are checked by the user
                 Set<Color> selectedFXColors = colorCheckBoxMap.entrySet().stream()
                         .filter(entry -> entry.getValue().isSelected())
                         .map(Map.Entry::getKey)
-                        .collect(java.util.stream.Collectors.toSet());
-
-                // 3. Define the "Filter Rule" (Predicate)
-                // 'v' represents an individual VehicleClass object in the stream
+                        .collect(Collectors.toSet());
                 Predicate<MeansOfTransportation> filterRule = v -> {
-                    // Check Speed: Pass if filter is off OR if vehicle speed is within limit
                 	if(v == null) return false; 
-                	
                     boolean speedPass = !filterSpeedActive || v.getSpeed() <= maxSpeedCriteria;
-
-                    // Check Color: Pass if filter is off OR if vehicle color matches selection
                     boolean colorPass = true;
                     if (filterColorActive) {
-                        // If Filter is ON, we must strictly check
                         if (selectedFXColors.isEmpty()) {
-                            // Filter is ON, but user picked NO colors -> Show Nothing
                             colorPass = false;
                         } else {
-                            // Filter is ON, and colors are picked -> Check match
                             SumoColor sumoColor = v.getColor();
                             if(sumoColor != null) {
                                 Color vehicleFXColor = ColorConverter.toFXColor(sumoColor);
                                 colorPass = selectedFXColors.contains(vehicleFXColor);                          
                             } else {
-                                colorPass = false; // No color data available
+                                colorPass = false;
                             }
                         }
                     }
 
-                    return speedPass && colorPass; // Intersection Logic (AND)
+                    return speedPass && colorPass;
                 };
-
-                // 4. Ask the manager to execute the filter
                 this.filteredVehicleIDs = this.simManager.getFilteredVehicleIDs(filterRule, simulationState);
 
                 log("Filter applied: " + this.filteredVehicleIDs.size() + " vehicles visible.");
-                logger.info("Filter applied: " + this.filteredVehicleIDs.size() + " vehicles visible.");
                 
             } else {
-                // No filters active: Clear the list
                 this.filteredVehicleIDs.clear();
             }
-
-            // 5. Tell the renderer what to draw (it now knows if filters are active)
             this.renderer.renderMeansOfTransportation(
                 vehiclePane, 
                 simulationState.getMeansOfTransportations(), 
@@ -588,8 +518,6 @@ public class MainController {
                 this.isFilterCurrentlyApplied,
                 this.meansOfTransportationClickHandler
             );
-
-            // 6. Update Traffic Lights and Stats
             this.renderer.renderTrafficLights(
             		trafficLightPane, 
             		simulationState.getTrafficLights(), 
@@ -599,7 +527,6 @@ public class MainController {
             updateCurrentStep();
             updateCurrentVehicleCount(currentVehicleCount);
             
-            // 7. Export CSV/PDF
             if(isExportingVehicleCSV) {
 	            	Platform.runLater(() -> {
 	            		simManager.generateReports(reportPath, simulationState.getMeansOfTransportations(), "VEHICLE", this.filteredVehicleIDs, currentStep, false, 0, 0);
@@ -622,86 +549,68 @@ public class MainController {
             		threadPool.submit(() -> {
                 		try {          
                 			simManager.generateReports(reportPath, simulationState.getMeansOfTransportations(), "PDF", this.filteredVehicleIDs, currentStep, false, 0 ,0);
-                			Platform.runLater(() -> log("✅ PDF Saved to Desktop!"));
+                			Platform.runLater(() -> log("PDF Saved to Desktop!"));
                     } catch (Throwable ex) {
-                    		System.err.println("CRITICAL THREAD ERROR:"); 
+                    		logger.error("CRITICAL THREAD ERROR:"); 
                     		ex.printStackTrace();      
-                    		Platform.runLater(() -> log("❌ CRASH: " + ex.getClass().getSimpleName() + " - " + ex.getMessage()));
+                    		Platform.runLater(() -> log("CRASH: " + ex.getClass().getSimpleName() + " - " + ex.getMessage()));
                     	}
                 });
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
-            System.err.print("UI Update Interrupted: " + e.getMessage());
+            logger.error("UI Update Interrupted: " + e.getMessage());
         }
     }
     
 
     private void log(String message) {
-        // 1. Ensure we update on the JavaFX Application Thread
-    	logger.info(message);
+    	log(message);
         Platform.runLater(() -> {
-            // 2. Add the new message with a timestamp or prefix
             logHistory.add("> " + message);
-
-            // 3. If we exceed the limit, remove the oldest line (the head)
             if (logHistory.size() > MAX_LOG_LINES) {
                 logHistory.removeFirst();
             }
-
-            // 4. Join the lines back together and update the Label
             String joinedLog = String.join("\n", logHistory);
             logLabel.setText(joinedLog);
-
-            // 5. Auto-scroll to the bottom of the ScrollPane
             bottomLogScrollPane.setVvalue(1.0);
         });
     }
     
     private void updateCurrentStep() {
-//    	System.out.println(currentStep);
     	if(simStepLabel != null) {
     		simStepLabel.setText("" + currentStep);
     	}
     }
     
     private void updateCurrentVehicleCount(int currentVehicleCount) {
-//    	System.out.println(currentVehicleCount);
     	if(vehicleCountLabel != null) {
     		vehicleCountLabel.setText("" + currentVehicleCount);
     	}
     }
-    
-   
-
 
     public void stopSimulation() {
-        System.out.println("Stopping simulation...");
-        
+        log("Stopping simulation...");
         isSimulationRunning = false;
-        
         if (uiLoop != null) {
             uiLoop.stop();
         }
-
         if (renderer != null) {
             renderer.clearVehicleCache();
         }
         if (vehiclePane != null) {
             Platform.runLater(() -> vehiclePane.getChildren().clear());
         }
-
         if (threadPool != null) {
             threadPool.shutdownNow(); 
             try {
                 if (!threadPool.awaitTermination(1000, TimeUnit.MILLISECONDS)) {
-                     System.out.println("Thread pool did not terminate gracefully");
+                     log("Thread pool did not terminate gracefully");
                 }
             } catch (InterruptedException e) {
-                System.out.println("Shutdown interrupted");
+                log("Shutdown interrupted");
             }
         }
-
         if (simManager != null) {
         	simManager.stopSimulation();
         }
@@ -744,10 +653,10 @@ public class MainController {
 			this.statQueue.offerState(newSimulationState);
 			log("Step Forward -> " + currentStep);
 		} catch (InterruptedException e) {
-		    System.out.println("Simulation loop interrupted. Stopping safely.");
+		    log("Simulation loop interrupted. Stopping safely.");
 		    return;
 		} catch (Exception e) {
-		    System.err.println("Unexpected error in simulation loop:");
+		    logger.error("Unexpected error in simulation loop:");
 		    e.printStackTrace();
 		    return;
 		}
@@ -769,7 +678,6 @@ public class MainController {
     		log("Please choose 2 edges please");
     		return;
     	}
-    	
     	String firstEdgeId = this.firstEdgeField.getText();
     	String secondEdgeId = this.secondEdgeField.getText();
     	String vehicleType = null;
@@ -777,13 +685,6 @@ public class MainController {
     	if(this.injectVehicleSpeedSlider!=null) {
     		speed=this.injectVehicleSpeedSlider.getValue();
     	}
-    	
-    	
-//    	if(this.carRadio.isSelected()) vehicleType = "DEFAULT_VEHTYPE";
-//    	else if(this.bikeRadio.isSelected()){
-//            vehicleType = "DEFAULT_BIKETYPE";
-//            speed = (speed>5) ?  5: speed;
-//        }
     	
     	if(this.injectionSelectedVehicleTypeButton == this.injectionCarButton) {
     		vehicleType = "DEFAULT_VEHTYPE";
@@ -805,7 +706,7 @@ public class MainController {
         SumoColor sumoColor = ColorConverter.toSumoColor(fxColor);
     	if(this.simManager.injectMeansOfTransportation(vehicleType, sumoColor, speed, firstEdgeId, secondEdgeId)) {
     		log("Injected vehicle");  
-    		this.updateView(); // KHOA FILTERING
+    		this.updateView(); 
     	}
     	else {
     		log("Fail injecting vehicle");
@@ -843,11 +744,11 @@ public class MainController {
      */
     @FXML private void setTrafficLightColorandorDuration() {
     	if(this.trafficLightIdField.getText().isEmpty() || this.currentTrafficLightLink == null) {
-    		logger.info("Please choose a Traffic Light please");
+    		log("Please choose a Traffic Light please");
     		return;
     	}
     	if(this.phaseDurationField.getText().isEmpty() && this.selectedColorButton == null) {
-    		logger.info("Please choose a color and/or duration to set");
+    		log("Please choose a color and/or duration to set");
     		return;
     	}
     	else if(!this.phaseDurationField.getText().isEmpty() && this.selectedColorButton == null) {
@@ -861,26 +762,26 @@ public class MainController {
 	    		check_validity = false;
 	    }
 	    	if(!check_validity) {
-	    		logger.info("Duration must be non-negative double.");
+	    		log("Duration must be non-negative double.");
 	    		return;
 	    	}
 	    	else {
 	    		this.trafficLightManager.setCurrentPhaseDuration(this.currentTrafficLightLink, Double.parseDouble(this.phaseDurationField.getText()));
-	    		logger.info("Duration of this phase is set to " + Double.parseDouble(this.phaseDurationField.getText()) + "s.");
+	    		log("Duration of this phase is set to " + Double.parseDouble(this.phaseDurationField.getText()) + "s.");
 	    	}
     	}
     	else if(this.phaseDurationField.getText().isEmpty() && this.selectedColorButton != null) {
     		if(this.selectedColorButton == setRedPhaseButton) {
     			this.trafficLightManager.setCurrentLightState(this.currentTrafficLightLink, 'r');
-    			logger.info("Color of Traffic Light is set to Red");
+    			log("Color of Traffic Light is set to Red");
     		}
     		else if(this.selectedColorButton == setYellowPhaseButton) {
     			this.trafficLightManager.setCurrentLightState(this.currentTrafficLightLink, 'y');
-    			logger.info("Color of Traffic Light is set to Yellow");
+    			log("Color of Traffic Light is set to Yellow");
     		}
     		else if(this.selectedColorButton == setGreenPhaseButton) {
     			this.trafficLightManager.setCurrentLightState(this.currentTrafficLightLink, 'G');
-    			logger.info("Color of Traffic Light is set to Green");
+    			log("Color of Traffic Light is set to Green");
     		}
     	}
     	else {
@@ -894,34 +795,30 @@ public class MainController {
 	    		check_validity = false;
 	    }
 	    	if(!check_validity) {
-	    		logger.info("Duration must be non-negative double.");
+	    		log("Duration must be non-negative double.");
 	    		return;
 	    	}
 	    	if(this.selectedColorButton == setRedPhaseButton) {
     			this.trafficLightManager.setCurrentLightState(this.currentTrafficLightLink, 'r');
 	    		this.trafficLightManager.setCurrentPhaseDuration(this.currentTrafficLightLink, Double.parseDouble(this.phaseDurationField.getText()));		    		
-	    		logger.info("Color of Traffic Light is set to Red with duration of " + Double.parseDouble(this.phaseDurationField.getText()) + "s");
+    			log("Color of Traffic Light is set to Red with duration of " + Double.parseDouble(this.phaseDurationField.getText()) + "s");
     		}
     		else if(this.selectedColorButton == setYellowPhaseButton) {
     			this.trafficLightManager.setCurrentLightState(this.currentTrafficLightLink, 'y');
 	    		this.trafficLightManager.setCurrentPhaseDuration(this.currentTrafficLightLink, Double.parseDouble(this.phaseDurationField.getText()));		    			    			
-	    		logger.info("Color of Traffic Light is set to Yellow with duration of " + Double.parseDouble(this.phaseDurationField.getText()) + "s");
+    			log("Color of Traffic Light is set to Yellow with duration of " + Double.parseDouble(this.phaseDurationField.getText()) + "s");
     		}
     		else if(this.selectedColorButton == setGreenPhaseButton) {
     			this.trafficLightManager.setCurrentLightState(this.currentTrafficLightLink, 'G');
 	    		this.trafficLightManager.setCurrentPhaseDuration(this.currentTrafficLightLink, Double.parseDouble(this.phaseDurationField.getText()));		    			    			
-	    		logger.info("Color of Traffic Light is set to Green with duration of " + Double.parseDouble(this.phaseDurationField.getText()) + "s");
+    			log("Color of Traffic Light is set to Green with duration of " + Double.parseDouble(this.phaseDurationField.getText()) + "s");
     		}
     	}
 }
     
-    
-    //pth modified
     @FXML
     private void toggleColorButton(ActionEvent event) {
-        // Get the button that was clicked from the event
         Button button = (Button) event.getSource();
-
         if (selectedColorButton == button) {
             button.getStyleClass().remove("selected-button");
             selectedColorButton = null;
@@ -936,12 +833,9 @@ public class MainController {
     
     @FXML
     private void toggleInjectionVehicleType(ActionEvent event) {
-        // Get the button that was clicked from the event
         Button button = (Button) event.getSource();
 
         if (this.injectionSelectedVehicleTypeButton == button) {
-//            button.getStyleClass().remove("selected-button");
-//            this.injectionSelectedVehicleTypeButton = null;
             log("You must choose at least 1 type");
         } else {
             if (this.injectionSelectedVehicleTypeButton != null) {
@@ -957,14 +851,9 @@ public class MainController {
     
     @FXML
     private void toggleStressTestVehicleType(ActionEvent event) {
-        // Get the button that was clicked from the event
         Button button = (Button) event.getSource();
-
         if (this.stressTestSelectedVehicleTypeButton == button) {
-//            button.getStyleClass().remove("selected-button");
-//            this.stressTestSelectedVehicleTypeButton = null;
         	log("You must choose at least 1 type");
-        	logger.info("Not sufficient edges chosen");
         } else {
             if (this.stressTestSelectedVehicleTypeButton != null) {
             	this.stressTestSelectedVehicleTypeButton.getStyleClass().remove("selected-button");
@@ -973,8 +862,6 @@ public class MainController {
             this.stressTestSelectedVehicleTypeButton = button;
             if (firstEdgeField1 != null) firstEdgeField1.clear();
             if (secondEdgeField1 != null) secondEdgeField1.clear();
-
-            // 4. Update the map visuals immediately
             updateLaneVisuals();
         }
     }
@@ -992,72 +879,42 @@ public class MainController {
     @FXML private void showCharts() {
     	this.chartWindow.show();
     }
-    @FXML private void startSumoGUI() {}
-    @FXML private void insertSumoConfigFile() {}
-    // KHOA FILTERING CODE
+
     @FXML private void applyFilter() {
-        
-        // Clear previous filter state
     	filteredVehicleIDs.clear();
-        
-        // 2. Determine if ANY filter checkbox is selected
         boolean filterColorActive = filterByColorCheck.isSelected();
         boolean filterSpeedActive = filterBySpeedCheck.isSelected();
-        
-        // 3. Set the global flag based on the UI state
-        // The filter is "applied" (ON) if either checkbox is ticked.
         this.isFilterCurrentlyApplied = filterColorActive || filterSpeedActive;
-        
-        // 4. Log the state (and check if any color checkboxes are actually selected)
         if (this.isFilterCurrentlyApplied) {
             log("Filter status: ON. Color=" + filterColorActive + ", Speed=" + filterSpeedActive);
-            logger.info("Filter is currently applied. Color=" + filterColorActive + ", Speed=" + filterSpeedActive);
         } else {
             log("Filter status: OFF (No criteria selected).");
-            logger.info("Filter is not currently applied");
         }
-        
-//        if (isPaused) updateView(); // Redraw immediately
     }
 
-
     @FXML private void clearFilter() {
-        
-        // Reset all UI controls to their default/cleared state
         if (filterByColorCheck != null) filterByColorCheck.setSelected(false);
         if (filterBySpeedCheck != null) filterBySpeedCheck.setSelected(false);
         this.filteredVehicleIDs.clear();
         this.isFilterCurrentlyApplied = false;
-        // Reset all dynamically created color checkboxes
         for (CheckBox cb : colorCheckBoxMap.values()) {
             cb.setSelected(false);
         }
-        
-        // Reset slider to its maximum value (to show all speeds)
         if (filterMaxSpeedSlider != null) {
             filterMaxSpeedSlider.setValue(filterMaxSpeedSlider.getMax()); 
         }
-        
-        log("✅ All filter inputs cleared. Click 'Apply Filter' to finalize.");
-        logger.info("All filter cleared");
-        if (isPaused) updateView(); // Redraw immediately
-        
+        log("All filter inputs cleared. Click 'Apply Filter' to finalize.");
+        if (isPaused) updateView();
     }
-    
-    // KHOA FILTERING CODE
+
     @FXML private void runStressTest() {
     	try {
 			this.simManager.stressTest();
-			// KHOA CODED THIS
-//	        this.isFilterCurrentlyApplied = false; 
 			log("Default Stress Test with " + " random cars with random Routes");
-			logger.info("Default Stress Test with random cars with random Routes");
-//			this.refreshColorFilterUI();
 			this.updateView();
 		} catch (Exception e) {
-			System.err.print(e.getMessage());
-			e.printStackTrace();
-			logger.error("Error in running StressTest " + e.getMessage());
+			logger.error(e.getMessage());
+			logger.trace(e);
 		}
     }
     
@@ -1104,7 +961,7 @@ public class MainController {
         SumoColor sumoColor = ColorConverter.toSumoColor(fxColor);
 
         log("Starting Stress Test: Injecting " + totalVehicles + " vehicles...");
-        logger.info("Stress Test is injecting " + totalVehicles + " vehicles");
+
         threadPool.submit(() -> {
             int successCount = 0;
             
@@ -1132,15 +989,10 @@ public class MainController {
                     final int stressTestVehicleCount = i;
                     if (success) {
                         successCount++;
-                        Platform.runLater(() -> {
-                        	log("Injected vehicle " + stressTestVehicleCount);
-                        	logger.info("Injected vehicle: " + stressTestVehicleCount);
-                        	}
-                        ); 
+                        Platform.runLater(() -> log("Injected vehicle " + stressTestVehicleCount)); 
                     } else {
                         Platform.runLater(() -> {
                         	log("Injection failed, no route between 2 edges");
-                        	logger.info("Failed to inject, no route between 2 edges");
                         	}
                         );
                         break;
@@ -1149,11 +1001,9 @@ public class MainController {
                     
                 } catch (InterruptedException e) { 
                     Thread.currentThread().interrupt();
-                    logger.error("Thread is interupted");
                     break; 
                 } catch (Exception e) {
                     if (e.toString().contains("Connection is closed")) {
-                    	logger.error("Connection is closed");
                         break; 
                     }
                     e.printStackTrace(); 
@@ -1163,7 +1013,6 @@ public class MainController {
             final int finalCount = successCount;
             Platform.runLater(() -> {
             	log("Stress Test Complete. Total: " + finalCount);
-            	logger.info("Stress Test Completed. Total: " + finalCount + " vehicles injected to Simulation");
             	this.firstEdgeField1.clear();
             	this.secondEdgeField1.clear();
             });
@@ -1186,10 +1035,8 @@ public class MainController {
                 // Optimization: Only update the UI if the color list has actually changed size
                 if (fxColorRGBA.size() != this.realColors.size() || !fxColorRGBA.containsAll(this.realColors)) {
                 	log("Vehicle of 1 color type finished their journey");
-                	logger.info("Vehicle of 1 color type finished their journey");
                 	this.clearFilter();
                 	log("Clearing all filter...");
-                	logger.info("All filter is cleared");
                     this.realColors = fxColorRGBA;
                     
                     // 3. Update the UI on the JavaFX Application Thread
@@ -1198,7 +1045,6 @@ public class MainController {
                 
             } catch (Exception e) {
                 log("Error refreshing colors: " + e.getMessage());
-                logger.error("Error refressing colors: " + e.getMessage());
                 // In a real app, you might only print the stack trace for non-InterruptedException errors
             }
         });
@@ -1229,28 +1075,19 @@ public class MainController {
                 colorCheckBoxMap.put(color, cb);
             }
             log("Filter UI Populated with " + colorsToShow.size() + " unique colors.");
-            logger.info("Filter UI now populated with " + colorsToShow.size() + " unique colors.");
         });
     }
 
     private void setClickHandler() {
     	laneClickHandler = (selectedLane) -> {
             if (selectedLane == null) return;
-
-            // get information of Lane 
             String laneId = selectedLane.getId();
-            
-            // Lấy edgeId từ laneId (ví dụ: "edge1_0" -> "edge1") như code hiện tại của bạn
             String edgeId = laneId.substring(0, laneId.indexOf("_")); 
-
-            // 2. Xác định trạng thái các Menu và lấy Mode tập trung
             String currentMode = getCurrentSelectedMode();
             boolean isInjecting = (injectionPane != null && injectionPane.isExpanded());
             boolean isStressTesting = (stressTestPane != null && stressTestPane.isExpanded());
 
             if (isInjecting) {
-                // --- LOGIC CHO INJECTION PANE ---
-                // Sử dụng currentMode đã lấy từ getCurrentSelectedMode()
                 if (!selectedLane.isVehicleAllowed(currentMode)) {
                     log("Warning: This lane does not allow " + currentMode);
                     return; 
@@ -1290,8 +1127,6 @@ public class MainController {
 
             } 
             else {
-                // --- CHẾ ĐỘ KHÁM PHÁ (Discovery Mode) ---
-                // Khi không có menu nào mở, chỉ hiện ID lên log như bạn muốn
                 log("Edge ID: " + edgeId + " | Lane ID: " + laneId);
             }
         };
@@ -1307,19 +1142,10 @@ public class MainController {
         };
         
         meansOfTransportationClickHandler = (selectedVehicle) -> {
-            // 1. Safety check
             if (selectedVehicle == null) return;
-
-            // 2. Get the info using the overridden toString()
             log(selectedVehicle.getSpeed()+"");
             String vehicleInfo = selectedVehicle.toString();
-
-            // 3. Log the information
-            // You can format this however you like, but this fulfills the requirement
             log("Vehicle Selected: " + vehicleInfo);
-
-            // Optional: If you want to show the specific ID separately (assuming it has getId())
-            // log("Vehicle ID: " + selectedVehicle.getId() + " | Details: " + vehicleInfo);
         };
     }
     
