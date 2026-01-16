@@ -2,8 +2,6 @@ package model;
 
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -12,8 +10,6 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.StackPane;
 import model.vehicles.MeansOfTransportation;
-import model.vehicles.VehicleClass;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -22,9 +18,6 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-
-import data.SimulationState;
-
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -32,7 +25,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -142,7 +134,7 @@ public class ReportManager {
                     content.drawImage(pdImage, 40, 350, 500, 350);
                     logger.info("   > Density Chart added.");
                 } else {
-                    logger.warn("   ❌ Density Chart Image is NULL.");
+                    logger.warn("Density Chart Image is NULL.");
                 }
 
                 logger.info("   > Generating Time Chart...");
@@ -152,7 +144,7 @@ public class ReportManager {
                     content.drawImage(pdImage, 40, 10, 500, 350);
                     logger.info("   > Time Chart added.");
                 } else {
-                    logger.warn("   ❌ Time Chart Image is NULL.");
+                    logger.warn("Time Chart Image is NULL.");
                 }
             } catch (IOException e) {
                 logger.error("IOException writing content stream in PDF {}: {}", filepath, e.getMessage(), e);
@@ -160,7 +152,7 @@ public class ReportManager {
 
             try {
                 doc.save(filepath);
-                logger.info("✅ PDF Report exported successfully to: " + filepath);
+                logger.info("PDF Report exported successfully to: " + filepath);
             } catch (IOException e) {
                 logger.error("IOException saving PDF {}: {}", filepath, e.getMessage(), e);
             }
@@ -180,18 +172,14 @@ public class ReportManager {
         Platform.runLater(() -> {
             try {
                 BarChart<String, Number> chart = createBarChartNode(data, title, xLabel, yLabel);
-                
                 StackPane root = new StackPane(chart);
-                Scene dummyScene = new Scene(root, 600, 400); 
-                
                 chart.applyCss();
                 chart.layout();
-                
                 WritableImage fxImage = chart.snapshot(new SnapshotParameters(), null);
                 imageHolder[0] = SwingFXUtils.fromFXImage(fxImage, null);
                 
             } catch (Throwable t) {
-                logger.error("❌ CRASH INSIDE JAVAFX THREAD: " + t.getMessage());
+                logger.error("CRASH INSIDE JAVAFX THREAD: " + t.getMessage());
                 t.printStackTrace();
             } finally {
                 latch.countDown();

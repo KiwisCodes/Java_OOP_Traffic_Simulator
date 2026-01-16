@@ -1,8 +1,6 @@
 package model;
 
 import model.vehicles.MeansOfTransportation;
-import model.vehicles.VehicleClass;
-
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -134,7 +132,6 @@ public class StatisticsManager {
 	}
 	
 	
-	// Calculate travel time distribution
     /**
      * Calculates a histogram of current travel times for all active vehicles.
      * <p>

@@ -1,18 +1,8 @@
 package controller;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import javafx.animation.ParallelTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.TranslateTransition;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.util.Duration;
-
 
 
 
@@ -39,30 +29,27 @@ public class MapInteractionHandler {
      * @param targetNode The actual Map Group (containing edges/vehicles) that will be scaled and translated.
      */
 	
+	//zoom
+	private static final double MAX_SCALE = 15;
+	private static final double MIN_SCALE = 0.1;
+	private static final double zoomFactor = 1.2;
+	//rotate
+	private static final double MOUSE_ROTATION_SENSITIVITY = 0.8; //degrees per pixel dragged
+	
 	/** The UI component that listens for mouse events (e.g. the StackPane). */
     private final Node inputNode; // take input from the centerMapStackPane
     
     /** The actual Map Group that receives the scale/translate transforms. */
     private final Node targetNode; // output to the group of panes
     
-    //panning variables
     private double mouseAnchorX;
     private double mouseAnchorY;
     private double translateAnchorX;
     private double translateAnchorY;
     
 
-    //zoom and rotate settings
-	//booleans so that trackpads zoom and rotate feature dont get confused and jitter or glitches
     private boolean isRotating = false;
     private boolean isZooming = false;
-    //zoom
-    private static final double MAX_SCALE = 15;
-    private static final double MIN_SCALE = 0.1;
-    private static final double zoomFactor = 1.2;
-    //rotate
-    private static final double MOUSE_ROTATION_SENSITIVITY = 0.8; //degrees per pixel dragged
-    private static final Logger logger = LogManager.getLogger(MapInteractionHandler.class);
     
     /**
      * Constructs a new interaction handler.
@@ -82,28 +69,12 @@ public class MapInteractionHandler {
      */
     private void addListeners() {
         inputNode.setOnMousePressed(event -> {
-            mouseAnchorX = event.getSceneX();//this function get the current x on the whole scence
-            mouseAnchorY = event.getSceneY();
-            
-            //this is the coordinates of the center of
-            Point2D pointOnMap = targetNode.sceneToLocal(mouseAnchorX, mouseAnchorY);// this one is the coordinates of the map itself
-            //if an edge is at 200,200 on the map, when you move the map somewhere else, that edge will still be at 200,200 on map
-            //but on the scene it will be different
-            
-            //this twos say how far the map pane, (the paper) has been drifted away from the original point
+            mouseAnchorX = event.getSceneX();
+            mouseAnchorY = event.getSceneY();        
             translateAnchorX = targetNode.getTranslateX();
             translateAnchorY = targetNode.getTranslateY();
-            
-            //just for understanding the documentation
-//            System.out.println(mouseAnchorX);
-//            System.out.println(mouseAnchorY);
-//            System.out.println(translateAnchorX);
-//            System.out.println(translateAnchorY);
-//            System.out.println(""+pointOnMap+"\n--\n");
-            
         });
 
-        //drag or rotate with mouse, not trackpads
         inputNode.setOnMouseDragged(event -> {
             if (event.isSecondaryButtonDown()) {
 
@@ -111,15 +82,11 @@ public class MapInteractionHandler {
                 
                 double angleDelta = deltaX * MOUSE_ROTATION_SENSITIVITY;
                 
-                // Rotate around the center of the screen (or mouse anchor)
-                // Using mouseAnchor makes it feel like spinning a paper under your finger
                 rotateAroundPivot(angleDelta, mouseAnchorX, mouseAnchorY);
                 
-                // Reset anchor so rotation doesn't accelerate wildly
                 mouseAnchorX = event.getSceneX();
                 mouseAnchorY = event.getSceneY();
             }
-            //if left mouse -> drag
             else if (event.isPrimaryButtonDown()) {
                 double deltaX = event.getSceneX() - mouseAnchorX;
                 double deltaY = event.getSceneY() - mouseAnchorY;
@@ -133,7 +100,6 @@ public class MapInteractionHandler {
         inputNode.setOnRotationFinished(e -> isRotating = false);
 
         inputNode.setOnRotate(event -> {
-        	//getAngle is to find the angle that the map pane has rotated from start to now
             rotateAroundPivot(event.getAngle(), event.getSceneX(), event.getSceneY());
             event.consume();
         });
@@ -143,10 +109,10 @@ public class MapInteractionHandler {
 
         inputNode.setOnZoom(event -> {
             if (isRotating) return;
-
             zoomToPivot(event.getZoomFactor(), event.getSceneX(), event.getSceneY());
             event.consume();
         });
+        
         inputNode.setOnScroll((ScrollEvent event) -> {
             if (isRotating || isZooming) {
                 event.consume();

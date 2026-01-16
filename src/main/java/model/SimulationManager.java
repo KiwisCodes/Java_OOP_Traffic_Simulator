@@ -1,22 +1,16 @@
 package model;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import controller.MainController;
-import model.infrastructure.*;
 import model.infrastructure.*;
 import it.polito.appeal.traci.*;
 import javafx.scene.control.TextField;
@@ -25,18 +19,11 @@ import de.tudresden.sumo.objects.SumoColor;
 import de.tudresden.sumo.objects.SumoStage;
 import de.tudresden.sumo.objects.SumoStringList;
 import model.vehicles.MeansOfTransportation;
-import model.vehicles.VehicleClass;
-// Import your vehicle classes
 import model.vehicles.VehicleManager;
 import util.ColorConverter;
 import util.SumoException;
 import javafx.scene.paint.Color;
-//import model.vehicles.Car;
-//import model.vehicles.Bus;
-//import model.vehicles.Truck;
-//import model.vehicles.Bike;
 import util.Util;
-// Import Infrastructure
 import model.infrastructure.MapManager;
 import model.infrastructure.TrafficlightManager;
 import data.*;
@@ -135,15 +122,9 @@ public class SimulationManager {
 			this.trafficlightManager = new TrafficlightManager(sumoConnection);
 			this.reportManager = new ReportManager();
             logger.info("Connection established!");
-            
-         // --- DEBUG: PRINT ALL LOADED VEHICLE TYPES ---
-            logger.info("=== LOADED VEHICLE TYPES ===");
-            
-            // Retrieve the list of IDs from SUMO
-            // Note: usage of do_job_get() is required for TraaS
+            logger.info("LOADED VEHICLE TYPES");
             @SuppressWarnings("unchecked")
             List<String> types = (List<String>) this.sumoConnection.do_job_get(Vehicletype.getIDList());
-
             for (String t : types) {
                 logger.info("Found Type: " + t);
             }
@@ -182,25 +163,6 @@ public class SimulationManager {
         }
     }
 
-    
-    /**
-     * Runs the main simulation loop in a blocking manner.
-     * <p>
-     * <b>Note:</b> This method blocks the calling thread until the simulation stops. 
-     * Ideally, it should be run in a separate thread from the UI.
-     * </p>
-     */
-    public void runSimulationLoop() {
-        logger.info("   -> Simulation Loop Started.");
-
-        while (isRunning && !this.sumoConnection.isClosed()) {
-            step();
-            try { Thread.sleep(10); } catch (InterruptedException e) { break; }
-        }
-        
-        stopSimulation();
-        logger.info("Simulation loop finished.");
-    }
 
     /**
      * Advances the simulation by one timestep.
@@ -218,14 +180,10 @@ public class SimulationManager {
             										this.trafficlightManager.getTrafficlightData()
             										);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.trace(e);
             stopSimulation(); 
         }
     }
-    
-    
-    
-    
     
     /**
      * Generates simulation reports (CSV or PDF) based on the given type.
@@ -242,7 +200,7 @@ public class SimulationManager {
      * @param currentStepCount current simulation timestep
      */
     public void generateReports(String outputDir, Map<String, MeansOfTransportation>vehicleData, String type, List<String> filteredVehicleIDs, int currentStepCount, boolean edgeFilter, double maxAvgSpeed, int minDensity) {
-        logger.debug("--- DEBUG: Starting Report Generation ---");
+        logger.debug("DEBUG: Starting Report Generation");
         if (this.reportManager == null || this.statisticsManager == null || this.mapManager == null) {
             logger.error("ERROR: Managers are NULL. Did you click 'Start Simulation' first?");
             return;
@@ -256,7 +214,7 @@ public class SimulationManager {
         if (!folder.exists()) {
             folder.mkdirs();
         }
-        logger.info("📂 Saving files to: " + folder.getAbsolutePath());
+        logger.info("Saving files to: " + folder.getAbsolutePath());
 
         DateTimeFormatter formatter =
                 DateTimeFormatter.ofPattern("dd-MM-yyyy_HH-mm-ss");
@@ -326,14 +284,14 @@ public class SimulationManager {
                 logger.info("   > Generating PDF...");
                 String pdfName = outputDir + "/SimulationReport_" + timestamp + ".pdf";
                 reportManager.exportReportPDF(this.statisticsManager, pdfName, filteredData, currentStepCount);
-                logger.info("PDF saved.");
+                logger.info("PDF saved");
             }
         } catch (Exception e) {
             logger.error("CRASH during PDF Export: " + e.getMessage());
             e.printStackTrace();
         }
 
-        logger.debug("--- DEBUG: Finished ---");
+        logger.debug("DEBUG: Finished");
     }
     
     /**
@@ -379,7 +337,7 @@ public class SimulationManager {
 
         } catch (Exception e){
             logger.info("Unexpected error happened in InjectVehicle: " + e);
-            e.printStackTrace();
+            logger.trace(e);
             return false;
         }
         return true;
@@ -426,7 +384,6 @@ public class SimulationManager {
 			String routeID = "route_" + vehicleCounter;
 			SumoStringList edges =  (SumoStringList) sumoConnection.do_job_get(Vehicle.getRoute(randomVehicleIDs.get(i)));
 			sumoConnection.do_job_set(Route.add(routeID, edges));
-			
 			vehicleManager.injectVehicle(String.valueOf("vehicle_" + vehicleCounter++), "DEFAULT_VEHTYPE", routeID, sumoColor, standardSpeed);
 			
 		}
@@ -447,7 +404,6 @@ public class SimulationManager {
 	public Map<String, MeansOfTransportation> getListOfVehicles() {
 		return listOfVehicles;
 	};
-	
 
 	private SumoStringList getRouteFromEdges(String firstEdge, String lastEdge, String vehType) throws Exception {
 		double offset = 5;
@@ -484,9 +440,7 @@ public class SimulationManager {
     	}
     	return false;
     }
-    
-    
-    
+
     /**
      * Get Statistic Manger
      * @return Statistic Manager
@@ -561,7 +515,7 @@ public class SimulationManager {
 				fxColorRGBA.add(ColorConverter.toFXColor(sumoColor));				
 			}
 		}
-		logger.info("Unique Colors obtained.");
+//		logger.info("Unique Colors obtained.");
 		return fxColorRGBA;
 	}
 	

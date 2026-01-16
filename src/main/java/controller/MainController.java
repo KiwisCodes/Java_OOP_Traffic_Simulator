@@ -1027,8 +1027,6 @@ public class MainController {
                 	this.clearFilter();
                 	log("Clearing all filter...");
                     this.realColors = fxColorRGBA;
-                    
-                    // 3. Update the UI on the JavaFX Application Thread
                     Platform.runLater(() -> this.showColorsAsCheckboxes(this.realColors));
                 }
                 

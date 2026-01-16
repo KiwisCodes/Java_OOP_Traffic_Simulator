@@ -3,7 +3,6 @@ package data;
 import java.util.Map;
 import model.infrastructure.TrafficlightClass;
 import model.vehicles.MeansOfTransportation;
-import model.vehicles.VehicleClass;
 
 /**
  * Represents an <b>immutable snapshot</b> of the simulation world at a specific moment in time (tick).
@@ -35,9 +34,6 @@ public class SimulationState {
      * 
      */
     private final Map<TrafficlightClass, Character> lastTrafficLightIDs;
-//    private final List<String> lastTrafficLightIDs; commented all traffic light to test vehicle and edges/lanes
-//    private final Map<String, Map<String, String>> lastLanes;
-//    private final Map<String, Map<String, String>> lastJunctions;
     /**
      * Constructor
      * 
@@ -45,18 +41,13 @@ public class SimulationState {
      * @param lastTrafficLightIDs: data about Traffic Lights
      */
     public SimulationState(
-//    		Map<String, EdgeClass> lastEdges,
     		Map<String, MeansOfTransportation> lastVehicles,
     		Map<TrafficlightClass, Character> lastTrafficLightIDs
-//    		List<String> laneIdList
     		) 
     {	
-//    	this.lastEdges = lastEdges;
 		this.lastMeansOfTransportations = lastVehicles;
 		this.lastTrafficLightIDs = lastTrafficLightIDs;
-//		this.laneIdList = laneIdList;
 	}
-//	public Map<String, EdgeClass> getEdges() { return lastEdges; }
     /**
      * return the current data about Vehicles
      * @return current state data about Vehicles
