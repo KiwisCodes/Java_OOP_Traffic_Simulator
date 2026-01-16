@@ -59,7 +59,11 @@ public class ColorConverter {
             a / 255.0 
         );
     }
-    
+    /**
+     * Covert RGB Color to HEX Color String to represent on the Simulation
+     * @param color
+     * @return
+     */
     public static String colorToWebString(Color color) {
         // Uses 255 * R/G/B values and formats them as a 6-digit hex string
         return String.format("#%02X%02X%02X", 
