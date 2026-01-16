@@ -11,6 +11,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This {@code ChartWindow} represents a separate window for visualization
@@ -26,6 +28,9 @@ import java.util.Map;
  * @author Minh Khoi
  */
 public class ChartWindow {
+
+    private static final Logger LOGGER = Logger.getLogger(ChartWindow.class.getName());
+
     /** Main Window (Stage) for the diagrams.*/
     private final Stage stage;
 
@@ -45,6 +50,7 @@ public class ChartWindow {
      * over {@link #initCharts()} and sets the layout of the Scene
      */
     public ChartWindow() {
+        LOGGER.info("Initializing ChartWindow components...");
         this.stage = new Stage();
         this.stage.setTitle("Live Simulation Statistics");
 
@@ -55,13 +61,13 @@ public class ChartWindow {
 
         Scene scene = new Scene(layout, 600, 900);
         stage.setScene(scene);
+        LOGGER.info("ChartWindow initialized.");
     }
 
     /**
      * Initialises the axes, titles and data rows for all three diagrams
      */
     private void initCharts() {
-        // Speed Chart
         NumberAxis xAxisSpeed = new NumberAxis();
         xAxisSpeed.setLabel("Step");
         NumberAxis yAxisSpeed = new NumberAxis();
@@ -75,7 +81,6 @@ public class ChartWindow {
         speedSeries.setName("Avg Speed");
         speedChart.getData().add(speedSeries);
 
-        // Density Chart
         CategoryAxis xAxisDens = new CategoryAxis();
         xAxisDens.setLabel("Edge ID");
         NumberAxis yAxisDens = new NumberAxis();
@@ -89,7 +94,6 @@ public class ChartWindow {
         densitySeries.setName("Vehicles");
         densityChart.getData().add(densitySeries);
 
-        // Travel Time Chart
         CategoryAxis xAxisTime = new CategoryAxis();
         xAxisTime.setLabel("Travel Time Range (s)");
         NumberAxis yAxisTime = new NumberAxis();
@@ -112,8 +116,10 @@ public class ChartWindow {
      */
     public void show() {
         if (!stage.isShowing()) {
+            LOGGER.info("Showing ChartWindow.");
             stage.show();
         } else {
+            LOGGER.info("ChartWindow already visible, bringing to front.");
             stage.toFront();
         }
     }
@@ -133,17 +139,31 @@ public class ChartWindow {
      */
     public void updateData(int currentStep, double avgSpeed,
                            Map<String, Integer> densityMap, Map<String, Integer> travelTimeMap) {
+
+        if (densityMap == null || travelTimeMap == null) {
+            LOGGER.warning("Update skipped: Received null map data for step " + currentStep);
+            return;
+        }
+
         Platform.runLater(() -> {
-            speedSeries.getData().add(new XYChart.Data<>(currentStep, avgSpeed));
+            try {
+                speedSeries.getData().add(new XYChart.Data<>(currentStep, avgSpeed));
 
-            densitySeries.getData().clear();
-            for (Map.Entry<String, Integer> entry : densityMap.entrySet()) {
-                densitySeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
-            }
+                densitySeries.getData().clear();
+                for (Map.Entry<String, Integer> entry : densityMap.entrySet()) {
+                    densitySeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+                }
 
-            travelTimeSeries.getData().clear();
-            for (Map.Entry<String, Integer> entry : travelTimeMap.entrySet()) {
-                travelTimeSeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+                travelTimeSeries.getData().clear();
+                for (Map.Entry<String, Integer> entry : travelTimeMap.entrySet()) {
+                    travelTimeSeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+                }
+
+                if (currentStep % 100 == 0) {
+                    LOGGER.info("Charts updated successfully for step " + currentStep);
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Error updating charts on UI thread", e);
             }
         });
     }
