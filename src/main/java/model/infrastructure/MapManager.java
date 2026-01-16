@@ -21,7 +21,9 @@ import de.tudresden.sumo.objects.SumoPosition2D;
 import de.tudresden.sumo.util.SumoCommand;
 import de.tudresden.ws.container.SumoBoundingBox; // Or use simple doubles
 import it.polito.appeal.traci.SumoTraciConnection;
-
+/**
+ * MapManager is the object that instantiate all of the elements related to the infrastructure: Junctions, Edges, and Lanes
+ */
 public class MapManager {
 	private SumoTraciConnection sumoConnection;
 	private int totalEdge = 0;
@@ -44,7 +46,10 @@ public class MapManager {
     private double maxX = Double.MIN_VALUE;
     private double maxY = Double.MIN_VALUE;
     private static final Logger logger = LogManager.getLogger(MapManager.class);
-
+    /**
+     * Map Manager Constructor
+     * @param sumoConnection
+     */
     public MapManager(SumoTraciConnection sumoConnection) {
         if(!sumoConnection.isClosed()) {
         	try {

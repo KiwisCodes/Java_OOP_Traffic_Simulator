@@ -565,7 +565,7 @@ public class MainController {
     
 
     private void log(String message) {
-    	log(message);
+    	logger.info(message);
         Platform.runLater(() -> {
             logHistory.add("> " + message);
             if (logHistory.size() > MAX_LOG_LINES) {
@@ -920,13 +920,12 @@ public class MainController {
     
     @FXML 
     private void runStressTestOnSpecificEdges() {
-    	clearFilter(); // KHOA CODED FILTERING
+    	clearFilter();
     	log("Clear all filtering...");
         if(this.firstEdgeField1.getText().isEmpty() || this.secondEdgeField1.getText().isEmpty()) {
             log("Please choose 2 edges first");
             return;
         }
-        
         this.stressTestButton.setDisable(true);
         PauseTransition unlockTimer = new PauseTransition(Duration.seconds(20));
         unlockTimer.setOnFinished(e -> this.stressTestButton.setDisable(false));
@@ -1018,21 +1017,11 @@ public class MainController {
             });
         });
     }
-    // KHOA FILTERING CODE
+
     public void refreshColorFilterUI(SimulationState state) {
-        // Submit the task to the thread pool to avoid blocking the JavaFX thread or UI thread
         threadPool.submit(() -> {
             try {
-                // Short delay might still be useful if injection takes a moment to register in SUMO
-//                Thread.sleep(50); 
-                
-                // 1. Get the raw colors (AWT type assumed)
                 List<Color> fxColorRGBA = this.simManager.getUniqueColors(state); 
-                
-                // 2. Convert and store
-//                List<javafx.scene.paint.Color> newColors = convertAwtToFxColors(rawColors);
-                
-                // Optimization: Only update the UI if the color list has actually changed size
                 if (fxColorRGBA.size() != this.realColors.size() || !fxColorRGBA.containsAll(this.realColors)) {
                 	log("Vehicle of 1 color type finished their journey");
                 	this.clearFilter();
