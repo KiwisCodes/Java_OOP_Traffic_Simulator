@@ -304,21 +304,21 @@ public class MainController {
         }
         if (exportVehiclesCsvButton != null) {
             exportVehiclesCsvButton.setOnAction(e -> { 
-                log("Exporting Vehicle CSV...");
+                logger.info("Exporting Vehicle CSV...");
                 isExportingVehicleCSV = true;
             });
         }
 
         if (exportEdgesCsvButton != null) {
             exportEdgesCsvButton.setOnAction(e -> {
-                log("Exporting Edge CSV...");
+            		logger.info("Exporting Edge CSV...");
                 isExportingEdgeCSV = true;
             });
         }
 
         if (exportPdfButton != null) {
             exportPdfButton.setOnAction(e -> {
-                log("Exporting PDF Report...");
+            		logger.info("Exporting PDF Report...");
                 isExportingPDF = true;
             });
         }
@@ -602,7 +602,6 @@ public class MainController {
             // 7. Export CSV/PDF
             if(isExportingVehicleCSV) {
 	            	Platform.runLater(() -> {
-	            		// since there will always be some good speed, even at default, we let filter = True
 	            		simManager.generateReports(reportPath, simulationState.getMeansOfTransportations(), "VEHICLE", this.filteredVehicleIDs, currentStep, false, 0, 0);
 	            });
             		isExportingVehicleCSV = false;
@@ -622,7 +621,6 @@ public class MainController {
             		isExportingPDF = false;
             		threadPool.submit(() -> {
                 		try {          
-                			// since there will always be some good speed, even at default, we let filter = True
                 			simManager.generateReports(reportPath, simulationState.getMeansOfTransportations(), "PDF", this.filteredVehicleIDs, currentStep, false, 0 ,0);
                 			Platform.runLater(() -> log("✅ PDF Saved to Desktop!"));
                     } catch (Throwable ex) {
@@ -845,11 +843,11 @@ public class MainController {
      */
     @FXML private void setTrafficLightColorandorDuration() {
     	if(this.trafficLightIdField.getText().isEmpty() || this.currentTrafficLightLink == null) {
-    		log("Please choose a Traffic Light please");
+    		logger.info("Please choose a Traffic Light please");
     		return;
     	}
     	if(this.phaseDurationField.getText().isEmpty() && this.selectedColorButton == null) {
-    		log("Please choose a color and/or duration to set");
+    		logger.info("Please choose a color and/or duration to set");
     		return;
     	}
     	else if(!this.phaseDurationField.getText().isEmpty() && this.selectedColorButton == null) {
@@ -863,26 +861,26 @@ public class MainController {
 	    		check_validity = false;
 	    }
 	    	if(!check_validity) {
-	    		log("Duration must be non-negative double.");
+	    		logger.info("Duration must be non-negative double.");
 	    		return;
 	    	}
 	    	else {
 	    		this.trafficLightManager.setCurrentPhaseDuration(this.currentTrafficLightLink, Double.parseDouble(this.phaseDurationField.getText()));
-	    		log("Duration of this phase is set to " + Double.parseDouble(this.phaseDurationField.getText()) + "s.");
+	    		logger.info("Duration of this phase is set to " + Double.parseDouble(this.phaseDurationField.getText()) + "s.");
 	    	}
     	}
     	else if(this.phaseDurationField.getText().isEmpty() && this.selectedColorButton != null) {
     		if(this.selectedColorButton == setRedPhaseButton) {
     			this.trafficLightManager.setCurrentLightState(this.currentTrafficLightLink, 'r');
-    			log("Color of Traffic Light is set to Red");
+    			logger.info("Color of Traffic Light is set to Red");
     		}
     		else if(this.selectedColorButton == setYellowPhaseButton) {
     			this.trafficLightManager.setCurrentLightState(this.currentTrafficLightLink, 'y');
-    			log("Color of Traffic Light is set to Yellow");
+    			logger.info("Color of Traffic Light is set to Yellow");
     		}
     		else if(this.selectedColorButton == setGreenPhaseButton) {
     			this.trafficLightManager.setCurrentLightState(this.currentTrafficLightLink, 'G');
-    			log("Color of Traffic Light is set to Green");
+    			logger.info("Color of Traffic Light is set to Green");
     		}
     	}
     	else {
@@ -896,23 +894,23 @@ public class MainController {
 	    		check_validity = false;
 	    }
 	    	if(!check_validity) {
-	    		log("Duration must be non-negative double.");
+	    		logger.info("Duration must be non-negative double.");
 	    		return;
 	    	}
 	    	if(this.selectedColorButton == setRedPhaseButton) {
     			this.trafficLightManager.setCurrentLightState(this.currentTrafficLightLink, 'r');
 	    		this.trafficLightManager.setCurrentPhaseDuration(this.currentTrafficLightLink, Double.parseDouble(this.phaseDurationField.getText()));		    		
-    			log("Color of Traffic Light is set to Red with duration of " + Double.parseDouble(this.phaseDurationField.getText()) + "s");
+	    		logger.info("Color of Traffic Light is set to Red with duration of " + Double.parseDouble(this.phaseDurationField.getText()) + "s");
     		}
     		else if(this.selectedColorButton == setYellowPhaseButton) {
     			this.trafficLightManager.setCurrentLightState(this.currentTrafficLightLink, 'y');
 	    		this.trafficLightManager.setCurrentPhaseDuration(this.currentTrafficLightLink, Double.parseDouble(this.phaseDurationField.getText()));		    			    			
-    			log("Color of Traffic Light is set to Yellow with duration of " + Double.parseDouble(this.phaseDurationField.getText()) + "s");
+	    		logger.info("Color of Traffic Light is set to Yellow with duration of " + Double.parseDouble(this.phaseDurationField.getText()) + "s");
     		}
     		else if(this.selectedColorButton == setGreenPhaseButton) {
     			this.trafficLightManager.setCurrentLightState(this.currentTrafficLightLink, 'G');
 	    		this.trafficLightManager.setCurrentPhaseDuration(this.currentTrafficLightLink, Double.parseDouble(this.phaseDurationField.getText()));		    			    			
-    			log("Color of Traffic Light is set to Green with duration of " + Double.parseDouble(this.phaseDurationField.getText()) + "s");
+	    		logger.info("Color of Traffic Light is set to Green with duration of " + Double.parseDouble(this.phaseDurationField.getText()) + "s");
     		}
     	}
 }

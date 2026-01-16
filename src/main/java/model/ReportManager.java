@@ -14,6 +14,7 @@ import javafx.scene.layout.StackPane;
 import model.vehicles.MeansOfTransportation;
 import model.vehicles.VehicleClass;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -31,6 +32,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Handles exporting simulation data into CSV files and a PDF report.
@@ -43,6 +46,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public class ReportManager {
 
+	private static final Logger logger = LogManager.getLogger(SimulationManager.class);
 	/**
 	 * Creates a new {@link ReportManager} instance.
 	 */
@@ -60,7 +64,7 @@ public class ReportManager {
             for (VehicleInfo v : vehicles) {
                 writer.write(v.id() + "," + v.speed() + "," + v.timeFromSpawn() + "," + v.color() + "," + v.type() + "\n");
             }
-            System.out.println("Vehicles CSV exported to: " + filepath);
+            logger.info("Vehicles CSV exported to: " + filepath);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -83,7 +87,7 @@ public class ReportManager {
             		}
                 writer.write(e.id() + "," + e.width() + "," + e.density() + "," + e.avgSpeed() + "\n");
             }
-            System.out.println("Edges CSV exported to: " + filepath);
+            logger.info("Edges CSV exported to: " + filepath);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -100,7 +104,7 @@ public class ReportManager {
      * @param currentStep current simulation timestep
      */
     public void exportReportPDF(StatisticsManager stat, String filepath, Map<String, MeansOfTransportation> vehiclesInfo, int currentStep) {
-        System.out.println(">>> Starting PDF Export...");
+    		logger.info(">>> Starting PDF Export...");
 
         double avgSpeed = stat.avgVehiclesSpeed(vehiclesInfo);
         Map<String, Integer> densityMap = stat.calculateVehicleDensity(vehiclesInfo);
@@ -127,32 +131,32 @@ public class ReportManager {
             content.showText(String.format("Timestep in Simulation: %d", currentStep));
             content.endText();
 
-            System.out.println("   > Generating Density Chart...");
+            logger.info("   > Generating Density Chart...");
             BufferedImage densityImg = generateChartImage(densityMap, "Vehicle Density Per Edge", "Edge", "Count");
             if (densityImg != null) {
                 PDImageXObject pdImage = LosslessFactory.createFromImage(doc, densityImg);
                 content.drawImage(pdImage, 40, 350, 500, 350);
-                System.out.println("   > Density Chart added.");
+                logger.info("   > Density Chart added.");
             } else {
-                System.err.println("   ❌ Density Chart Image is NULL.");
+            		logger.info("   ❌ Density Chart Image is NULL.");
             }
 
-            System.out.println("   > Generating Time Chart...");
+            logger.info("   > Generating Time Chart...");
             BufferedImage timeImg = generateChartImage(travelTimeMap, "Travel Time Distribution (s)", "Time Bin", "Vehicles");
             if (timeImg != null) {
                 PDImageXObject pdImage = LosslessFactory.createFromImage(doc, timeImg);
                 content.drawImage(pdImage, 40, 10, 500, 350);
-                System.out.println("   > Time Chart added.");
+                logger.info("   > Time Chart added.");
             } else {
-                System.err.println("   ❌ Time Chart Image is NULL.");
+            		logger.info("   ❌ Time Chart Image is NULL.");
             }
 
             content.close();
             doc.save(filepath);
-            System.out.println("✅ PDF Report exported successfully to: " + filepath);
+            logger.info("✅ PDF Report exported successfully to: " + filepath);
 
         } catch (Exception e) {
-            System.err.println("❌ CRASH in PDF Generation: " + e.getMessage());
+            logger.error("❌ CRASH in PDF Generation: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -176,7 +180,7 @@ public class ReportManager {
                 imageHolder[0] = SwingFXUtils.fromFXImage(fxImage, null);
                 
             } catch (Throwable t) {
-                System.err.println("❌ CRASH INSIDE JAVAFX THREAD: " + t.getMessage());
+                logger.error("❌ CRASH INSIDE JAVAFX THREAD: " + t.getMessage());
                 t.printStackTrace();
             } finally {
                 latch.countDown();
