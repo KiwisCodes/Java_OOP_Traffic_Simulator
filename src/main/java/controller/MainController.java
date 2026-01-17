@@ -660,6 +660,26 @@ public class MainController {
         this.exportVehiclesCsvButton.setDisable(state);
         this.exportEdgesCsvButton.setDisable(state);
         this.stressTestButton.setDisable(state);
+        this.injectionCarButton.setDisable(state);
+        this.injectionBikeButton.setDisable(state);
+        this.injectionBusButton.setDisable(state);
+        this.injectionPedestrianButton.setDisable(state);
+        this.stressTestCarButton.setDisable(state);
+        this.stressTestBikeButton.setDisable(state);
+        this.stressTestBusButton.setDisable(state);
+        this.stressTestPedestrianButton.setDisable(state);
+        this.setRedPhaseButton.setDisable(state);
+        this.setYellowPhaseButton.setDisable(state);
+        this.setGreenPhaseButton.setDisable(state);
+        this.setTrafficLightColorandorDurationButton.setDisable(state);
+        this.switchTrafficLightPhaseButton.setDisable(state);
+        this.showChartsButton.setDisable(state);
+        this.exportVehiclesCsvButton.setDisable(state);
+        this.exportEdgesCsvButton.setDisable(state);
+        this.exportPdfButton.setDisable(state);
+        this.stressTestButton.setDisable(state);
+        this.applyFilterButton.setDisable(state);
+        this.clearFilterButton.setDisable(state);
     }
 
     @FXML private void pauseSimulation() {

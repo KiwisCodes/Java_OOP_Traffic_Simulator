@@ -12,7 +12,6 @@
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
-<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -97,11 +96,9 @@
                                        <children>
                                           <Label styleClass="section-header" text="1. CONFIGURATION" />
                                           <TextField fx:id="pathToSumoGuiField" promptText="Path to sumo-gui/sumo" />
-                                          <TextField fx:id="pathToSumocfgFileField" promptText="Path to .sumocfg..." />
                                           <HBox spacing="8.0">
                                              <children>
                                                 <Button fx:id="loadSumoPathButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#loadSumoPath" styleClass="action-button" text="Load Sumo Path" HBox.hgrow="ALWAYS" />
-                                                <Button fx:id="loadSumoConfigButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Load Map" HBox.hgrow="ALWAYS" />
                                              </children>
                                           </HBox>
                                        </children>
@@ -209,11 +206,11 @@
                                                     <Button fx:id="exportVehiclesCsvButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Export CSV Vehicle Report" />
                                                     <VBox spacing="5.0" style="-fx-border-color: #cccccc; -fx-border-width: 1; -fx-border-radius: 4; -fx-padding: 8; -fx-background-color: rgba(0,0,0,0.03);">
 										               <children>
-										                  <CheckBox fx:id="edgeFilterCheckbox" text="Filter Edges" style="-fx-font-weight: bold;"/>
-										                  <Label text="Max Average Speed" style="-fx-font-size: 10px;"/>
-										                  <Slider fx:id="edgeSpeedSlider" majorTickUnit="5.0" min="5.0" max="15.0" value="15.0" minorTickCount="8" showTickLabels="true" showTickMarks="true" disable="${!edgeFilterCheckbox.selected}" />
-										              	  <Label text="Min Vehicle Density" style="-fx-font-size: 10px;"/>
-										                  <Slider fx:id="edgeDensitySlider" majorTickUnit="5" min="0" max="20" value="0" minorTickCount="4" showTickLabels="true" showTickMarks="true" disable="${!edgeFilterCheckbox.selected}" />
+										                  <CheckBox fx:id="edgeFilterCheckbox" style="-fx-font-weight: bold;" text="Filter Edges" />
+										                  <Label style="-fx-font-size: 10px;" text="Max Average Speed" />
+										                  <Slider fx:id="edgeSpeedSlider" disable="${!edgeFilterCheckbox.selected}" majorTickUnit="5.0" max="15.0" min="5.0" minorTickCount="8" showTickLabels="true" showTickMarks="true" value="15.0" />
+										              	  <Label style="-fx-font-size: 10px;" text="Min Vehicle Density" />
+										                  <Slider fx:id="edgeDensitySlider" disable="${!edgeFilterCheckbox.selected}" majorTickUnit="5" max="20" min="0" minorTickCount="4" showTickLabels="true" showTickMarks="true" value="0" />
 										                  <Button fx:id="exportEdgesCsvButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="secondary-button" text="Export CSV Edge Report" />
 										               </children>
 										            </VBox>
@@ -326,12 +323,10 @@
             <VBox alignment="CENTER_RIGHT" opacity="0.95" pickOnBounds="false" spacing="15.0" BorderPane.alignment="CENTER_RIGHT">
                <children>
                   <VBox alignment="CENTER" spacing="15.0">
-                      <ToggleButton fx:id="view3DToggleButton" mnemonicParsing="false" styleClass="map-control-button" text="3D" textAlignment="CENTER" />
                       <Button fx:id="resetViewButton" mnemonicParsing="false" onAction="#resetView" styleClass="map-control-button" text="⟲" textAlignment="CENTER">
                         <font>
                            <Font size="20.0" />
                         </font></Button>
-                      <Separator orientation="HORIZONTAL" prefWidth="20.0" />
                       <Button fx:id="zoomInButton" mnemonicParsing="false" onAction="#zoomIn" styleClass="map-control-button" text="+" textAlignment="CENTER" />
                       <Button fx:id="zoomOutButton" mnemonicParsing="false" onAction="#zoomOut" styleClass="map-control-button" text="-" textAlignment="CENTER" />
                   </VBox>
