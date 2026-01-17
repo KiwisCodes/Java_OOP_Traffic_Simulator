@@ -5,8 +5,9 @@ package util;
  */
 public class SumoException extends Exception {
 
-    // 1. Basic constructor with just a message
-    public SumoException(String message) {
+    private static final long serialVersionUID = 1L;
+
+	public SumoException(String message) {
         super(message);
     }
 

@@ -1,7 +1,6 @@
 package model.vehicles;
 
 import de.tudresden.sumo.objects.SumoColor;
-import de.tudresden.ws.container.SumoPosition2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
@@ -33,12 +32,10 @@ public class BusClass extends VehicleClass{
         final double WHEEL_Y_OFFSET_F = 50.0; // Front Axle distance
         final double WHEEL_Y_OFFSET_R = 50.0; // Rear Axle distance
         final double WHEEL_LEN = 18.0;
-        final double WHEEL_WID = 6.0;
 
         // Colors
         final Color TIRE_COLOR = Color.web("#121212");
         final Color TRIM_COLOR = Color.BLACK;
-        final Color GLASS_COLOR = Color.web("#202020"); // Dark Grey for the roof block
         final Color HEADLIGHT_COLOR = Color.WHITE;
         final Color TAILLIGHT_COLOR = Color.web("#D50000");
 

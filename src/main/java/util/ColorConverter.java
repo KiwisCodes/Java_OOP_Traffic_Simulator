@@ -17,12 +17,12 @@ public class ColorConverter {
      * <br><b>Fallback:</b> Returns a default <b>Yellow</b> (255, 255, 0) if the input {@code fxColor} is {@code null}.
      */
     public static SumoColor toSumoColor(Color fxColor) { 
-    	if (fxColor == null) return new SumoColor(255, 255, 0, 255); // Mặc định Vàng
+    	if (fxColor == null) return new SumoColor(255, 255, 0, 255);
         return new SumoColor(
             (int) (fxColor.getRed() * 255),   // 0.5 -> 127
             (int) (fxColor.getGreen() * 255),
             (int) (fxColor.getBlue() * 255),
-            255 // Alpha (độ đục), mặc định là 255 (đặc)
+            255
         );
     }
     /**
@@ -45,8 +45,7 @@ public class ColorConverter {
      */
     public static Color toFXColor(SumoColor sumoColor) {
         if (sumoColor == null) return Color.YELLOW;
-
-        // Dùng (x & 0xFF) để ép kiểu byte âm thành số nguyên dương (0-255)
+        //byte to 0-255
         int r = sumoColor.r & 0xFF;
         int g = sumoColor.g & 0xFF;
         int b = sumoColor.b & 0xFF;

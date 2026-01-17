@@ -3,6 +3,7 @@ package model.vehicles;
 import de.tudresden.sumo.cmd.Person;
 import de.tudresden.sumo.cmd.Vehicle; 
 import it.polito.appeal.traci.SumoTraciConnection;
+import model.SimulationManager;
 import de.tudresden.sumo.util.SumoCommand;
 import de.tudresden.sumo.objects.SumoStringList;
 import de.tudresden.sumo.objects.SumoColor;
@@ -14,6 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Manages all vehicles information and interaction related to vehicles in SUMO via TraCI interface
  * <p>
@@ -24,6 +28,7 @@ import java.util.Map;
  */
 public class VehicleManager {
 
+	private static final Logger logger = LogManager.getLogger(VehicleManager.class);
     /** The connectiion object used to communicate with the running SUMO instance */
     private SumoTraciConnection conn;
     /** A list containing the IDs of all vehicles currently active in the simulation */
@@ -32,6 +37,7 @@ public class VehicleManager {
     private List<String> pedestrianIds;
     /** A map storing all informations related to each vehicle, using their ID */
     private Map<String, MeansOfTransportation> vehiclesData;
+    
 
     /**
      * Constructs a new VehicleManager.
@@ -81,7 +87,7 @@ public class VehicleManager {
 			this.updateVehiclesInfo();
 			
 		} catch (IllegalStateException e){
-			System.out.println("VehicleManager: Connection closed. Stopping updates.");
+			logger.info("VehicleManager: Connection closed. Stopping updates.");
 	        this.vehiclesIds = new ArrayList<>(); 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -108,19 +114,17 @@ public class VehicleManager {
 				if (this.conn == null || this.conn.isClosed()) return;
 				
 				try {
-					// 1. Get the Vehicle Type ID (e.g., "bus", "car_express", "ped_type")
 					SumoCommand typeCmd = Vehicle.getTypeID(id); 
 					String typeId = ((String) this.conn.do_job_get(typeCmd)).toLowerCase();
 					
-					// 2. Fetch shared data from SUMO
+
 					SumoColor color = (SumoColor) this.conn.do_job_get(Vehicle.getColor(id));
 					SumoPosition2D position = (SumoPosition2D) this.conn.do_job_get(Vehicle.getPosition(id));
 					double speed = (Double) this.conn.do_job_get(Vehicle.getSpeed(id));
-//					System.out.println(speed);
 					String edgeId = (String) this.conn.do_job_get(Vehicle.getRoadID(id));
 					double angle = (Double) this.conn.do_job_get(Vehicle.getAngle(id));
 					
-					// Fetch Departure Time (Custom Command)
+
 					SumoCommand departureCmd = new SumoCommand(
 							Constants.CMD_GET_VEHICLE_VARIABLE, Constants.VAR_DEPARTURE, id,
 							Constants.RESPONSE_GET_VEHICLE_VARIABLE, Constants.TYPE_DOUBLE
@@ -141,7 +145,7 @@ public class VehicleManager {
 					}
 					
 				} catch (Exception e) {
-					System.err.println("Error requesting data for vehicle: " + id);
+					logger.error("Error requesting data for vehicle: " + id);
 					e.printStackTrace();
 				}
 			}
@@ -159,8 +163,6 @@ public class VehicleManager {
 					double angle = (Double) this.conn.do_job_get(Person.getAngle(id));
 					
 					double departure = 0.0; 
-					
-					// Instantiate PedestrianClass
 					MeansOfTransportation pedestrian = new PedestrianClass(id, speed, position, color, edgeId, angle, departure);
 					
 					if(pedestrian != null) {
@@ -168,7 +170,7 @@ public class VehicleManager {
 					}
 					
 				} catch (Exception e) {
-					System.err.println("Error data for person: " + id);
+					logger.error("Error data for person: " + id);
 				}
 			}
 		}
@@ -205,10 +207,10 @@ public class VehicleManager {
 			
 			SumoCommand setColorCmd = Vehicle.setColor(vehicleId, sumoColor);
 			this.conn.do_job_set(setColorCmd);
-			System.out.println("Vehicle Injected: " + vehicleId);
+			logger.info("Vehicle Injected: " + vehicleId);
 
 		} catch (Exception e) {
-			System.out.println("Error at Injection of Vehicle " + vehicleId);
+			logger.error("Error at Injection of Vehicle " + vehicleId);
 			e.printStackTrace();
 		}
 	}
@@ -236,10 +238,10 @@ public class VehicleManager {
 	            ""          // stopID
 	        ));
 
-	        System.out.println("Person Injected: " + personId);
+	        logger.info("Person Injected: " + personId);
 
 	    } catch (Exception e) {
-	        System.out.println("Error at Injection of Person " + personId);
+	        logger.error("Error at Injection of Person " + personId);
 	        e.printStackTrace();
 	    }
 	}
@@ -257,36 +259,36 @@ public class VehicleManager {
 	
 	public void printVehiclesData() {
 		if (this.vehiclesData.isEmpty()) {
-			System.out.println("No vehicles are active");
+			logger.info("No vehicles are active");
 			return;
 		}
 		
-		System.out.println("----Actual Vehicles Data----");
+		logger.info("----Actual Vehicles Data----");
 		
 		for (MeansOfTransportation v : this.vehiclesData.values()) {
-			System.out.println("ID " + v.getId());
-			System.out.println(" - Color: " + v.getColor());
-			System.out.println(" - Position: " + v.getPosition().x + ", " + v.getPosition().y);
-			System.out.println(" - Speed: " + v.getSpeed());
-			System.out.println(" - Edge: " + v.getEdgeId());
-			System.out.println("--------------------------");
+			logger.info("ID " + v.getId());
+			logger.info(" - Color: " + v.getColor());
+			logger.info(" - Position: " + v.getPosition().x + ", " + v.getPosition().y);
+			logger.info(" - Speed: " + v.getSpeed());
+			logger.info(" - Edge: " + v.getEdgeId());
+			logger.info("--------------------------");
 		}
 	}
 	
 	public void printIdList(int step) {
 	    // Print Cars
 	    if (this.vehiclesIds != null) {
-	        for (String id : this.vehiclesIds) System.out.println("Car: " + id);
+	        for (String id : this.vehiclesIds) logger.info("Car: " + id);
 	    }
 	    
 	    // Print Pedestrians
 	    if (this.pedestrianIds != null) {
-	        for (String id : this.pedestrianIds) System.out.println("Person: " + id);
+	        for (String id : this.pedestrianIds) logger.info("Person: " + id);
 	    }
 
 	    int vCount = (vehiclesIds != null) ? vehiclesIds.size() : 0;
 	    int pCount = (pedestrianIds != null) ? pedestrianIds.size() : 0;
 	    
-	    System.out.println("Step " + step + " | Active Cars: " + vCount + " | Active People: " + pCount);
+	    logger.info("Step " + step + " | Active Cars: " + vCount + " | Active People: " + pCount);
 	}
 }

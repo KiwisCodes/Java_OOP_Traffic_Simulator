@@ -2,12 +2,6 @@ package util;
 
 import javafx.geometry.Point2D;
 import model.infrastructure.MapManager;
-import view.MainGUI;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import controller.MainController;
 import de.tudresden.ws.container.SumoPosition2D; 
 
 
@@ -29,15 +23,7 @@ import de.tudresden.ws.container.SumoPosition2D;
 public class CoordinateConverter {
     private double mapMinX;
     private double mapMaxY; //the ceiling of the map
-    private double mapWidth;
-    private double mapHeight;
-
     private double scale = 1;     //pixels per Meter
-    private final double padding = 50.0; // Empty space around map edges
-    
-    private int windowWidth = MainGUI.windowWidth;
-    private int windowHeight = MainGUI.windowHeight;
-    private static final Logger logger = LogManager.getLogger(CoordinateConverter.class);
     
 
     /**
@@ -63,8 +49,6 @@ public class CoordinateConverter {
     public void setBound(MapManager map) {
         this.mapMinX = map.getMinX();
         this.mapMaxY = map.getMaxY();
-        this.mapWidth = map.getWidth();
-        this.mapHeight = map.getHeight();
     }
 
     
