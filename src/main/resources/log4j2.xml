@@ -5,7 +5,7 @@
             <PatternLayout pattern="%d [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
 
-        <File name="FileLogger" fileName="logs/app.log" append="true">
+        <File name="FileLogger" fileName="logs/app.log" append="false">
             <PatternLayout pattern="%d [%t] %-5level %logger{36} - %msg%n"/>
         </File>
     </Appenders>

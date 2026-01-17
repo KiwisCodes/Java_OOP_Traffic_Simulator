@@ -8,16 +8,20 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.shape.StrokeLineCap;
+import java.util.Locale; // <--- CRITICAL IMPORT FOR THE FIX
 
-public class BikeClass extends VehicleClass{
+public class BikeClass extends VehicleClass {
+
     public BikeClass(String id, double speed, SumoPosition2D position, SumoColor color, String edgeId, double angle, double departureTime) {
         super(id, speed, position, color, edgeId, angle, departureTime);
     }
     
     /**
      * Returns a Node representing the bike, facing UP (-Y), centered at (0,0).
+     * Uses Locale.US to ensure SVG paths are valid on all systems.
      * @param simColor The team color (Jersey).
      */
+    @Override
     public Node getShape(Color simColor) {
         Group bikeGroup = new Group();
 
@@ -48,7 +52,8 @@ public class BikeClass extends VehicleClass{
         double tY_Rear_Start  = WHEEL_DIST - (TIRE_LEN / 2.0);  // 11
         double tY_Rear_End    = WHEEL_DIST + (TIRE_LEN / 2.0);  // 25
         
-        tires.setContent(String.format(
+        // FIX: Added Locale.US
+        tires.setContent(String.format(Locale.US,
             // Front Tire
             "M -%1$f,%2$f L %1$f,%2$f L %1$f,%3$f L -%1$f,%3$f Z " +
             // Rear Tire
@@ -63,7 +68,8 @@ public class BikeClass extends VehicleClass{
         double barW = 16.0;  // Width of handlebars
         double barSweep = 4.0; // Curve back
         
-        frame.setContent(String.format(
+        // FIX: Added Locale.US
+        frame.setContent(String.format(Locale.US,
             // Handlebar (Curved Arc)
             // Start Left (-16, -10) -> Curve via Center (0, -14) -> End Right (16, -10)
             "M -%1$f,%2$f Q 0,%3$f %1$f,%2$f " +
@@ -79,7 +85,7 @@ public class BikeClass extends VehicleClass{
         // 3. SADDLE ("The Chair")
         // Small black shape behind the rider
         SVGPath saddle = new SVGPath();
-        saddle.setContent("M -3,8 L 3,8 L 3,14 L -3,14 Z"); // Rectangle behind waist
+        saddle.setContent("M -3,8 L 3,8 L 3,14 L -3,14 Z"); // Rectangle behind waist (Simple integers, no locale needed)
         saddle.setFill(SADDLE_COLOR);
 
         // 4. RIDER ARMS
@@ -87,7 +93,9 @@ public class BikeClass extends VehicleClass{
         SVGPath arms = new SVGPath();
         double shoulderY = -2.0;
         double shoulderX = 6.0;
-        arms.setContent(String.format(
+        
+        // FIX: Added Locale.US
+        arms.setContent(String.format(Locale.US,
             // Left Arm
             "M -%1$f,%2$f L -%3$f,%4$f " +
             // Right Arm
@@ -103,7 +111,8 @@ public class BikeClass extends VehicleClass{
         double waistX = 3.5;
         double waistY = 8.0;
         
-        body.setContent(String.format(
+        // FIX: Added Locale.US
+        body.setContent(String.format(Locale.US,
             "M -%1$f,%2$f " +  // Shoulder Left
             "L %1$f,%2$f " +   // Shoulder Right
             "L %3$f,%4$f " +   // Waist Right
@@ -126,7 +135,7 @@ public class BikeClass extends VehicleClass{
         // --- FINAL TRANSFORMS ---
         bikeGroup.setScaleX(BIKE_SCALE);
         bikeGroup.setScaleY(BIKE_SCALE);
-        bikeGroup.setManaged(false);
+        bikeGroup.setManaged(false); 
         
         // No rotation needed. Natively faces UP (-Y).
         return bikeGroup;
@@ -134,11 +143,13 @@ public class BikeClass extends VehicleClass{
     
     @Override
     public String toString() {
+        // FIX: Added Locale.US for consistent logging format
         return "Bike {" +
                "ID='" + getId() + '\'' +
-               ", Speed=" + String.format("%.2f", getSpeed()) + " m/s" +
+               ", Speed=" + String.format(Locale.US, "%.2f", getSpeed()) + " m/s" +
                ", Edge='" + getEdgeId() + '\'' +
-               ", Pos=(" + String.format("%.2f", getPosition().x) + ", " + String.format("%.2f", getPosition().y) + ")" +
+               ", Pos=(" + String.format(Locale.US, "%.2f", getPosition().x) + ", " + 
+                           String.format(Locale.US, "%.2f", getPosition().y) + ")" +
                '}';
     }
 }
