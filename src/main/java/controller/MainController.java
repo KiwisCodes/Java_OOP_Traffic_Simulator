@@ -65,6 +65,21 @@ import view.ChartWindow;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * The main "brain" of the app that connects the SUMO sim with the JavaFX screen.
+ * * This class handles all the buttons and sliders you see on the UI. It uses a few 
+ * different threads to make sure the map renders smooth while the simulation 
+ * runs in the backround. 
+ * * Main jobs:
+ * <ul>
+ * <li>Starts and stops the SUMO conection.</li>
+ * <li>Updates the map and vehicles using a Renderer class.</li>
+ * <li>Handles mouse clicks for selecting lanes and traffic lights.</li>
+ * <li>Calculates stats for the charts and exports PDF reports.</li>
+ * <li>Lets users "inject" new cars or change light colors manualy.</li>
+ * </ul>
+ * * Its basically the middle-man between the data and the user.
+ */
 public class MainController {
     // FXML View Elements
     @FXML private ScrollPane leftControlPanel;
@@ -228,10 +243,18 @@ public class MainController {
         this.statQueue = new SimulationQueue(2);
     }
     
-    public static void main(String[] args) {
-        //this is used to test if we are dont use the MainGUI
-    }
-
+    /**
+     * Automatically called by the JavaFX FXMLLoader after the FXML file has been loaded.
+     * <p>
+     * This method performs the initial setup for the UI and simulation controllers:
+     * <ul>
+     * <li>Initializes map interaction and data visualization windows.</li>
+     * <li>Sets up mutually exclusive expansion logic for the Injection and Stress Test panes.</li>
+     * <li>Configures the initial state of UI buttons and default vehicle selection styles.</li>
+     * <li>Ensures the local directory for simulation reports exists.</li>
+     * <li>Attaches event handlers to data export buttons (CSV and PDF).</li>
+     * </ul>
+     */
     @FXML
     public void initialize() {
         log("Controller initialized. Waiting to start...");
@@ -294,6 +317,18 @@ public class MainController {
         }
     }
 
+    /**
+     * Initiates the simulation sequence by connecting to SUMO and launching background processing threads.
+     * <p>
+     * This method coordinates the following startup activities:
+     * <ul>
+     * <li>Establishes a connection to the SUMO engine and initializes the coordinate converter.</li>
+     * <li>Renders the static map infrastructure (lanes and junctions) and sets up mouse interaction handlers.</li>
+     * <li><b>Simulation Thread:</b> Launches a background loop to step the simulation and offer state snapshots to the UI and Stat queues.</li>
+     * <li><b>Stats Thread:</b> Launches a background loop to calculate performance metrics (speed, density, travel time) and update the chart window.</li>
+     * <li>Triggers the UI update loop to synchronize the visual representation with the simulation state.</li>
+     * </ul>
+     */
     @FXML 
     private void startSimulation() {
         this.startButton.setDisable(true); // prevent double start
@@ -1018,6 +1053,18 @@ public class MainController {
         });
     }
 
+    /**
+     * Synchronizes the color filter UI with the colors currently present in the simulation.
+     * <p>
+     * This method runs a background task to:
+     * <ul>
+     * <li>Retrieve unique vehicle colors from the current simulation state.</li>
+     * <li>Detect changes in the available color set (e.g., when all vehicles of a certain color finish their journey).</li>
+     * <li>Reset the filter and refresh the UI checkbox list via {@link Platform#runLater(Runnable)} if the color set has changed.</li>
+     * </ul>
+     *
+     * @param state The current snapshot of the simulation containing vehicle data.
+     */
     public void refreshColorFilterUI(SimulationState state) {
         threadPool.submit(() -> {
             try {
@@ -1032,7 +1079,7 @@ public class MainController {
                 
             } catch (Exception e) {
                 log("Error refreshing colors: " + e.getMessage());
-                // In a real app, you might only print the stack trace for non-InterruptedException errors
+                logger.trace(e);
             }
         });
     }

@@ -20,41 +20,26 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Polyline;   
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.SVGPath;
 import javafx.scene.shape.Shape;
-import javafx.scene.shape.StrokeLineCap;
-import it.polito.appeal.traci.SumoTraciConnection;
-import de.tudresden.sumo.cmd.Lane;           
-import de.tudresden.sumo.cmd.Junction;      
+import javafx.scene.shape.StrokeLineCap;     
 import de.tudresden.sumo.objects.SumoGeometry;  
 import de.tudresden.sumo.objects.SumoPosition2D;
-import model.vehicles.BikeClass;
-import model.vehicles.BusClass;
-import model.vehicles.CarClass;
 import model.vehicles.MeansOfTransportation;
-import model.vehicles.PedestrianClass;
-import model.vehicles.VehicleClass;
 import util.ColorConverter;
-import model.SimulationManager;
 import model.infrastructure.*;
-import util.CoordinateConverter;
-import de.tudresden.sumo.cmd.Trafficlight; 
-import de.tudresden.sumo.cmd.Junction;    
-import javafx.scene.shape.Circle;          
-import de.tudresden.sumo.objects.SumoColor;     
+import util.CoordinateConverter;    
 import javafx.scene.shape.Polygon;   
-import java.util.Map;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.Glow;
-import javafx.scene.image.Image;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
-import javafx.scene.paint.Color;
 
+
+/**
+ * Handles the graphical rendering of SUMO simulation elements onto JavaFX layers.
+ * <p>
+ * This class is responsible for converting simulation data—including lanes, junctions, 
+ * vehicles, and traffic lights—into interactive UI components. It manages coordinate 
+ * transformations and utilizes a visual cache to optimize performance during updates.
+ */
 public class Renderer {
 	private static final Logger logger = LogManager.getLogger(Renderer.class);
 	
@@ -69,7 +54,7 @@ public class Renderer {
     
     private static final DropShadow HOVER_GLOW = new DropShadow();
     
-    private Map<Character, Color> tl_color_map = new HashMap<>(); // map the state of each traffic light to each color
+    private Map<Character, Color> tl_color_map = new HashMap<>(); 
 
     public Renderer() {
         this.converter = new CoordinateConverter(); 
@@ -77,7 +62,6 @@ public class Renderer {
         HOVER_GLOW.setRadius(10);
         HOVER_GLOW.setSpread(0.6);
         
-    	//Khang's
   		this.tl_color_map.put('r', Color.rgb(255, 80, 80));            // bright_red
 
   		this.tl_color_map.put('y', Color.rgb(255, 255, 120));          // yellow
@@ -85,8 +69,6 @@ public class Renderer {
   		this.tl_color_map.put('g', Color.GREEN);                       // green
   		this.tl_color_map.put('G', Color.rgb(120, 255, 120));          // bright_green
 
-  		// JavaFX has no blinking colors. You must implement blinking using transitions.
-  		// Here: normal + brighter versions.
   		this.tl_color_map.put('o', Color.rgb(255, 200, 0));            // blinking_yellow (base)
   		this.tl_color_map.put('O', Color.rgb(255, 230, 50));           // bright_blinking_yellow (base)
 
@@ -121,39 +103,32 @@ public class Renderer {
      *
      * @param laneData A map containing lane IDs and their corresponding {@code LaneClass} properties.
      * @param laneClickHandler A consumer callback to handle mouse click events on the generated lane shapes.
+     * @param lanePane the pane for the lanes
      */
-    
     public void renderLanes(Map<String, LaneClass> laneData, Pane lanePane, Consumer<LaneClass> laneClickHandler) {
-        // 1. Xóa các lane cũ
         lanePane.getChildren().clear();
         
-        System.out.println("Renderer: Drawing lanes...");
+        logger.info("Renderer: Drawing lanes...");
 
         try {
-            // 2. Duyệt qua danh sách laneId
             for (String laneId : laneData.keySet()) {
-                // Lọc bỏ làn nội bộ (Internal Lanes)
                 if (laneId.startsWith(":")) continue; 
 
                 LaneClass props = laneData.get(laneId);
                 if (props == null) continue;
 
-                // 3. Gọi hàm tạo hình (Hàm này bạn đã viết riêng)
                 Shape laneShape = createLaneShape(props, laneData, laneClickHandler);
                 
                 if (laneShape != null) {
                     lanePane.getChildren().add(laneShape);
                 }
             }
-            
-            // Lệnh này phải nằm TRONG hàm và SAU vòng lặp
-            System.out.println("Renderer: Done drawing lanes.");
+            logger.info("Renderer: Done drawing lanes.");
 
         } catch (Exception e) {
-            // Bắt lỗi chung cho quá trình vẽ
-            e.printStackTrace();
+            logger.trace(e);
         }
-    } // Kết thúc hàm renderLanes
+    } 
     
     /**
      * Constructs a graphical representation (Shape) of a specific lane to be rendered on the map.
@@ -214,8 +189,9 @@ public class Renderer {
 
             return lanePolyline;
         } catch (Exception e) {
-            return null; 
+            logger.error(e.getMessage());
         }
+		return null;
     }
 
 
@@ -231,7 +207,6 @@ public class Renderer {
          * <li>Attaches a mouse click listener to delegate the selection event back to the Controller via {@code onJunctionClick}.</li>
          * <li>Adds the generated shape directly to the UI pane.</li>
          * </ol>
-         * </p>
          *
          * @param junctionData    A map containing junction IDs and their properties (geometry, position).
          * @param junctionPane    The JavaFX {@link Pane} layer dedicated to displaying junctions.
@@ -255,7 +230,7 @@ public class Renderer {
                     junctionPane.getChildren().add(junctionShape);
                 }
             }
-            System.out.println("Renderer: Done Drawing Junctions.");
+            logger.info("Renderer: Done Drawing Junctions.");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -316,10 +291,12 @@ public class Renderer {
      * </ul>
      * </li>
      * </ul>
-     * </p>
      *
      * @param vehiclePane The JavaFX {@link Pane} layer dedicated to displaying vehicles.
      * @param vehicleData A map containing the latest snapshot of vehicle data (ID -> Vehicle Properties) from the simulation core.
+     * @param validIDs ids of all valid car 
+     * @param isFilterApplied is the filter is applied
+     * @param meansOfTransportationClickHandler when user click, this consumer accept and do its job
      */
     public void renderMeansOfTransportation(Pane vehiclePane, Map<String, MeansOfTransportation> vehicleData, List<String> validIDs, boolean isFilterApplied, Consumer<MeansOfTransportation> meansOfTransportationClickHandler) {
         if (vehicleData == null || vehicleData.isEmpty()) {
@@ -332,7 +309,6 @@ public class Renderer {
             (validIDs == null ? new HashSet<>() : new HashSet<>(validIDs)) : 
             vehicleData.keySet();
 
-        // 1. CLEANUP
         List<String> toRemove = new ArrayList<>();
         for (String cachedId : vehicleVisualCache.keySet()) {
             if (!vehicleData.containsKey(cachedId) || (isFilterApplied && !visibleIDs.contains(cachedId))) { 
@@ -344,11 +320,9 @@ public class Renderer {
             vehicleVisualCache.remove(id);     
         }
 
-        // 2. DRAW / UPDATE
         for (String vehicleId : visibleIDs) {
             MeansOfTransportation props = vehicleData.get(vehicleId);
             try {
-//            	System.out.println(props.getSpeed());
                 double screenX = converter.toScreenX(props.getPosition().x);
                 double screenY = converter.toScreenY(props.getPosition().y);
                 double angle = props.getAngle(); 
@@ -357,14 +331,11 @@ public class Renderer {
                 Node vehicleNode = vehicleVisualCache.get(vehicleId);
 
                 if (vehicleNode != null) {
-                    // Update existing
                     vehicleNode.setTranslateX(screenX); 
                     vehicleNode.setTranslateY(screenY); 
                     vehicleNode.setRotate(angle); 
                     vehicleNode.setUserData(props);
                 } else {
-                    // Create new detailed shape
-//                    vehicleNode = createVehicleShape(props, fxColor);
                 	vehicleNode = this.createMeansOfTransportationShape(props, fxColor);
                     
                     vehicleNode.setTranslateX(screenX);
@@ -372,7 +343,6 @@ public class Renderer {
                     vehicleNode.setRotate(angle);
                     vehicleNode.setUserData(props);
 
-                    // Re-add your hover effects and click events
                     setupVehicleEvents(vehicleNode, props, meansOfTransportationClickHandler);
                     vehiclePane.getChildren().add(vehicleNode);
                     vehicleVisualCache.put(vehicleId, vehicleNode);
@@ -393,10 +363,7 @@ public class Renderer {
             node.setCursor(Cursor.DEFAULT);
         });
         node.setOnMouseClicked(e -> {
-            // 1. Retrieve the FRESH object stored in the node (from Step 1)
             MeansOfTransportation freshData = (MeansOfTransportation) node.getUserData();
-            
-            // 2. Send the FRESH data to the controller
             if (freshData != null) {
                 meansOfTransportationClickHandler.accept(freshData);
             }
@@ -405,9 +372,6 @@ public class Renderer {
 	
     private Node createMeansOfTransportationShape(MeansOfTransportation meansOfTransportation, Color color) {
         Node visual = meansOfTransportation.getShape(color);
-        if(meansOfTransportation instanceof PedestrianClass) {
-        	return visual;
-        }
         return visual;
     }
 	
@@ -421,98 +385,103 @@ public class Renderer {
      * <li>Loading a new map.</li>
      * </ul>
      * This ensures that no stale visual artifacts ("ghost vehicles") from the previous session remain in memory or on screen.
-     * </p>
      */
 	public void clearVehicleCache() {
         this.vehicleVisualCache.clear();
     }
 	
+	/**
+	 * Renders and updates traffic light visuals on the specified pane.
+	 * <p>
+	 * If the pane is empty, this method initializes the UI elements and sets up mouse listeners. 
+	 * It then updates the lamp colors to match the current state characters provided in the data map.
+	 *
+	 * @param trafficLightPane    The container for the traffic light graphics.
+	 * @param trafficLightsData   Map of traffic light objects to their current state characters.
+	 * @param onTrafficLightClick Callback executed when a traffic light is clicked.
+	 */
+	public void renderTrafficLights(Pane trafficLightPane, Map<TrafficlightClass,Character>trafficLightsData, Consumer<TrafficlightClass> onTrafficLightClick) {
+		
+		if (trafficLightsData == null || trafficLightsData.isEmpty()) {
+	        logger.info("Empty traffic light map");
+	        return;
+	    }
 
-		public void renderTrafficLights(Pane trafficLightPane, Map<TrafficlightClass,Character>trafficLightsData, Consumer<TrafficlightClass> onTrafficLightClick) {
-			
-			if (trafficLightsData == null || trafficLightsData.isEmpty()) {
-		        System.out.println("Empty traffic light map");
-		        return;
-		    }
+	    if (trafficLightPane.getChildren().isEmpty()) {
+	        for (TrafficlightClass tl_link : trafficLightsData.keySet()) {
+	            Character tl_color_char = trafficLightsData.get(tl_link);
+	            try {
+	                SumoPosition2D pos = tl_link.getPosition();
+	                double screenX = converter.toScreenX(pos.x);
+	                double screenY = converter.toScreenY(pos.y);
 
-		    // Check if traffic lights already exist
-		    if (trafficLightPane.getChildren().isEmpty()) {
-		        // First time: create all traffic lights
-		        for (TrafficlightClass tl_link : trafficLightsData.keySet()) {
-		            Character tl_color_char = trafficLightsData.get(tl_link);
-		            try {
-		                SumoPosition2D pos = tl_link.getPosition();
-		                double screenX = converter.toScreenX(pos.x);
-		                double screenY = converter.toScreenY(pos.y);
+	                Group lightGroup = new Group();
+	                // Housing
+	                Rectangle box = new Rectangle(-0.75, -2.125, 1.5, 4.25);
+	                box.setArcWidth(0.75);
+	                box.setArcHeight(0.75);
+	                box.setFill(Color.rgb(30, 30, 30));
+	                box.setStroke(Color.BLACK);
 
-		                Group lightGroup = new Group();
-		                // Housing
-		                Rectangle box = new Rectangle(-0.75, -2.125, 1.5, 4.25);
-		                box.setArcWidth(0.75);
-		                box.setArcHeight(0.75);
-		                box.setFill(Color.rgb(30, 30, 30));
-		                box.setStroke(Color.BLACK);
+	                // Circles
+	                Circle redLamp = new Circle(0, -1.125, 0.5);
+	                Circle yellowLamp = new Circle(0, 0, 0.5);
+	                Circle greenLamp = new Circle(0, 1.125, 0.5);
 
-		                // Circles
-		                Circle redLamp = new Circle(0, -1.125, 0.5);
-		                Circle yellowLamp = new Circle(0, 0, 0.5);
-		                Circle greenLamp = new Circle(0, 1.125, 0.5);
+	                redLamp.setId("red");
+	                yellowLamp.setId("yellow");
+	                greenLamp.setId("green");
 
-		                redLamp.setId("red");
-		                yellowLamp.setId("yellow");
-		                greenLamp.setId("green");
+	                lightGroup.getChildren().addAll(box, redLamp, yellowLamp, greenLamp);
+	                lightGroup.setTranslateX(screenX);
+	                lightGroup.setTranslateY(screenY);
+	                lightGroup.setUserData(tl_link);
 
-		                lightGroup.getChildren().addAll(box, redLamp, yellowLamp, greenLamp);
-		                lightGroup.setTranslateX(screenX);
-		                lightGroup.setTranslateY(screenY);
-		                lightGroup.setUserData(tl_link);
+	                // Click & Hover
+	                lightGroup.setOnMouseClicked(e -> {
+	                    if (onTrafficLightClick != null) {
+	                        onTrafficLightClick.accept(tl_link);
+	                    }
+	                });
+	                lightGroup.setOnMouseEntered(e -> {
+	                    lightGroup.setEffect(HOVER_GLOW);
+	                    lightGroup.setCursor(Cursor.HAND);
+	                });
+	                lightGroup.setOnMouseExited(e -> {
+	                    lightGroup.setEffect(null);
+	                    lightGroup.setCursor(Cursor.DEFAULT);
+	                });
 
-		                // Click & Hover
-		                lightGroup.setOnMouseClicked(e -> {
-		                    if (onTrafficLightClick != null) {
-		                        onTrafficLightClick.accept(tl_link);
-		                    }
-		                });
-		                lightGroup.setOnMouseEntered(e -> {
-		                    lightGroup.setEffect(HOVER_GLOW);
-		                    lightGroup.setCursor(Cursor.HAND);
-		                });
-		                lightGroup.setOnMouseExited(e -> {
-		                    lightGroup.setEffect(null);
-		                    lightGroup.setCursor(Cursor.DEFAULT);
-		                });
+	                trafficLightPane.getChildren().add(lightGroup);
 
-		                trafficLightPane.getChildren().add(lightGroup);
+	            } catch (Exception e) {
+	                e.printStackTrace();
+	            }
+	        }
+	    }
 
-		            } catch (Exception e) {
-		                e.printStackTrace();
-		            }
-		        }
-		    }
+	    for (var node : trafficLightPane.getChildren()) {
+	        if (!(node instanceof Group)) continue;
+	        Group lightGroup = (Group) node;
+	        TrafficlightClass tl_link = (TrafficlightClass) lightGroup.getUserData();
+	        Character tl_color_char = trafficLightsData.get(tl_link);
+	        if (tl_color_char == null) continue;
 
-		    // Update colors of all existing traffic lights
-		    for (var node : trafficLightPane.getChildren()) {
-		        if (!(node instanceof Group)) continue;
-		        Group lightGroup = (Group) node;
-		        TrafficlightClass tl_link = (TrafficlightClass) lightGroup.getUserData();
-		        Character tl_color_char = trafficLightsData.get(tl_link);
-		        if (tl_color_char == null) continue; // skip if no data
-
-		        for (var child : lightGroup.getChildren()) {
-		            if (!(child instanceof Circle)) continue;
-		            Circle lamp = (Circle) child;
-		            switch (lamp.getId()) {
-		                case "red" -> {
-		                    lamp.setFill((tl_color_char == 'r') ? tl_color_map.get(tl_color_char) : tl_color_map.get('a'));
-		                }
-		                case "yellow" -> {
-		                    lamp.setFill((tl_color_char == 'y' || tl_color_char == 'O' || tl_color_char == 'o') ? tl_color_map.get(tl_color_char) : tl_color_map.get('b'));
-		                }
-		                case "green" -> {
-		                    lamp.setFill((tl_color_char == 'G' || tl_color_char == 'g') ? tl_color_map.get(tl_color_char) : tl_color_map.get('c'));
-		                }
-		            }
-		        }
-		    }
-		}
+	        for (var child : lightGroup.getChildren()) {
+	            if (!(child instanceof Circle)) continue;
+	            Circle lamp = (Circle) child;
+	            switch (lamp.getId()) {
+	                case "red" -> {
+	                    lamp.setFill((tl_color_char == 'r') ? tl_color_map.get(tl_color_char) : tl_color_map.get('a'));
+	                }
+	                case "yellow" -> {
+	                    lamp.setFill((tl_color_char == 'y' || tl_color_char == 'O' || tl_color_char == 'o') ? tl_color_map.get(tl_color_char) : tl_color_map.get('b'));
+	                }
+	                case "green" -> {
+	                    lamp.setFill((tl_color_char == 'G' || tl_color_char == 'g') ? tl_color_map.get(tl_color_char) : tl_color_map.get('c'));
+	                }
+	            }
+	        }
+	    }
+	}
 }

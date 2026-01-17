@@ -15,11 +15,7 @@ public class EdgeClass {
     private final SumoTraciConnection sumoConnection;
     private final String edgeId;
     private final int laneCount;
-
-
     private final Map<String, LaneClass> lanes;
-
-    //we get this permission by going through each lane, yes i think we dont need that, we can just do sumo do job get but this has better structure
     private boolean allowsPassenger;
     private boolean allowsBicycle;
     private boolean isInternal;
@@ -37,7 +33,6 @@ public class EdgeClass {
         this.laneCount = (int) sumoConnection.do_job_get(Edge.getLaneNumber(edgeId));
         this.lanes = new HashMap<>();
         fetchLanes();
-//        logger.info("Edges Created");
     }
 
     private void fetchLanes() throws Exception {

@@ -2,21 +2,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <!-- TODO: Update these with your project's information -->
     <groupId>com.htkkk</groupId>
     <artifactId>traffic-simulator</artifactId>
     <version>1.0.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- Set Java version to 17 -->
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <!-- Set the latest stable JavaFX version -->
         <javafx.version>21.0.2</javafx.version>
-        <!-- TODO: UPDATE THIS to your main class's full path -->
-        <!-- Example: com.yourcompany.traffic.MainApp -->
         <main.class>view.MainGUI</main.class>
     </properties>
     
@@ -42,12 +36,6 @@
             <version>${javafx.version}</version>
         </dependency>
 
-        <!-- 
-          Local TraaS.jar Dependency 
-          - scope = system
-          - systemPath = the path to the JAR. ${project.basedir} is the root folder 
-            (where pom.xml is)
-        -->
         <dependency>
             <groupId>com.traas</groupId>
             <artifactId>traas</artifactId>
@@ -95,12 +83,13 @@
 	        <artifactId>log4j-core</artifactId>
 	        <version>2.24.0</version>
 	    </dependency>
+	    
 
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Compiler Plugin: Ensures we use Java 17 -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -111,7 +100,7 @@
                 </configuration>
             </plugin>
 
-            <!-- JavaFX Maven Plugin: Allows running from Maven (e.g., 'mvn javafx:run') -->
+
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -121,10 +110,6 @@
                 </configuration>
             </plugin>
 
-            <!-- 
-              Assembly Plugin: Creates a single runnable "uber-jar" 
-              (jar-with-dependencies) that includes JavaFX and TraaS.jar
-            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -138,12 +123,10 @@
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <!-- This sets the main class in the final JAR -->
                                     <mainClass>${main.class}</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
-                                <!-- This tells the plugin to bundle all dependencies -->
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
                         </configuration>
