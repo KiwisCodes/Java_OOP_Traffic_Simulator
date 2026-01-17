@@ -1137,16 +1137,10 @@ public class MainController {
             if (selectedLane == null) return;
             String laneId = selectedLane.getId();
             String edgeId = laneId.substring(0, laneId.indexOf("_")); 
-            String currentMode = getCurrentSelectedMode();
             boolean isInjecting = (injectionPane != null && injectionPane.isExpanded());
             boolean isStressTesting = (stressTestPane != null && stressTestPane.isExpanded());
 
             if (isInjecting) {
-                if (!selectedLane.isVehicleAllowed(currentMode)) {
-                    log("Warning: This lane does not allow " + currentMode);
-                    return; 
-                }
-
                 if (firstEdgeField.getText().isEmpty()) {
                     firstEdgeField.setText(edgeId);
                     log("Selected First Edge (Injection): " + edgeId);
@@ -1160,13 +1154,6 @@ public class MainController {
                 }
 
             } else if (isStressTesting) {
-                // --- LOGIC CHO STRESS TEST PANE ---
-                // Sử dụng currentMode đã lấy từ getCurrentSelectedMode()
-                if (!selectedLane.isVehicleAllowed(currentMode)) {
-                    log("Warning: This lane does not allow " + currentMode);
-                    return; 
-                }
-
                 if (firstEdgeField1.getText().isEmpty()) {
                     firstEdgeField1.setText(edgeId);
                     log("Selected First Edge (Stress Test): " + edgeId);

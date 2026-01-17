@@ -45,15 +45,15 @@ public class MainGUI extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        System.out.println("Starting Traffic Simulator Application...");
+        logger.info("Starting Traffic Simulator Application...");
         
         URL fxmlUrl = getClass().getResource(FXML_VIEW);
         
         if (fxmlUrl == null) {
-            System.err.println("--- FATAL ERROR ---");
-            System.err.println("FXML resource not found: " + FXML_VIEW);
-            System.err.println("Please ensure the file is located at src/main/resources" + FXML_VIEW);
-            System.err.println("-------------------");
+            logger.error("--- FATAL ERROR ---");
+            logger.error("FXML resource not found: " + FXML_VIEW);
+            logger.error("Please ensure the file is located at src/main/resources" + FXML_VIEW);
+            logger.error("-------------------");
             throw new IllegalStateException("FXML resource not found at " + FXML_VIEW);
         }
         
@@ -65,7 +65,7 @@ public class MainGUI extends Application {
         primaryStage.setScene(new Scene(root, windowWidth, windowHeight)); // Set default size
         
         primaryStage.setOnCloseRequest(event -> {
-            System.out.println("Window closing...");
+            logger.info("Window closing...");
             controller.stopSimulation(); // Stop threads before exit
         });
         primaryStage.show();
