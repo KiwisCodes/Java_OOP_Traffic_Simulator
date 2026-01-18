@@ -315,6 +315,10 @@ public class MainController {
                 isExportingPDF = true;
             });
         }
+
+        logLabel.heightProperty().addListener((observable, oldValue, newValue) -> {
+            bottomLogScrollPane.setVvalue(1.0);
+        });
     }
 
     /**
@@ -604,7 +608,8 @@ public class MainController {
     
 
     private void log(String message) {
-    	logger.info(message);
+        logger.info(message);
+        
         Platform.runLater(() -> {
             logHistory.add("> " + message);
             if (logHistory.size() > MAX_LOG_LINES) {
@@ -612,7 +617,10 @@ public class MainController {
             }
             String joinedLog = String.join("\n", logHistory);
             logLabel.setText(joinedLog);
-            bottomLogScrollPane.setVvalue(1.0);
+
+            Platform.runLater(() -> {
+                bottomLogScrollPane.setVvalue(1.0); 
+            });
         });
     }
     
@@ -764,7 +772,7 @@ public class MainController {
         Color fxColor = injectVehicleColorPickerButton.getValue();
         SumoColor sumoColor = ColorConverter.toSumoColor(fxColor);
     	if(this.simManager.injectMeansOfTransportation(vehicleType, sumoColor, speed, firstEdgeId, secondEdgeId)) {
-    		log("Injected vehicle");  
+    		log("Injected vehicle, the speed will be re assessed based on the allowed max speed for the route");  
     		this.updateView(); 
     	}
     	else {
