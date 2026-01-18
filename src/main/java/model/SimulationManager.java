@@ -50,7 +50,7 @@ import de.tudresden.sumo.cmd.Vehicletype;
 public class SimulationManager {
 	private static final Logger logger = LogManager.getLogger(SimulationManager.class);
 	//TODO insert your sumoPath here to run
-    private String sumoPath = "/Users/apple/sumo/bin/sumo";
+    private String sumoPath = "";
     private String sumoConfigFileName = "SumoConfig/frauasmap.sumocfg";
     private String sumoConfigFilePath;
 
