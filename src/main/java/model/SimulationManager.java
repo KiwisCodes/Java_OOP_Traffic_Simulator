@@ -143,6 +143,7 @@ public class SimulationManager {
      * @return {@code true} if files exist and are executable.
      */
     private boolean setupPaths() {
+    	if(this.sumoPath == "" || this.sumoPath == null) return false;
         try {
             URL resource = SimulationManager.class.getClassLoader().getResource(this.sumoConfigFileName);
             if (resource == null) {

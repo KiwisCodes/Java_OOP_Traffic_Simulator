@@ -453,6 +453,7 @@ public class MainController {
             startUiLoop();
         } else {
             log("Failed to connect to SUMO.");
+            log("Check your sumo path, if Window please use double slash '\\\\' ");
         }
     }
     
