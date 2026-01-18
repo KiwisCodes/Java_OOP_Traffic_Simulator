@@ -11,8 +11,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This {@code ChartWindow} represents a separate window for visualization
@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  */
 public class ChartWindow {
 
-    private static final Logger LOGGER = Logger.getLogger(ChartWindow.class.getName());
+	private static final Logger logger = LogManager.getLogger(ChartWindow.class);
 
     /** Main Window (Stage) for the diagrams.*/
     private final Stage stage;
@@ -50,7 +50,7 @@ public class ChartWindow {
      * over {@link #initCharts()} and sets the layout of the Scene
      */
     public ChartWindow() {
-        LOGGER.info("Initializing ChartWindow components...");
+        logger.info("Initializing ChartWindow components...");
         this.stage = new Stage();
         this.stage.setTitle("Live Simulation Statistics");
 
@@ -61,12 +61,8 @@ public class ChartWindow {
 
         Scene scene = new Scene(layout, 600, 900);
         stage.setScene(scene);
-        LOGGER.info("ChartWindow initialized.");
+        logger.info("ChartWindow initialized.");
     }
-
-    /**
-     * Initialises the axes, titles and data rows for all three diagrams
-     */
     private void initCharts() {
         NumberAxis xAxisSpeed = new NumberAxis();
         xAxisSpeed.setLabel("Step");
@@ -116,10 +112,10 @@ public class ChartWindow {
      */
     public void show() {
         if (!stage.isShowing()) {
-            LOGGER.info("Showing ChartWindow.");
+            logger.info("Showing ChartWindow.");
             stage.show();
         } else {
-            LOGGER.info("ChartWindow already visible, bringing to front.");
+            logger.info("ChartWindow already visible, bringing to front.");
             stage.toFront();
         }
     }
@@ -141,7 +137,7 @@ public class ChartWindow {
                            Map<String, Integer> densityMap, Map<String, Integer> travelTimeMap) {
 
         if (densityMap == null || travelTimeMap == null) {
-            LOGGER.warning("Update skipped: Received null map data for step " + currentStep);
+            logger.warn("Update skipped: Received null map data for step " + currentStep);
             return;
         }
 
@@ -160,10 +156,10 @@ public class ChartWindow {
                 }
 
                 if (currentStep % 100 == 0) {
-                    LOGGER.info("Charts updated successfully for step " + currentStep);
+                    logger.info("Charts updated successfully for step " + currentStep);
                 }
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Error updating charts on UI thread", e);
+                logger.error("Error updating charts on UI thread");
             }
         });
     }

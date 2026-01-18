@@ -22,7 +22,7 @@ import de.tudresden.ws.container.SumoPosition2D;
  */
 public class CoordinateConverter {
     private double mapMinX;
-    private double mapMaxY; //the ceiling of the map
+    private double mapMaxY; 
     private double scale = 1;     //pixels per Meter
     
 

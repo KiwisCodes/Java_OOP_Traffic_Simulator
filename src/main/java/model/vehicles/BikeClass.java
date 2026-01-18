@@ -18,7 +18,8 @@ public class BikeClass extends VehicleClass {
     
     /**
      * Returns a Node representing the bike, facing UP (-Y), centered at (0,0).
-     * Uses Locale.US to ensure SVG paths are valid on all systems.
+     * Uses Locale.US to ensure SVG paths are valid on all systems
+     * This is AI generated, prompts, usage,  benefit, drawbacks are written in the document
      * @param simColor The team color (Jersey).
      */
     @Override

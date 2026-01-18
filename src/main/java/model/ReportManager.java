@@ -38,7 +38,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class ReportManager {
 
-	private static final Logger logger = LogManager.getLogger(SimulationManager.class);
+	private static final Logger logger = LogManager.getLogger(ReportManager.class);
 	/**
 	 * Creates a new {@link ReportManager} instance.
 	 */
@@ -100,7 +100,7 @@ public class ReportManager {
      * @param currentStep current simulation timestep
      */
     public void exportReportPDF(StatisticsManager stat, String filepath, Map<String, MeansOfTransportation> vehiclesInfo, int currentStep) {
-        logger.info(">>> Starting PDF Export...");
+        logger.info("Starting PDF Export...");
 
         double avgSpeed = stat.avgVehiclesSpeed(vehiclesInfo);
         Map<String, Integer> densityMap = stat.calculateVehicleDensity(vehiclesInfo);
@@ -127,22 +127,22 @@ public class ReportManager {
                 content.showText(String.format("Timestep in Simulation: %d", currentStep));
                 content.endText();
 
-                logger.info("   > Generating Density Chart...");
+                logger.info("Generating Density Chart...");
                 BufferedImage densityImg = generateChartImage(densityMap, "Vehicle Density Per Edge", "Edge", "Count");
                 if (densityImg != null) {
                     PDImageXObject pdImage = LosslessFactory.createFromImage(doc, densityImg);
                     content.drawImage(pdImage, 40, 350, 500, 350);
-                    logger.info("   > Density Chart added.");
+                    logger.info("Density Chart added.");
                 } else {
                     logger.warn("Density Chart Image is NULL.");
                 }
 
-                logger.info("   > Generating Time Chart...");
+                logger.info("Generating Time Chart...");
                 BufferedImage timeImg = generateChartImage(travelTimeMap, "Travel Time Distribution (s)", "Time Bin", "Vehicles");
                 if (timeImg != null) {
                     PDImageXObject pdImage = LosslessFactory.createFromImage(doc, timeImg);
                     content.drawImage(pdImage, 40, 10, 500, 350);
-                    logger.info("   > Time Chart added.");
+                    logger.info("Time Chart added.");
                 } else {
                     logger.warn("Time Chart Image is NULL.");
                 }
@@ -189,7 +189,7 @@ public class ReportManager {
         try {
             latch.await(); 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.trace(e);
         }
 
         return imageHolder[0];

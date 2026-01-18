@@ -127,6 +127,7 @@ public class Renderer {
 
         } catch (Exception e) {
             logger.trace(e);
+            logger.error(null, e, e, e, e, laneData, lanePane, laneClickHandler, e);
         }
     } 
     
@@ -190,6 +191,7 @@ public class Renderer {
             return lanePolyline;
         } catch (Exception e) {
             logger.error(e.getMessage());
+            logger.trace(e);
         }
 		return null;
     }
@@ -261,13 +263,12 @@ public class Renderer {
                 double screenY = converter.toScreenY(realY);
                 junctionShape.getPoints().addAll(screenX, screenY);
             }
-        	
         	junctionShape.setFill(Color.rgb(80, 80, 80)); 
             junctionShape.setStrokeWidth(0.5);
             junctionShape.setUserData(props.getId());
-            
             return junctionShape;
         } catch (Exception e) {
+            logger.error(e);
             return null;
         }
     }
@@ -416,7 +417,7 @@ public class Renderer {
 	                double screenY = converter.toScreenY(pos.y);
 
 	                Group lightGroup = new Group();
-	                // Housing
+	                // Outter box
 	                Rectangle box = new Rectangle(-0.75, -2.125, 1.5, 4.25);
 	                box.setArcWidth(0.75);
 	                box.setArcHeight(0.75);
@@ -455,7 +456,7 @@ public class Renderer {
 	                trafficLightPane.getChildren().add(lightGroup);
 
 	            } catch (Exception e) {
-	                e.printStackTrace();
+	            	 logger.error(e);
 	            }
 	        }
 	    }

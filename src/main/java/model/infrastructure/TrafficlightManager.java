@@ -1,22 +1,16 @@
 package model.infrastructure;
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.scene.control.Alert;
+
 import de.tudresden.sumo.cmd.*;
 import de.tudresden.sumo.objects.*;
 import it.polito.appeal.traci.SumoTraciConnection;
 import java.util.List;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
-import javafx.scene.paint.Color;
-import model.ReportManager;
 import model.SimulationManager;
 import util.SumoException;
 
@@ -88,7 +82,6 @@ public class TrafficlightManager {
                     trafficlightlinkList.add(tmp);
                     run_var++;
                 }
-
             } catch (SumoException e) {
                 logger.error("SUMO error getting controlled links for {}: {}", tlId, e.getMessage());
             } catch (ClassCastException e) {
@@ -234,7 +227,6 @@ public class TrafficlightManager {
 		        		}
 		        }
 	        }
-	        // Create new program starting from current phase
 	        SumoTLSProgram new_prog = new SumoTLSProgram("0", prog.type, 0);
 
 	        for (int run_var = colorIndex; run_var < phases.size(); run_var++) {

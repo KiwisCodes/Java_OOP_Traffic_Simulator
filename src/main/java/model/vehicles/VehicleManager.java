@@ -4,6 +4,7 @@ import de.tudresden.sumo.cmd.Person;
 
 import de.tudresden.sumo.cmd.Vehicle;
 import it.polito.appeal.traci.SumoTraciConnection;
+import model.SimulationManager;
 import de.tudresden.sumo.util.SumoCommand;
 import de.tudresden.sumo.objects.SumoStringList;
 import de.tudresden.sumo.objects.SumoColor;
@@ -14,10 +15,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import de.tudresden.sumo.config.Constants;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -29,7 +28,7 @@ import org.apache.logging.log4j.LogManager;
  * @author Minh Khoi
  */
 public class VehicleManager {
-    private static final Logger LOGGER = Logger.getLogger(VehicleManager.class.getName());
+	private static final Logger logger = LogManager.getLogger(SimulationManager.class);
     /** The connectiion object used to communicate with the running SUMO instance */
     private SumoTraciConnection conn;
     /** A list containing the IDs of all vehicles currently active in the simulation */
@@ -46,7 +45,7 @@ public class VehicleManager {
      * @param connection The active {@link SumoTraciConnection} to the SUMO simulation.
      */
     public VehicleManager(SumoTraciConnection connection) {
-        LOGGER.info("Initializing VehicleManager...");
+        logger.info("Initializing VehicleManager...");
         this.conn = connection;
         this.vehiclesData = new HashMap<>();
         this.vehiclesIds = new ArrayList<>();
@@ -81,17 +80,17 @@ public class VehicleManager {
             this.vehiclesData = new HashMap<>();
 
             if(this.conn == null || this.conn.isClosed()) {
-                LOGGER.warning("Connection is null or closed during step execution.");
+                logger.warn("Connection is null or closed during step execution.");
                 return;
             }
 
             this.updateVehiclesInfo();
 
         } catch (IllegalStateException e){
-            LOGGER.warning("VehicleManager: Connection closed. Stopping updates.");
+            logger.warn("VehicleManager: Connection closed. Stopping updates.");
             this.vehiclesIds = new ArrayList<>();
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error during simulation step.", e);
+            logger.error("Unexpected error during simulation step.", e.getMessage());
         }
     }
 
@@ -144,7 +143,7 @@ public class VehicleManager {
                     }
 
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Error requesting data for vehicle: " + id, e);
+                    logger.error("Error requesting data for vehicle: " + id, e.getMessage());
                 }
             }
         }
@@ -166,9 +165,8 @@ public class VehicleManager {
                     if(pedestrian != null) {
                         this.vehiclesData.put(id, pedestrian);
                     }
-
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Error requesting data for person: " + id, e);
+                    logger.error("Error requesting data for person: " + id, e.getMessage());
                 }
             }
         }
@@ -206,17 +204,17 @@ public class VehicleManager {
             	this.conn.do_job_set(setColorCmd);            	
             }
 
-            LOGGER.info("Vehicle Injected: " + vehicleId);
+            logger.info("Vehicle Injected: " + vehicleId);
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error at Injection of Vehicle " + vehicleId, e);
+            logger.error("Error at Injection of Vehicle " + vehicleId, e.getMessage());
         }
     }
 
     public void injectPerson(String personId, String typeId, SumoStringList edgeList, SumoColor sumoColor, double speed) {
         try {
             if (edgeList == null || edgeList.size() == 0) {
-                LOGGER.warning("Injection skipped for person " + personId + ": Edge list is empty or null.");
+                logger.warn("Injection skipped for person " + personId + ": Edge list is empty or null.");
                 return;
             }
             String firstEdge = edgeList.get(0);
@@ -236,10 +234,10 @@ public class VehicleManager {
             			""
             			));
             }
-            LOGGER.info("Person Injected: " + personId);
+            logger.info("Person Injected: " + personId);
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error at Injection of Person " + personId, e);
+            logger.error("Error at Injection of Person " + personId, e.getMessage());
         }
     }
 
@@ -248,7 +246,7 @@ public class VehicleManager {
             SumoCommand idCountCmd = Vehicle.getIDCount();
             return (Integer) this.conn.do_job_get(idCountCmd);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error getting vehicle count.", e);
+            logger.error("Error getting vehicle count.", e.getMessage());
             return 0;
         }
     }

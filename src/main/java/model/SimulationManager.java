@@ -61,7 +61,7 @@ public class SimulationManager {
     
     private StatisticsManager statisticsManager;
     private ReportManager reportManager;
-    private MapManager mapManager; // Holds static map data (Lanes, Edges)
+    private MapManager mapManager; 
     private VehicleManager vehicleManager;
     private TrafficlightManager trafficlightManager;
     
@@ -101,7 +101,7 @@ public class SimulationManager {
         logger.info("  > Config: " + this.sumoConfigFilePath);
         
         this.sumoConnection = new SumoTraciConnection(this.sumoPath, this.sumoConfigFilePath);
-        this.sumoConnection.addOption("start", null); // Auto-start simulation
+        this.sumoConnection.addOption("start", null); 
         this.sumoConnection.addOption("step-length", this.stepLength);
         this.sumoConnection.printSumoOutput(true);
         this.sumoConnection.printSumoError(true);
@@ -116,7 +116,6 @@ public class SimulationManager {
         	else {
         		logger.info("Is not closed");
         	}
-
             this.mapManager = new MapManager(sumoConnection);
             this.vehicleManager = new VehicleManager(sumoConnection);
 			this.trafficlightManager = new TrafficlightManager(sumoConnection);
@@ -133,7 +132,7 @@ public class SimulationManager {
 
         } catch (Exception e) {
             logger.error("Critical failure initiating SUMO connection.", e);
-            throw new SumoException("Failed to start SUMO. Is the path correct?", e);
+            throw new SumoException("Failed to start SUMO. Is the path correct?");
         }
     }
     
@@ -252,7 +251,7 @@ public class SimulationManager {
             }
         } catch (Exception e) {
             logger.error("CRASH during Vehicle Export: " + e.getMessage());
-            e.printStackTrace();
+            logger.trace(e);
         }
         try {
             if (type.equals("EDGE")) {
@@ -276,7 +275,7 @@ public class SimulationManager {
             }
         } catch (Exception e) {
             logger.error("CRASH during Edge Export: " + e.getMessage());
-            e.printStackTrace();
+            logger.trace(e);
         }
 
         try {
@@ -288,9 +287,8 @@ public class SimulationManager {
             }
         } catch (Exception e) {
             logger.error("CRASH during PDF Export: " + e.getMessage());
-            e.printStackTrace();
+            logger.trace(e);
         }
-
         logger.debug("DEBUG: Finished");
     }
     
@@ -306,35 +304,21 @@ public class SimulationManager {
      */
     public boolean injectMeansOfTransportation(String vehType, SumoColor sumoColor, double Speed, String firstEdge, String lastEdge) {
         try {
-            // 1. Calculate the route using your existing function
-            // This works for Pedestrians too, as long as 'vehType' is "pedestrian" in SUMO
             SumoStringList edges = getRouteFromEdges(firstEdge, lastEdge, vehType);
-            
             if(edges == null || edges.size() == 0) {
                 logger.info("ERROR: No path found for type " + vehType + 
                         " from edge " + firstEdge + " to edge " + lastEdge);
                 return false;
             }
-
-            // 2. CHECK IF THIS IS A PEDESTRIAN
-            // You can check via String comparison, or instanceof if you have the object.
-            // Assuming "pedestrian" is the ID string from your SUMO rou.xml
-            if (vehType.equalsIgnoreCase("DEFAULT_PEDTYPE")) {
-                
+            if (vehType.equalsIgnoreCase("DEFAULT_PEDTYPE")) {      
                 String personID = "person_" + vehicleCounter++;
-                
-                // Call the new specific method in VehicleManager
                 vehicleManager.injectPerson(personID, vehType, edges, sumoColor, Speed);
-                
             } else {
-                // 3. STANDARD VEHICLE LOGIC (Existing Code)
                 String routeID = "routes_" + vehicleCounter;
                 String vehicleID = "vehicle_" + vehicleCounter++;
-                
                 sumoConnection.do_job_set(Route.add(routeID, edges));
                 vehicleManager.injectVehicle(vehicleID, vehType, routeID, sumoColor, Speed);
             }
-
         } catch (Exception e){
             logger.info("Unexpected error happened in InjectVehicle: " + e);
             logger.trace(e);
@@ -496,8 +480,6 @@ public class SimulationManager {
         }
     }
     
-    
-    // KHOA FILTERING
     /**
      * Get Unique Colors currently in the Simulation
      * @param state
@@ -505,7 +487,6 @@ public class SimulationManager {
      */
 	public List<Color> getUniqueColors(SimulationState state){
 		Map<String, MeansOfTransportation> vehicleData = state.getMeansOfTransportations();
-		//Hung changed to SumoColor
 		List<Color> fxColorRGBA = new ArrayList<>();
 		for(Map.Entry<String, MeansOfTransportation> vehicle : vehicleData.entrySet()) {
 			MeansOfTransportation props = vehicle.getValue();
@@ -515,11 +496,9 @@ public class SimulationManager {
 				fxColorRGBA.add(ColorConverter.toFXColor(sumoColor));				
 			}
 		}
-//		logger.info("Unique Colors obtained.");
 		return fxColorRGBA;
 	}
 	
-	// ADD THIS METHOD
 	public List<String> getFilteredVehicleIDs(Predicate<MeansOfTransportation> criteria, SimulationState state) {
 	    if (state == null || state.getMeansOfTransportations() == null) return new ArrayList<>();
 
@@ -527,8 +506,7 @@ public class SimulationManager {
 	                .filter(criteria)
 	                .map(MeansOfTransportation::getId)
 	                .toList();
-	    
-	    return new ArrayList<>(list); // Returns a mutable copy or else it wont work, race condition
+	    return new ArrayList<>(list); 
 	}
 	
 }

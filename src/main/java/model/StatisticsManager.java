@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Calculates real-time statistics based on the current state of vehicles in the simulation.
@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  * @author Minh Khoi
  */
 public class StatisticsManager {
-    private static final Logger LOGGER = Logger.getLogger(StatisticsManager.class.getName());
+	private static final Logger logger = LogManager.getLogger(StatisticsManager.class);
 
     /** A snapshot of all vehicles currently active in the simulation. */
     private Map<String, MeansOfTransportation> vehiclesData;
@@ -36,7 +36,7 @@ public class StatisticsManager {
      * Initializes the StatisticsManager with an empty data set.
      */
     public StatisticsManager() {
-        LOGGER.info("StatisticsManager initialized.");
+        logger.info("StatisticsManager initialized.");
         this.vehiclesData = new HashMap<>();
     }
 
@@ -51,7 +51,7 @@ public class StatisticsManager {
      */
     public void step(Map<String, MeansOfTransportation> statsData, int step) {
         if (statsData == null) {
-            LOGGER.warning("Received null statsData in step " + step);
+            logger.warn("Received null statsData in step " + step);
             return;
         }
         this.vehiclesData = statsData;
@@ -65,7 +65,7 @@ public class StatisticsManager {
      */
     public double avgVehiclesSpeed(Map<String, MeansOfTransportation> vehiclesInfo) {
         if (vehiclesInfo == null || vehiclesInfo.isEmpty()) {
-            LOGGER.info("There are no vehicles currently");
+            logger.info("There are no vehicles currently");
             return 0.0;
         }
 
@@ -76,7 +76,7 @@ public class StatisticsManager {
             }
             return totalSpeed / vehiclesData.size();
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error calculating average vehicle speed", e);
+            logger.error("Error calculating average vehicle speed", e.getMessage());
             return 0.0;
         }
     }
@@ -122,7 +122,7 @@ public class StatisticsManager {
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error finding congestion spots", e);
+            logger.error("Error finding congestion spots", e);
         }
 
         return congestedEdges;
@@ -147,7 +147,7 @@ public class StatisticsManager {
                 densityMap.put(edgeId, densityMap.getOrDefault(edgeId, 0) + 1);
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error calculating vehicle density", e);
+            logger.error("Error calculating vehicle density");
         }
 
         return densityMap;
@@ -172,7 +172,7 @@ public class StatisticsManager {
                 int lowerB = Integer.parseInt(b.split("-")[0]);
                 return Integer.compare(lowerA, lowerB);
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Error parsing time distribution keys", e);
+                logger.error("Error parsing time distribution keys", e);
                 return 0;
             }
         });
@@ -188,7 +188,7 @@ public class StatisticsManager {
                 double currentTravelTime = this.step * 0.1 - departureTime;
 
                 if (currentTravelTime < 0) {
-                    LOGGER.warning("Negative travel time detected for vehicle " + vehicle);
+                    logger.warn("Negative travel time detected for vehicle " + vehicle);
                     continue;
                 }
                 int binIndex = (int) (currentTravelTime / binSizeSeconds);
@@ -199,7 +199,7 @@ public class StatisticsManager {
                 distribution.put(key, distribution.getOrDefault(key, 0) + 1);
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error calculating travel time distribution", e);
+            logger.error("Error calculating travel time distribution", e);
         }
         return distribution;
     }

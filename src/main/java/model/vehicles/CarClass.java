@@ -15,6 +15,12 @@ public class CarClass extends VehicleClass {
         super(id, speed, position, color, edgeId, angle, departureTime);
     }
     
+    /**
+     * Returns a Node representing the bus, facing UP (-Y), centered at (0,0).
+     * Uses Locale.US to ensure SVG paths are valid on all systems.
+     * This is AI generated, prompts, usage,  benefit, drawbacks are written in the document
+     * @param simColor The body color of the car.
+     */
     @Override 
     public Node getShape(Color simColor){
         Group carGroup = new Group();

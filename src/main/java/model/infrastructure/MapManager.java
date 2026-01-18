@@ -25,6 +25,7 @@ import it.polito.appeal.traci.SumoTraciConnection;
  * MapManager is the object that instantiate all of the elements related to the infrastructure: Junctions, Edges, and Lanes
  */
 public class MapManager {
+	private static final Logger logger = LogManager.getLogger(MapManager.class);
 	private SumoTraciConnection sumoConnection;
 	private int totalEdge = 0;
 	private int totalLane = 0;
@@ -40,12 +41,10 @@ public class MapManager {
     private Map<String, JunctionClass> junctions;
     
     
-    //i use this for the converter
     private double minX = Double.MAX_VALUE;
     private double minY = Double.MAX_VALUE;
     private double maxX = Double.MIN_VALUE;
     private double maxY = Double.MIN_VALUE;
-    private static final Logger logger = LogManager.getLogger(MapManager.class);
     /**
      * Map Manager Constructor
      * @param sumoConnection
@@ -73,7 +72,7 @@ public class MapManager {
 				this.junctions = new HashMap<>();
 				
 				
-				fetchEdgesFromSumo();//this also fetch lanes from Sumo
+				fetchEdgesFromSumo();
 				fetchJunctionsFromSumo();
 				
 				SumoCommand getNetBoundary = Simulation.getNetBoundary();
@@ -99,7 +98,6 @@ public class MapManager {
 				    minX = 0; minY = 0; maxX = 1000; maxY = 1000;
 				    System.err.println("Unknown map boundary type: " + response.getClass().getName());
 				}
-				
 			} catch (Exception e) {
 				logger.warn(e.getMessage());
 				logger.trace(e);
@@ -151,10 +149,6 @@ public class MapManager {
     		this.totalLane += edge.getLaneCount();
     	}
     }
-
-//    private void fetchLanesFromSumo() throws Exception{
-//    	//write the laneObject first
-//    }
     
     private void fetchJunctionsFromSumo() throws Exception{
     	for(int i=0;i<this.junctionIdList.size();i++) {

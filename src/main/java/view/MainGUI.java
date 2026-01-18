@@ -62,11 +62,11 @@ public class MainGUI extends Application {
         MainController controller = loader.getController();
 
         primaryStage.setTitle("Cool Traffic Simulator");
-        primaryStage.setScene(new Scene(root, windowWidth, windowHeight)); // Set default size
+        primaryStage.setScene(new Scene(root, windowWidth, windowHeight)); 
         
         primaryStage.setOnCloseRequest(event -> {
             logger.info("Window closing...");
-            controller.stopSimulation(); // Stop threads before exit
+            controller.stopSimulation(); 
         });
         primaryStage.show();
     }

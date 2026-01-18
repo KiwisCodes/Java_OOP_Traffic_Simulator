@@ -337,7 +337,12 @@ public class MainController {
 		try {
 			connected = this.simManager.startConnection();
 		} catch (SumoException e) {
-			logger.error(e);
+		    if (e.isFatal()) {
+		        connected = false;
+		        logger.error(e);
+		    } else {
+		    	logger.warn(e);
+		    }
 		}
 
         if (connected) {
@@ -394,7 +399,6 @@ public class MainController {
                     	}
                         this.uiQueue.offerState(simulationState);
                         this.statQueue.offerState(simulationState);
-
                         currentStep++;
                     } catch (InterruptedException e) {
                         log("Simulation loop interrupted. Stopping safely.");
@@ -815,6 +819,7 @@ public class MainController {
 	        }
 	    } catch (NumberFormatException e) {
 	    		check_validity = false;
+	    		logger.warn(e);
 	    }
 	    	if(!check_validity) {
 	    		log("Duration must be non-negative double.");
@@ -1033,12 +1038,10 @@ public class MainController {
                     }
                     continue;
                 }
-
                 try {
                     if(this.simManager == null || this.simManager.getConnection().isClosed()) {
                          break;
                     }
-
                     boolean success = this.simManager.injectMeansOfTransportation(vehicleType, sumoColor, speed, firstEdgeId, secondEdgeId);
                     final int stressTestVehicleCount = i;
                     if (success) {
@@ -1063,7 +1066,7 @@ public class MainController {
                     e.printStackTrace(); 
                 }
             }
-            
+
             final int finalCount = successCount;
             Platform.runLater(() -> {
             	log("Stress Test Complete. Total: " + finalCount);
@@ -1167,7 +1170,6 @@ public class MainController {
                 log("Edge ID: " + edgeId + " | Lane ID: " + laneId);
             }
         };
-        
         trafficLightClickHandler = (trafficLightLink) -> {
             if (trafficLightControlPane != null && trafficLightControlPane.isExpanded()) {
                 	trafficLightIdField.setText(trafficLightLink.getLinkId().toString());
@@ -1177,7 +1179,6 @@ public class MainController {
                 log("Traffic Light ID: " + trafficLightLink.getLinkId().toString());
             }
         };
-        
         meansOfTransportationClickHandler = (selectedVehicle) -> {
             if (selectedVehicle == null) return;
             log(selectedVehicle.getSpeed()+"");

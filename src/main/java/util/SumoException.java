@@ -1,17 +1,38 @@
 package util;
 
 /**
- * Custom exception for errors related to the SUMO simulation connection.
+ * A custom exception for SUMO errors.
  */
 public class SumoException extends Exception {
 
     private static final long serialVersionUID = 1L;
+    
+    private final boolean fatal; 
 
-	public SumoException(String message) {
+    /**
+     * Use this for minor errors (logic issues, invalid IDs).
+     * The simulation can continue.
+     */
+    public SumoException(String message) {
         super(message);
+        this.fatal = false; 
     }
 
-    public SumoException(String message, Throwable cause) {
+    /**
+     * Specify if the error is fatal.
+     */
+    public SumoException(String message, boolean isFatal) {
+        super(message);
+        this.fatal = isFatal;
+    }
+
+
+    public SumoException(String message, Throwable cause, boolean isFatal) {
         super(message, cause);
+        this.fatal = isFatal;
+    }
+
+    public boolean isFatal() {
+        return fatal;
     }
 }

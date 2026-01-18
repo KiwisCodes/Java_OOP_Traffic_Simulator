@@ -15,7 +15,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class TrafficlightClass{
 	private static final Logger logger = LogManager.getLogger(SimulationManager.class);
-	private SumoLink link;  // the link (SumoLink)
+	private SumoLink link;  
 	private String host_junction_id; // the traffic light (tls_id)
 	private String link_index; // the index of this link (SumoLink) in the traffic light (tls_id)
 	private SumoPosition2D link_pos; 

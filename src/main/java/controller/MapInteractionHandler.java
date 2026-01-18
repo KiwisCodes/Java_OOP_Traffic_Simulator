@@ -192,7 +192,6 @@ public class MapInteractionHandler {
         
         targetNode.setScaleX(newScale);
         targetNode.setScaleY(newScale);
-        //something is here
         
         Point2D newLocationInScene = targetNode.localToScene(pivotOnMap);
 
