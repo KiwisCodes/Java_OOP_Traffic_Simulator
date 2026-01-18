@@ -1105,7 +1105,6 @@ public class MainController {
     }
     
     private void showColorsAsCheckboxes(List<Color> colorsToShow) {
-        // UI manipulation must always be done on the JavaFX Application Thread
         Platform.runLater(() -> {
             if (dynamicColorCheckBoxContainer == null) {
                 log("Error: dynamicColorCheckBoxContainer is null. FXML load failed or ID mismatch.");
@@ -1113,16 +1112,14 @@ public class MainController {
             }
             
             dynamicColorCheckBoxContainer.getChildren().clear();
-            colorCheckBoxMap.clear();//this will forget the last chosen filter choice that is still happening
-            //if you are filtering for green and yellow, then green is gone, you will also clear yellow too
+            colorCheckBoxMap.clear();
 
             for (Color color : colorsToShow) {
                 String webColor = ColorConverter.colorToWebString(color);
                 String labelText = "Color: " + webColor; 
 
                 CheckBox cb = new CheckBox(labelText);
-                cb.setUserData(color); // Store the actual Color object
-                // Style the text to be the color it represents
+                cb.setUserData(color);
                 cb.setStyle("-fx-text-fill: " + webColor + "; -fx-font-weight: bold;"); 
 
                 dynamicColorCheckBoxContainer.getChildren().add(cb);
@@ -1165,7 +1162,6 @@ public class MainController {
                     secondEdgeField1.clear();
                     log("Selected Another First Edge (Stress Test): " + edgeId);
                 }   
-
             } 
             else {
                 log("Edge ID: " + edgeId + " | Lane ID: " + laneId);

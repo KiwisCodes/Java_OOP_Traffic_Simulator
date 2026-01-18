@@ -1,6 +1,7 @@
 package model.vehicles;
 
 import de.tudresden.sumo.cmd.Person;
+
 import de.tudresden.sumo.cmd.Vehicle;
 import it.polito.appeal.traci.SumoTraciConnection;
 import de.tudresden.sumo.util.SumoCommand;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import de.tudresden.sumo.config.Constants;
 import org.apache.logging.log4j.LogManager;
 
 
@@ -196,12 +197,15 @@ public class VehicleManager {
             int depart = 0;
             double pos = 0.0;
             byte lane = (byte) 0;
+            
+            synchronized(this.conn) {
+            	SumoCommand addCmd = Vehicle.add(vehicleId, typeId, routeId, depart, pos, Speed, lane);
+            	this.conn.do_job_set(addCmd);
+            	
+            	SumoCommand setColorCmd = Vehicle.setColor(vehicleId, sumoColor);
+            	this.conn.do_job_set(setColorCmd);            	
+            }
 
-            SumoCommand addCmd = Vehicle.add(vehicleId, typeId, routeId, depart, pos, Speed, lane);
-            this.conn.do_job_set(addCmd);
-
-            SumoCommand setColorCmd = Vehicle.setColor(vehicleId, sumoColor);
-            this.conn.do_job_set(setColorCmd);
             LOGGER.info("Vehicle Injected: " + vehicleId);
 
         } catch (Exception e) {
@@ -216,20 +220,22 @@ public class VehicleManager {
                 return;
             }
             String firstEdge = edgeList.get(0);
-            this.conn.do_job_set(Person.add(personId, firstEdge, 0, (byte) 0, typeId));
-
-            this.conn.do_job_set(Person.setColor(personId, sumoColor));
-            this.conn.do_job_set(Person.setSpeed(personId, speed));
-
-            this.conn.do_job_set(Person.appendWalkingStage(
-                    personId,
-                    edgeList,
-                    0.0,
-                    -1.0,
-                    speed,
-                    ""
-            ));
-
+            
+            synchronized(this.conn) {
+            	this.conn.do_job_set(Person.add(personId, firstEdge, 0, Constants.DEPARTFLAG_NOW, typeId));
+            	
+            	this.conn.do_job_set(Person.setColor(personId, sumoColor));
+            	this.conn.do_job_set(Person.setSpeed(personId, speed));
+            	
+            	this.conn.do_job_set(Person.appendWalkingStage(
+            			personId,
+            			edgeList,
+            			-1.0,
+            			-1.0,
+            			speed,
+            			""
+            			));
+            }
             LOGGER.info("Person Injected: " + personId);
 
         } catch (Exception e) {
