@@ -2,6 +2,7 @@ package model;
 
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -173,6 +174,7 @@ public class ReportManager {
             try {
                 BarChart<String, Number> chart = createBarChartNode(data, title, xLabel, yLabel);
                 StackPane root = new StackPane(chart);
+                Scene dummyScene = new Scene(root, 600, 400);
                 chart.applyCss();
                 chart.layout();
                 WritableImage fxImage = chart.snapshot(new SnapshotParameters(), null);

@@ -18,6 +18,7 @@ import de.tudresden.sumo.cmd.*;
 import de.tudresden.sumo.objects.SumoColor;
 import de.tudresden.sumo.objects.SumoStage;
 import de.tudresden.sumo.objects.SumoStringList;
+import model.vehicles.*;
 import model.vehicles.MeansOfTransportation;
 import model.vehicles.VehicleManager;
 import util.ColorConverter;
@@ -242,7 +243,21 @@ public class SimulationManager {
                     String color = ColorConverter.colorToWebString(ColorConverter.toFXColor(attr.getColor()));
                     double depart = (Double) attr.getDeparture();
                     double timeAlive = currentStepCount - depart;
-                    vehicleList.add(new VehicleInfo(id, speed, timeAlive, color, "car"));
+                    String vehicleType = "";
+                    if(attr instanceof BikeClass) {
+                    		vehicleType = "bike";
+                    }
+                    else if(attr instanceof BusClass) {
+                    		vehicleType = "bus";
+                    }
+                    else if(attr instanceof CarClass) {
+                    		vehicleType = "car";
+                    }
+                    else if(attr instanceof PedestrianClass) {
+                    		vehicleType = "pedestrian";
+                    }
+                    
+                    vehicleList.add(new VehicleInfo(id, speed, timeAlive, color, vehicleType));
                 }
 
                 String fileName = outputDir + "/vehicles_" + timestamp + ".csv";
