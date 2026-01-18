@@ -71,10 +71,10 @@ public class StatisticsManager {
 
         try {
             double totalSpeed = 0;
-            for (MeansOfTransportation vehicle : this.vehiclesData.values()) {
+            for (MeansOfTransportation vehicle : vehiclesInfo.values()) {
                 totalSpeed += vehicle.getSpeed();
             }
-            return totalSpeed / vehiclesData.size();
+            return totalSpeed / vehiclesInfo.size();
         } catch (Exception e) {
             logger.error("Error calculating average vehicle speed", e.getMessage());
             return 0.0;
@@ -141,7 +141,7 @@ public class StatisticsManager {
         }
 
         try {
-            for (MeansOfTransportation vehicle : this.vehiclesData.values()) {
+            for (MeansOfTransportation vehicle : vehiclesInfo.values()) {
                 String edgeId = vehicle.getEdgeId();
 
                 densityMap.put(edgeId, densityMap.getOrDefault(edgeId, 0) + 1);
@@ -182,7 +182,7 @@ public class StatisticsManager {
         }
 
         try {
-            for (MeansOfTransportation vehicle : this.vehiclesData.values()) {
+            for (MeansOfTransportation vehicle : vehiclesInfo.values()) {
 
                 double departureTime = vehicle.getDeparture();
                 double currentTravelTime = this.step * 0.1 - departureTime;

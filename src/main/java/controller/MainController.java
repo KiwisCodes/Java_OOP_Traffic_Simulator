@@ -216,7 +216,7 @@ public class MainController {
 //    Thread
     private AnimationTimer uiLoop; 
     private ExecutorService threadPool; 
-    private final int NUMBER_OF_THREADS = 4; //sim, stat, stress, extra things...
+    private final int NUMBER_OF_THREADS = 5; //sim, stat, stress, export, extra things...
     
 //    Flags
     private volatile static boolean isSimulationRunning = false;
@@ -570,28 +570,38 @@ public class MainController {
             updateCurrentStep();
             updateCurrentVehicleCount(currentVehicleCount);
             
+            
             if(isExportingVehicleCSV) {
-	            	Platform.runLater(() -> {
-	            		simManager.generateReports(reportPath, simulationState.getMeansOfTransportations(), "VEHICLE", this.filteredVehicleIDs, currentStep, false, 0, 0);
+            		Map<String, MeansOfTransportation> snapshot = new HashMap<>(simulationState.getMeansOfTransportations());
+                List<String> vehicleIdsSnapshot = new ArrayList<>(filteredVehicleIDs);
+                int stepSnapshot = currentStep;
+                threadPool.submit(() -> {
+	            		simManager.generateReports(reportPath, snapshot, "VEHICLE", vehicleIdsSnapshot, stepSnapshot, false, 0, 0);
 	            });
             		isExportingVehicleCSV = false;
             }
             
             if(isExportingEdgeCSV) {
-	            	Platform.runLater(() -> {
+            		Map<String, MeansOfTransportation> snapshot = new HashMap<>(simulationState.getMeansOfTransportations());
+                List<String> vehicleIdsSnapshot = new ArrayList<>(filteredVehicleIDs);
+                int stepSnapshot = currentStep;
+	            threadPool.submit(() -> {
 	            		boolean edgeFilter = edgeFilterCheckbox.isSelected();
 	            	    double maxSpeed = edgeSpeedSlider.getValue();
 	            	    int minDensity = (int) edgeDensitySlider.getValue();
-	            	    simManager.generateReports(reportPath, simulationState.getMeansOfTransportations(), "EDGE", this.filteredVehicleIDs, currentStep, edgeFilter, maxSpeed, minDensity);
+	            	    simManager.generateReports(reportPath, snapshot, "EDGE", vehicleIdsSnapshot, stepSnapshot, edgeFilter, maxSpeed, minDensity);
 	            });
             		isExportingEdgeCSV = false;
             }
             
             if(isExportingPDF) {
             		isExportingPDF = false;
+            		Map<String, MeansOfTransportation> snapshot = new HashMap<>(simulationState.getMeansOfTransportations());
+            		List<String> vehicleIdsSnapshot = new ArrayList<>(filteredVehicleIDs);
+            		int stepSnapshot = currentStep;
             		threadPool.submit(() -> {
                 		try {          
-                			simManager.generateReports(reportPath, simulationState.getMeansOfTransportations(), "PDF", this.filteredVehicleIDs, currentStep, false, 0 ,0);
+                			simManager.generateReports(reportPath, snapshot, "PDF", this.filteredVehicleIDs, stepSnapshot, false, 0 ,0);
                 			Platform.runLater(() -> log("PDF Saved to Desktop!"));
                     } catch (Throwable ex) {
                     		logger.error("CRITICAL THREAD ERROR:"); 
